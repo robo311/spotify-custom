@@ -232,9 +232,8 @@ func TestDigitalSilenceBecomesNoSignal(t *testing.T) {
 	s.Want(true)
 	defer s.Stop()
 	eventually(t, "no-signal", func() bool { return s.Status().State == StateNoSignal })
-	if !out.has(`"state":"no-signal"`) {
-		t.Error("no-signal status not pushed to the page")
-	}
+	// The page push follows the state change (outside the lock), so wait for it too.
+	eventually(t, "no-signal pushed to the page", func() bool { return out.has(`"state":"no-signal"`) })
 	if n := out.count(framePrefix); n > 1 {
 		t.Errorf("%d silent frames streamed, want at most one", n)
 	}

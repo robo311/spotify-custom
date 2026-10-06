@@ -4,16 +4,17 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"path"
 	"path/filepath"
 	"strings"
 )
 
 // BundleOf returns the .app bundle containing a macOS executable (…/X.app/Contents/MacOS/X), or "".
 func BundleOf(exe string) string {
-	macos := filepath.Dir(exe)
-	contents := filepath.Dir(macos)
-	bundle := filepath.Dir(contents)
-	if filepath.Base(macos) != "MacOS" || filepath.Base(contents) != "Contents" || !strings.HasSuffix(bundle, ".app") {
+	macos := path.Dir(exe) // macOS paths: always slash-separated
+	contents := path.Dir(macos)
+	bundle := path.Dir(contents)
+	if path.Base(macos) != "MacOS" || path.Base(contents) != "Contents" || !strings.HasSuffix(bundle, ".app") {
 		return ""
 	}
 	return bundle

@@ -38,7 +38,7 @@ e2e: payload
 
 ## Mac .dmg + update zip, Windows .exe into dist/ (spec §11). VERSION=x.y.z sets the version. The Windows
 ## installer is built by CI (Inno Setup runs on Windows); see docs/releasing.md.
-release: check payload
+release: payload check
 	$(MAKE) -C $(HELPER) release OUT=$(abspath dist)
 
 ## Publish a release: tags vVERSION and pushes the tag; GitHub Actions builds, tests and publishes it, and

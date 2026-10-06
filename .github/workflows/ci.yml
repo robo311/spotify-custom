@@ -1,0 +1,52 @@
+# Every push and pull request: the full check on macOS, and the Go helper's tests on a real Windows machine.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: payload/package-lock.json
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: helper/go.mod
+          cache-dependency-path: helper/go.sum
+      - run: npm ci
+        working-directory: payload
+      - run: make payload
+      - run: make check
+      - uses: actions/upload-artifact@v4
+        with:
+          name: payload
+          path: helper/internal/inject/payload.js
+
+  windows:
+    needs: check
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: helper/go.mod
+          cache-dependency-path: helper/go.sum
+      - uses: actions/download-artifact@v4
+        with:
+          name: payload
+          path: helper/internal/inject
+      - run: go vet ./...
+        working-directory: helper
+      - run: go test ./...
+        working-directory: helper

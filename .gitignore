@@ -1,0 +1,12 @@
+.DS_Store
+node_modules/
+
+# Build output (releases are built by CI from tags)
+dist/
+payload/dist/
+payload/.vitest/
+helper/internal/inject/payload.js
+helper/cmd/spotifycustom/rsrc_windows_*.syso
+
+# Local test output (screenshots of a real Spotify session)
+e2e/out/

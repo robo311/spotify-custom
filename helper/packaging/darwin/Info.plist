@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>CFBundleIdentifier</key><string>com.spotifycustom.helper</string>
+  <key>CFBundleName</key><string>Spotify Custom</string>
+  <key>CFBundleDisplayName</key><string>Spotify Custom</string>
+  <key>CFBundleExecutable</key><string>SpotifyCustom</string>
+  <key>CFBundleIconFile</key><string>AppIcon</string>
+  <key>CFBundlePackageType</key><string>APPL</string>
+  <key>CFBundleShortVersionString</key><string>__VERSION__</string>
+  <key>CFBundleVersion</key><string>__VERSION__</string>
+  <key>LSMinimumSystemVersion</key><string>11.0</string>
+  <!-- Menu bar app: no Dock icon, no app menu. -->
+  <key>LSUIElement</key><true/>
+  <key>NSHighResolutionCapable</key><true/>
+  <!-- Music-reactive effects tap Spotify's own sound (only while switched on). -->
+  <key>NSAudioCaptureUsageDescription</key><string>Spotify Custom listens to Spotify's music only to make your theme move with it. Nothing is recorded, saved or sent anywhere.</string>
+</dict>
+</plist>

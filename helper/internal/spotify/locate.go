@@ -2,7 +2,7 @@ package spotify
 
 import (
 	"errors"
-	"path/filepath"
+	"path"
 	"strings"
 )
 
@@ -24,8 +24,8 @@ type Install struct {
 
 // locateMac returns the first Spotify.app found in the standard locations.
 func locateMac(home string, exists func(string) bool) (Install, error) {
-	for _, p := range []string{"/Applications/Spotify.app", filepath.Join(home, "Applications", "Spotify.app")} {
-		if exists(filepath.Join(p, "Contents", "MacOS", "Spotify")) {
+	for _, p := range []string{"/Applications/Spotify.app", path.Join(home, "Applications", "Spotify.app")} {
+		if exists(path.Join(p, "Contents", "MacOS", "Spotify")) {
 			return Install{Path: p}, nil
 		}
 	}

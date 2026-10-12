@@ -16,5 +16,4 @@ It updates itself after that.
 | `make release` | local Mac + Windows build into `dist/` |
 | `make publish VERSION=x.y.z` | publish a release via GitHub Actions ([docs/releasing.md](docs/releasing.md)) |
 
-Design: [docs/superpowers/specs](docs/superpowers/specs/2026-10-02-spotify-custom-design.md) · rules:
-[CONVENTIONS.md](CONVENTIONS.md) · payload in `payload/` (TypeScript, Preact) · helper in `helper/` (Go).
+Changes: [CHANGELOG.md](CHANGELOG.md) · payload in `payload/` (TypeScript, Preact) · helper in `helper/` (Go).

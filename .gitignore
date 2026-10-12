@@ -10,3 +10,8 @@ helper/cmd/spotifycustom/rsrc_windows_*.syso
 
 # Local test output (screenshots of a real Spotify session)
 e2e/out/
+
+# Local working notes (kept out of the repo)
+TASKS.md
+docs/superpowers/
+CONVENTIONS.md

@@ -1,4 +1,4 @@
-# Entry points for development, checks and release. See CONVENTIONS.md.
+# Entry points for development, checks and release.
 PAYLOAD     := payload
 HELPER      := helper
 EMBED       := $(HELPER)/internal/inject/payload.js

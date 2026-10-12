@@ -1,8 +1,7 @@
 # Helper
 
 The installable part of Spotify Custom: a tray app that starts Spotify with DevTools on
-`127.0.0.1:<port>`, keeps the payload injected, and stores the user's data. See the spec
-(`docs/superpowers/specs/2026-10-02-spotify-custom-design.md` §5) and `CONVENTIONS.md`.
+`127.0.0.1:<port>`, keeps the payload injected, and stores the user's data.
 
 | Package | Responsibility |
 |---|---|

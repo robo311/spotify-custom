@@ -1,4 +1,4 @@
-# Helper build, checks and packaging. Called from the root Makefile; see CONVENTIONS.md.
+# Helper build, checks and packaging. Called from the root Makefile.
 VERSION     ?= 0.1.0
 OUT         ?= $(abspath ../dist)
 BUILD       := $(OUT)/.build

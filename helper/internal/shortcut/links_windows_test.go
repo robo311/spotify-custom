@@ -75,16 +75,19 @@ func TestRetargetRealShortcut(t *testing.T) {
 	lnk := filepath.Join(dir, "Spotify.lnk")
 	createLink(t, lnk, spotify)
 
-	if err := (windowsLinks{}).Retarget(lnk, self, Marker, spotify); err != nil {
-		t.Fatal(err)
-	}
-	if target, args := readLink(t, lnk); !samePath(target, self) || args != Marker {
-		t.Fatalf("after retarget: %q %q", target, args)
-	}
-	if err := (windowsLinks{}).Retarget(lnk, spotify, "", spotify); err != nil {
-		t.Fatal(err)
-	}
-	if target, args := readLink(t, lnk); !samePath(target, spotify) || args != "" {
-		t.Fatalf("after restore: %q %q", target, args)
+	// Twice over: each direction must take, whatever the link went through before.
+	for round := 1; round <= 2; round++ {
+		if err := (windowsLinks{}).Retarget(lnk, self, Marker, spotify); err != nil {
+			t.Fatalf("round %d, point at us: %v", round, err)
+		}
+		if target, args := readLink(t, lnk); !samePath(target, self) || args != Marker {
+			t.Fatalf("round %d, after pointing at us: %q %q", round, target, args)
+		}
+		if err := (windowsLinks{}).Retarget(lnk, spotify, "", spotify); err != nil {
+			t.Fatalf("round %d, restore: %v", round, err)
+		}
+		if target, args := readLink(t, lnk); !samePath(target, spotify) || args != "" {
+			t.Fatalf("round %d, after restore: %q %q", round, target, args)
+		}
 	}
 }

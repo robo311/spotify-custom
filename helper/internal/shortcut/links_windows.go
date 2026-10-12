@@ -18,8 +18,11 @@ import (
 // state) is kept. COM is called through vtables with syscall.SyscallN, like the audio capture code.
 
 var (
-	modOle32             = windows.NewLazySystemDLL("ole32.dll")
-	procCoCreateInstance = modOle32.NewProc("CoCreateInstance")
+	modOle32              = windows.NewLazySystemDLL("ole32.dll")
+	procCoCreateInstance  = modOle32.NewProc("CoCreateInstance")
+	modShell32            = windows.NewLazySystemDLL("shell32.dll")
+	procILCreateFromPathW = modShell32.NewProc("ILCreateFromPathW")
+	procILFree            = modShell32.NewProc("ILFree")
 
 	clsidShellLink  = windows.GUID{Data1: 0x00021401, Data4: [8]byte{0xC0, 0, 0, 0, 0, 0, 0, 0x46}}
 	iidIShellLinkW  = windows.GUID{Data1: 0x000214F9, Data4: [8]byte{0xC0, 0, 0, 0, 0, 0, 0, 0x46}}
@@ -40,7 +43,9 @@ type shellLink struct{ vtbl *shellLinkVtbl }
 type shellLinkVtbl struct {
 	unknownVtbl
 	GetPath         uintptr
-	_               [6]uintptr // GetIDList, SetIDList, Get/SetDescription, Get/SetWorkingDirectory
+	_               uintptr // GetIDList
+	SetIDList       uintptr
+	_               [4]uintptr // Get/SetDescription, Get/SetWorkingDirectory
 	GetArguments    uintptr
 	SetArguments    uintptr
 	_               [4]uintptr // Get/SetHotkey, Get/SetShowCmd
@@ -131,6 +136,23 @@ func (l *shellLink) read() (target, args string, err error) {
 // Supported: only Windows shortcuts can be re-pointed.
 const Supported = true
 
+// setTarget points the link at path through a freshly built item ID list. SetPath isn't enough: a link keeps its
+// original target in a second record too, and SetPath back to that target is taken as "no change", so restoring
+// Spotify after pointing the link at us left it opening us (caught by TestRetargetRealShortcut on Windows).
+func (l *shellLink) setTarget(path string) error {
+	p, err := windows.UTF16PtrFromString(path)
+	if err != nil {
+		return err
+	}
+	pidl, _, _ := procILCreateFromPathW.Call(uintptr(unsafe.Pointer(p)))
+	if pidl == 0 {
+		return fmt.Errorf("set target: can't resolve %s", path)
+	}
+	defer procILFree.Call(pidl)
+	r, _, _ := syscall.SyscallN(l.vtbl.SetIDList, uintptr(unsafe.Pointer(l)), pidl)
+	return hresult("set target", r)
+}
+
 type windowsLinks struct{}
 
 // NewLinks finds Spotify's shortcuts in the current user's Start menu, desktop and pinned taskbar.
@@ -195,7 +217,7 @@ func (windowsLinks) Retarget(path, target, args, icon string) error {
 			r, _, _ := syscall.SyscallN(method, append([]uintptr{uintptr(unsafe.Pointer(link)), uintptr(unsafe.Pointer(p))}, extra...)...)
 			return hresult(what, r)
 		}
-		if err := set("set target", link.vtbl.SetPath, target); err != nil {
+		if err := link.setTarget(target); err != nil {
 			return err
 		}
 		if err := set("set arguments", link.vtbl.SetArguments, args); err != nil {

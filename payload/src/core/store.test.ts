@@ -208,6 +208,62 @@ describe('store', () => {
     expect(fn).toHaveBeenCalledTimes(1)
   })
 
+  it('keeps the current name on undo and redo (renaming is not an edit step)', async () => {
+    store.edit(t => {
+      t.palette.accent = '#ff0000'
+    })
+    const id = store.get().active.id
+    store.edit(t => {
+      t.palette.accent = '#00ff00'
+    })
+    store.renameTheme(id, 'Renamed')
+    store.undo()
+    expect(store.get().active).toMatchObject({ name: 'Renamed', palette: { accent: '#ff0000' } })
+    store.redo()
+    expect(store.get().active).toMatchObject({ name: 'Renamed', palette: { accent: '#00ff00' } })
+    await vi.runAllTimersAsync()
+    expect(savedState().userThemes.map(t => t.name)).toEqual(['Renamed'])
+  })
+
+  it('keeps theme folder ids the helper allows, so edits save back to the same folder', async () => {
+    const mine = { ...PRESETS[0], id: 'My_Theme', name: 'Mine', basedOn: null }
+    store.dispose()
+    store = createStore(
+      createBridge({
+        mock: {
+          ...createMockHelper(localStorage),
+          getState: () => ({ ...savedState(), userThemes: [mine], settings: { ...savedState().settings, activeTheme: 'My_Theme' } as HelperState['settings'] }),
+        },
+      }),
+    )
+    await store.init()
+    expect(store.get()).toMatchObject({ activeIsPreset: false, active: { id: 'My_Theme' } })
+    store.edit(t => {
+      t.radius = 3
+    })
+    await vi.runAllTimersAsync()
+    expect(savedState().userThemes.map(t => t.id)).toEqual(['My_Theme'])
+  })
+
+  it('does nothing when disposed before the helper state arrives (hot reload during boot)', async () => {
+    store.dispose()
+    localStorage.clear()
+    store = createStore(createBridge())
+    const booting = store.init()
+    store.dispose()
+    // The next instance has booted meanwhile and owns the theme slot and the boot cache.
+    const slot = document.getElementById('sc-theme')
+    if (!slot) throw new Error('missing theme slot')
+    slot.textContent = 'next instance'
+    localStorage.setItem('sc:last-theme-css', 'next instance')
+    await booting
+    await vi.runAllTimersAsync()
+    expect(store.get().ready).toBe(false)
+    expect(themeCss()).toBe('next instance')
+    expect(localStorage.getItem('sc:last-theme-css')).toBe('next instance')
+    expect(savedState().settings).toBeNull()
+  })
+
   it('restores the user theme from saved settings on the next start', async () => {
     store.selectTheme('forest')
     store.dispose()

@@ -37,7 +37,11 @@ func Download(ctx context.Context, client *http.Client, a Asset, dir string) (st
 	if err := os.MkdirAll(dir, 0o755); err != nil {
 		return "", fmt.Errorf("download update: %w", err)
 	}
-	dst := filepath.Join(dir, path.Base(req.URL.Path))
+	name := path.Base(req.URL.Path)
+	if name != filepath.Base(name) || !filepath.IsLocal(name) { // `\` is a separator on Windows
+		return "", fmt.Errorf("download update: unusable file name %q", name)
+	}
+	dst := filepath.Join(dir, name)
 	f, err := os.Create(dst)
 	if err != nil {
 		return "", fmt.Errorf("download update: %w", err)

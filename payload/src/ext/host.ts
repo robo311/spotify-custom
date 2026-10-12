@@ -41,6 +41,11 @@ function errorMessage(error: unknown): string {
   return error instanceof Error ? error.message : String(error)
 }
 
+function sameToggles(a: Settings['extensions'], b: Settings['extensions']): boolean {
+  const keys = Object.keys(a)
+  return keys.length === Object.keys(b).length && keys.every(key => a[key] === b[key])
+}
+
 export function createExtensionHost({ store, home, onChange }: HostDeps): ExtensionHost & {
   addUserFile(file: UserExtensionFile): void
   sync(): void
@@ -173,8 +178,9 @@ export function createExtensionHost({ store, home, onChange }: HostDeps): Extens
   }
 
   let lastExtensions = store.get().settings.extensions
+  // editSettings clones the whole settings object, so identity changes on every edit; compare the toggles themselves.
   const unsubscribe = store.subscribe(state => {
-    if (state.settings.extensions === lastExtensions) return
+    if (sameToggles(state.settings.extensions, lastExtensions)) return
     lastExtensions = state.settings.extensions
     sync(true)
   })

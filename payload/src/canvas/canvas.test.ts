@@ -1,7 +1,19 @@
-import { afterEach, describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
+import type { Theme } from '../types'
+import { startCanvasCover } from './index'
 import { coverTargets, OVERLAY_CLASS, syncOverlays } from './overlay'
 
+vi.mock('../spotify', () => ({
+  spotify: {
+    onPlayback: () => () => undefined,
+    onNavigate: () => () => undefined,
+    currentPath: () => '/',
+    uriToPath: () => null,
+  },
+}))
+
 afterEach(() => {
+  document.head.innerHTML = ''
   document.body.innerHTML = ''
 })
 
@@ -54,5 +66,62 @@ describe('syncOverlays', () => {
     expect(cover.querySelector(`.${OVERLAY_CLASS}`)).toBeNull()
     syncOverlays([], null)
     expect(document.querySelectorAll(`.${OVERLAY_CLASS}`)).toHaveLength(0)
+  })
+})
+
+describe('startCanvasCover', () => {
+  const theme = { effects: { canvasAlbum: false, canvasPlayerBar: true }, pageStyle: { headerLayout: 'default' } } as unknown as Theme
+
+  /** Puts Spotify's panel Canvas video on the page; each captureStream() hands out a stream with its own track. */
+  function mountPanel() {
+    document.body.insertAdjacentHTML('beforeend', '<div data-testid="NPV_Panel_OpenDiv"><video></video></div>')
+    const video = document.querySelector('[data-testid="NPV_Panel_OpenDiv"] video')
+    if (!video) throw new Error('fixture')
+    const tracks: { stop: ReturnType<typeof vi.fn> }[] = []
+    Object.assign(video, {
+      captureStream: () => {
+        const track = { stop: vi.fn() }
+        tracks.push(track)
+        const stream = new MediaStream()
+        Object.assign(stream, { getTracks: () => [track] })
+        return stream
+      },
+    })
+    return { video, tracks }
+  }
+
+  it('stops the previous mirror when re-capturing, when the panel video goes, and on dispose', () => {
+    mount()
+    const { video, tracks } = mountPanel()
+    const cover = startCanvasCover(() => theme)
+    expect(tracks).toHaveLength(1)
+
+    video.dispatchEvent(new Event('loadeddata'))
+    expect(tracks).toHaveLength(2)
+    expect(tracks[0]?.stop).toHaveBeenCalled()
+    expect(tracks[1]?.stop).not.toHaveBeenCalled()
+
+    video.parentElement?.remove()
+    cover.refresh()
+    expect(tracks[1]?.stop).toHaveBeenCalled()
+
+    const again = mountPanel()
+    cover.refresh()
+    cover.dispose()
+    expect(again.tracks[0]?.stop).toHaveBeenCalled()
+  })
+
+  it('leaves its style element alone when nothing changed', () => {
+    mount()
+    mountPanel()
+    const cover = startCanvasCover(() => theme)
+    const style = document.getElementById('sc-canvas-cover')
+    if (!style) throw new Error('style missing')
+    const watcher = new MutationObserver(() => undefined)
+    watcher.observe(style, { childList: true, characterData: true, subtree: true })
+    cover.refresh()
+    expect(watcher.takeRecords()).toHaveLength(0)
+    watcher.disconnect()
+    cover.dispose()
   })
 })

@@ -238,6 +238,7 @@ export function startRecolor(): { setEnabled(enabled: boolean): void; dispose():
       observer.disconnect()
       document.removeEventListener('load', onLoad, true)
       if (scheduled) cancelAnimationFrame(scheduled)
+      styleSlot(SLOT).textContent = ''
     },
   }
 }

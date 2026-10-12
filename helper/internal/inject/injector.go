@@ -53,6 +53,10 @@ type session struct {
 	scriptID string     // identifier of the new-document script, for replacing/removing it
 
 	busy atomic.Bool // a broadcast evaluate is in flight
+
+	qmu     sync.Mutex
+	queue   []string // Send expressions not yet evaluated, oldest first
+	sending bool     // a goroutine is draining queue
 }
 
 type runner struct {
@@ -121,13 +125,53 @@ func (in *Injector) Broadcast(expr string) {
 		}
 		r.goAsync(func() {
 			defer s.busy.Store(false)
-			ctx, cancel := context.WithTimeout(r.ctx, broadcastTimeout)
-			defer cancel()
-			params := map[string]any{"expression": expr, "silent": true}
-			if err := r.conn.Call(ctx, s.id, "Runtime.evaluate", params, nil); err != nil {
-				r.in.Log.Debug("broadcast not delivered", "err", err)
-			}
+			r.fire(s, expr)
 		})
+	}
+}
+
+// Send runs expr in every attached Spotify page without waiting for it, like Broadcast, but never skips one: use it
+// for one-off messages (status changes). Each page evaluates them in the order they were sent.
+func (in *Injector) Send(expr string) {
+	in.mu.Lock()
+	defer in.mu.Unlock()
+	r := in.current
+	if r == nil {
+		return
+	}
+	for _, s := range r.snapshot() {
+		s.qmu.Lock()
+		s.queue = append(s.queue, expr)
+		start := !s.sending
+		s.sending = true
+		s.qmu.Unlock()
+		if start {
+			r.goAsync(func() { r.drain(s) })
+		}
+	}
+}
+
+func (r *runner) drain(s *session) {
+	for {
+		s.qmu.Lock()
+		if len(s.queue) == 0 {
+			s.sending = false
+			s.qmu.Unlock()
+			return
+		}
+		expr := s.queue[0]
+		s.queue = s.queue[1:]
+		s.qmu.Unlock()
+		r.fire(s, expr)
+	}
+}
+
+func (r *runner) fire(s *session, expr string) {
+	ctx, cancel := context.WithTimeout(r.ctx, broadcastTimeout)
+	defer cancel()
+	params := map[string]any{"expression": expr, "silent": true}
+	if err := r.conn.Call(ctx, s.id, "Runtime.evaluate", params, nil); err != nil {
+		r.in.Log.Debug("broadcast not delivered", "err", err)
 	}
 }
 

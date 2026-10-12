@@ -6,6 +6,9 @@ export const NAV_BAR = '[data-testid="global-nav-bar"]'
 /** The entry button is inserted before the first of these that exists (they sit in the top-right button group). */
 export const ENTRY_ANCHORS = ['[data-testid="whats-new-feed-button"]', '[data-testid="friend-activity-button"]', '[data-testid="user-widget-link"]'] as const
 
+/** Spotify's own dialogs and menus: Esc pressed inside one closes it, so the drawer leaves that Esc alone. */
+export const SPOTIFY_OVERLAYS = '[role="dialog"], [role="menu"]'
+
 /** Player bar: the drawer stops above it so playback controls stay usable. */
 export const NOW_PLAYING_BAR = '[data-testid="now-playing-bar"]'
 

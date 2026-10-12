@@ -14,6 +14,7 @@ type fakePlatform struct {
 	running     bool
 	ignoreQuit  bool
 	ignoreKill  bool
+	exitOnKill  bool // the process exits just as Kill runs, so Kill fails (taskkill exit 128, ESRCH)
 	launchedOn  []int
 	quitAsked   int
 	killed      int
@@ -52,6 +53,10 @@ func (f *fakePlatform) Kill(Process) error {
 	f.mu.Lock()
 	defer f.mu.Unlock()
 	f.killed++
+	if f.exitOnKill {
+		f.running = false
+		return errors.New("no such process")
+	}
 	if !f.ignoreKill {
 		f.running = false
 	}
@@ -118,5 +123,15 @@ func TestRestartWhenNotRunningJustLaunches(t *testing.T) {
 func TestNewControllerPropagatesLocateErrors(t *testing.T) {
 	if _, err := NewController(&fakePlatform{locateError: ErrStoreVersion}); !errors.Is(err, ErrStoreVersion) {
 		t.Fatalf("err = %v", err)
+	}
+}
+
+func TestRestartWhenSpotifyExitsDuringKill(t *testing.T) {
+	f := &fakePlatform{running: true, ignoreQuit: true, exitOnKill: true}
+	if err := newTestController(t, f).Restart(context.Background(), 1); err != nil {
+		t.Fatalf("Restart: %v (Spotify was gone, so the failed kill doesn't matter)", err)
+	}
+	if len(f.launchedOn) != 1 {
+		t.Fatalf("launched=%v", f.launchedOn)
 	}
 }

@@ -1,7 +1,7 @@
 // "Use someone's theme": paste a code (or open a file), see it on Spotify, then keep it.
 import { useEffect, useState } from 'preact/hooks'
 import { Eye, FolderOpen } from 'lucide-static'
-import { useEnv } from '../../context'
+import { useEnv, useUi } from '../../context'
 import { css, useStyles } from '../../styles/sheet'
 import { parseShareInput, type ShareParseResult } from '../../lib/share-input'
 import { pickFile, readFileAsText } from '../../lib/files'
@@ -58,9 +58,15 @@ export function ImportPanel() {
   const { store } = useEnv()
   const [text, setText] = useState('')
   const [previewing, setPreviewing] = useState(false)
+  const open = useUi(s => s.open)
   const result: ShareParseResult | null = text.trim() ? parseShareInput(text, code => store.parseShareCode(code)) : null
 
-  // Never leave Spotify showing a preview after the panel goes away.
+  // Never leave Spotify showing a preview after the panel goes away, or when the studio closes (it stays mounted).
+  useEffect(() => {
+    if (open || !previewing) return
+    store.preview(null)
+    setPreviewing(false)
+  }, [open, previewing, store])
   useEffect(() => () => store.preview(null), [store])
 
   const update = (next: string) => {

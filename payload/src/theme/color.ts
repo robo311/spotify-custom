@@ -45,8 +45,12 @@ export function contrast(a: Color, b: Color): number {
 export function ensureContrast(fg: Color, bg: Color, min: number): Color {
   if (contrast(fg, bg) >= min) return fg
   const base = toOklch(fg)
-  const goLighter = lightness(bg) < 0.6
-  const target = goLighter ? 1 : 0
+  // Lighter on dark backgrounds, darker on light ones; but on mid-tones (around L 0.56–0.6) only one side may be
+  // able to reach min at all, so fall back to the side whose extreme does better.
+  const extreme = (l: number) => contrast(fromOklch({ ...base, l }), bg)
+  const [preferred, other] = lightness(bg) < 0.6 ? [1, 0] : [0, 1]
+  const preferredBest = extreme(preferred)
+  const target = preferredBest >= min || preferredBest >= extreme(other) ? preferred : other
   // Binary search for the smallest lightness change that passes.
   let lo = base.l
   let hi = target

@@ -216,6 +216,16 @@ describe('image encoding', () => {
     expect(calls).toContain('192@0.86')
   })
 
+  it('still encodes pictures smaller than the minimum size, at their own size', () => {
+    const sizes: number[] = []
+    const encode: Encode = (size, type) => {
+      sizes.push(size)
+      return `data:${type};base64,AAAA`
+    }
+    expect(encodeWithinBudget(encode, 64)).toBe('data:image/webp;base64,AAAA')
+    expect(sizes.at(-1)).toBe(64)
+  })
+
   it('falls back to jpeg when webp encoding is unsupported', () => {
     const encode: Encode = (_size, _type, _quality) => 'data:image/png;base64,AAAA'
     const jpegOnly: Encode = (size, type, quality) => (type === 'image/webp' ? encode(size, type, quality) : 'data:image/jpeg;base64,AAAA')

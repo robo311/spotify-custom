@@ -52,8 +52,44 @@ describe('validateTheme', () => {
     expect(t.parts).toEqual({ playerBar: { background: 'linear-gradient(#000, #111)', text: '#fff' }, topBar: { radius: 24 } })
   })
 
+  const partsWith = (background: string) => validateTheme({ ...darcula, parts: { playerBar: { background } } }).parts
+
+  it.each([
+    'linear-gradient(135deg, #ff6b6b 0%, #ff8f5a 45%, #ffc24b 100%)',
+    'radial-gradient(circle at 20% 30%, rgb(10 20 30 / 0.5), transparent 70%)',
+    'repeating-conic-gradient(from 0deg, #000 0 10deg, #fff 10deg 20deg)',
+    'linear-gradient(red, blue), radial-gradient(circle, #f00, transparent)',
+    'linear-gradient(calc(90deg * 2), var(--sc-accent), color-mix(in oklab, red 50%, blue))',
+  ])('keeps the gradient %s', paint => {
+    expect(partsWith(paint)).toEqual({ playerBar: { background: paint } })
+  })
+
+  it.each([
+    'linear-gradient(red,blue), image-set("https://evil/p.png" 1x)',
+    'linear-gradient(red,blue), \\75rl(https://evil)',
+    'linear-gradient(red,blue)/*)',
+    'linear-gradient(red,(blue)',
+    'linear-gradient(red, blue))',
+    'linear-gradient(red, blue) x (y)',
+    'linear-gradient(red, blue),',
+    'linear-gradient(red, blue), url(x)',
+    "linear-gradient(red, blue), image('x')",
+    'linear-gradient(red, blue), element(#x)',
+    'linear-gradient(red, blue), cross-fade(red, blue)',
+    'linear-gradient(red, blue) */',
+    'linear-gradient(red, blue)@import',
+  ])('drops the unsafe background %s', paint => {
+    expect(partsWith(paint)).toEqual({})
+  })
+
   it('replaces unsafe ids (they become folder names) with a slug of the name', () => {
     expect(validateTheme({ ...darcula, id: '../../etc' }).id).toBe('darcula')
+    expect(validateTheme({ ...darcula, id: 'a..b' }).id).toBe('darcula')
+    expect(validateTheme({ ...darcula, id: `a${'b'.repeat(100)}` }).id).toBe('darcula')
+  })
+
+  it("keeps any id the helper accepts as a folder name, so edits save back to the theme's own folder", () => {
+    expect(validateTheme({ ...darcula, id: 'My_Theme.v2' }).id).toBe('My_Theme.v2')
   })
 })
 

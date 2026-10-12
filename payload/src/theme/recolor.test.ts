@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { SVG_ATTRIBUTE_CSS, compileRecolor, type Declaration } from './recolor'
+import { SVG_ATTRIBUTE_CSS, compileRecolor, startRecolor, type Declaration } from './recolor'
 
 const decl = (property: string, value: string, selector = '.x', conditions: string[] = []): Declaration => ({ selector, property, value, conditions })
 
@@ -54,5 +54,17 @@ describe('compileRecolor', () => {
     expect(css).toContain('r g b / 0)')
     expect(css).toContain('r g b / 0.502)')
     expect(css).toContain('r g b / 0.6)')
+  })
+})
+
+describe('startRecolor', () => {
+  it('empties its style slot on dispose, so a hot-reloaded instance starts clean', async () => {
+    const recolor = startRecolor()
+    recolor.setEnabled(true)
+    await new Promise(r => requestAnimationFrame(r))
+    const slot = () => document.getElementById('sc-recolor')?.textContent ?? ''
+    expect(slot()).toContain(SVG_ATTRIBUTE_CSS)
+    recolor.dispose()
+    expect(slot()).toBe('')
   })
 })

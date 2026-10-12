@@ -13,6 +13,7 @@ import (
 	"path/filepath"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"testing"
 	"time"
 )
@@ -105,6 +106,20 @@ func TestDownloadVerifiesChecksum(t *testing.T) {
 	}
 	if _, statErr := os.Stat(filepath.Join(dir, "a.zip")); !os.IsNotExist(statErr) {
 		t.Error("a package that fails verification must not be left behind")
+	}
+}
+
+func TestDownloadRejectsNamesOutsideDir(t *testing.T) {
+	pkg := []byte("pkg")
+	srv := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { _, _ = w.Write(pkg) }))
+	defer srv.Close()
+	dir := filepath.Join(t.TempDir(), "updates")
+	for _, p := range []string{"/x/%2E%2E", "/x/a%5C..%5C..%5Cevil.exe", "/"} {
+		// On Windows `\` is a separator, so the second name would climb out of dir once joined.
+		if got, err := Download(context.Background(), srv.Client(), Asset{URL: srv.URL + p, SHA256: sum(pkg)}, dir); err == nil &&
+			filepath.Dir(got) != dir {
+			t.Errorf("%s: wrote %s, outside %s", p, got, dir)
+		}
 	}
 }
 
@@ -206,6 +221,7 @@ func (f *fakeInstaller) Install(_ context.Context, pkg string) error {
 }
 
 type harness struct {
+	version  atomic.Value // string: the version latest.json currently offers
 	svc      *Service
 	inst     *fakeInstaller
 	opened   chan string
@@ -216,11 +232,13 @@ type harness struct {
 func newHarness(t *testing.T, version string, inst *fakeInstaller) *harness {
 	t.Helper()
 	pkg := []byte("new helper")
+	h := &harness{inst: inst, opened: make(chan string, 1), quit: make(chan struct{}, 1), statuses: make(chan Status, 16)}
+	h.version.Store(version)
 	var srv *httptest.Server
 	srv = httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case "/latest.json":
-			_, _ = io.WriteString(w, `{"version":"`+version+`","page":"https://example.com/release","assets":{"`+platformKey+`":{"url":"`+
+			_, _ = io.WriteString(w, `{"version":"`+h.version.Load().(string)+`","page":"https://example.com/release","assets":{"`+platformKey+`":{"url":"`+
 				srv.URL+`/pkg.zip","sha256":"`+sum(pkg)+`"}}}`)
 		case "/pkg.zip":
 			_, _ = w.Write(pkg)
@@ -229,7 +247,6 @@ func newHarness(t *testing.T, version string, inst *fakeInstaller) *harness {
 		}
 	}))
 	t.Cleanup(srv.Close)
-	h := &harness{inst: inst, opened: make(chan string, 1), quit: make(chan struct{}, 1), statuses: make(chan Status, 16)}
 	h.svc = &Service{
 		Current:   "0.1.0",
 		URL:       srv.URL + "/latest.json",
@@ -344,9 +361,42 @@ func TestServiceInstallWithoutUpdateIsNoop(t *testing.T) {
 	inst := &fakeInstaller{}
 	h := newHarness(t, "0.1.0", inst)
 	h.svc.Install()
-	time.Sleep(50 * time.Millisecond)
+	h.waitState(t, StateNone) // the page shows "installing" optimistically; it must hear back
 	if len(inst.packages) != 0 {
 		t.Error("installed without an available update")
+	}
+}
+
+// The page sets "installing" as soon as the button is pressed; a manual install must report back so it resets.
+func TestServiceManualInstallReportsStatus(t *testing.T) {
+	h := newHarness(t, "0.2.0", &fakeInstaller{manual: true})
+	if err := h.svc.Check(context.Background()); err != nil {
+		t.Fatal(err)
+	}
+	h.waitState(t, StateAvailable) // from Check
+	h.svc.Install()
+	h.waitState(t, StateAvailable)
+}
+
+// A release pulled after the last check (marked pre-release) must not be installed from the cached manifest.
+func TestServiceInstallRechecksManifest(t *testing.T) {
+	inst := &fakeInstaller{}
+	h := newHarness(t, "0.2.0", inst)
+	if err := h.svc.Check(context.Background()); err != nil {
+		t.Fatal(err)
+	}
+	h.version.Store("0.1.0")
+	h.svc.Install()
+	h.waitState(t, StateNone)
+	select {
+	case <-h.quit:
+		t.Error("quit after installing a pulled release")
+	case <-time.After(50 * time.Millisecond):
+	}
+	inst.mu.Lock()
+	defer inst.mu.Unlock()
+	if len(inst.packages) != 0 {
+		t.Errorf("installed %v", inst.packages)
 	}
 }
 

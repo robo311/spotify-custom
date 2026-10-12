@@ -6,14 +6,23 @@ on:
   push:
     tags: ['v*.*.*']
 
+# Build jobs run third-party code (npm install scripts, go run/install @latest): they get a read-only token, and
+# only publish may write releases.
 permissions:
-  contents: write
+  contents: read
+
+# Releases publish one at a time in tag order, so an older pipeline finishing late can't become "latest".
+concurrency:
+  group: release
+  cancel-in-progress: false
 
 jobs:
   mac:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - uses: actions/setup-node@v4
         with:
           node-version: 22
@@ -45,6 +54,8 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - uses: actions/setup-go@v5
         with:
           go-version-file: helper/go.mod
@@ -75,6 +86,8 @@ jobs:
   publish:
     needs: [mac, windows]
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4

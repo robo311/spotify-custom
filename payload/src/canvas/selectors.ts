@@ -1,5 +1,8 @@
 // Every Spotify selector the Canvas-as-cover feature relies on, in one place.
 
+/** Spotify's app root; the observer watches below it so covers, the panel and pages are all covered. */
+export const APP_ROOT = '[data-testid="root"]'
+
 /** Spotify's Canvas video in the right panel's Now playing view (a looping, muted <video> it decodes itself). */
 export const PANEL_CANVAS_VIDEO = '[data-testid="NPV_Panel_OpenDiv"] video'
 

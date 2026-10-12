@@ -46,10 +46,20 @@ export function createExtensionScope({ extensionId, store, home, onCrash }: Cont
       }
     }
 
+  // Unlike guard(), this must still run after dispose: releasing a shelf during dispose() is what calls it.
+  const guardCleanup = (cleanup: () => void) => () => {
+    try {
+      cleanup()
+    } catch (error) {
+      if (disposed) console.error(`[spotify-custom] extension "${extensionId}" cleanup failed`, error)
+      else onCrash(error)
+    }
+  }
+
   const addHomeShelf = (def: ShelfDef) => {
     const render = guard((el: HTMLElement) => {
       const cleanup = def.render(el)
-      return typeof cleanup === 'function' ? guard(cleanup) : undefined
+      return typeof cleanup === 'function' ? guardCleanup(cleanup) : undefined
     })
     track(home.addShelf({ id: def.id, title: def.title, render: el => render(el) }))
   }

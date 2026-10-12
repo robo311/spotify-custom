@@ -108,8 +108,8 @@ func run() int {
 	status := &statusSink{}
 
 	injector := &inject.Injector{Payload: payload, Log: log, Reload: reload}
-	music := &audio.Service{Capturer: audio.NewCapturer(), Spotify: ctrl, Sink: injector.Broadcast, Log: log}
-	updates := &updateSink{page: injector.Broadcast}
+	music := &audio.Service{Capturer: audio.NewCapturer(), Spotify: ctrl, Sink: injector.Broadcast, Notify: injector.Send, Log: log}
+	updates := &updateSink{page: injector.Send}
 	updater := &update.Service{
 		Current:   version,
 		URL:       update.ManifestURL,
@@ -237,6 +237,9 @@ func healAutostart(log *slog.Logger) {
 		return
 	}
 	exe, err := os.Executable()
+	if err == nil && autostart.Temporary(exe) {
+		return // keep the login item pointing at the installed copy
+	}
 	if err == nil {
 		err = autostart.Enable(exe)
 	}

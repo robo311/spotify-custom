@@ -176,7 +176,7 @@ export function validateTheme(input: unknown): Theme {
 
   const name = typeof raw.name === 'string' && raw.name.trim() ? raw.name.trim().slice(0, 60) : null
   if (!name) throw new ThemeValidationError('The theme needs a name.')
-  const id = typeof raw.id === 'string' && isSlug(raw.id) ? raw.id : slugify(name)
+  const id = typeof raw.id === 'string' && isThemeId(raw.id) ? raw.id : slugify(name)
 
   if (!isRecord(raw.palette)) throw new ThemeValidationError(`"${name}" has no colours.`)
   const paletteInput = raw.palette
@@ -449,9 +449,41 @@ function validateParts(input: unknown): Record<string, PartStyle> {
   return out
 }
 
+/** Escapes, comments, strings, at-rules and every function that can load an image. */
+const UNSAFE_PAINT = /[\\'"@;{}]|\/\*|\*\/|(?:url|image|image-set|element|cross-fade)\s*\(/i
+const GRADIENT_CALL = /^(?:repeating-)?(?:linear|radial|conic)-gradient\(([\s\S]*)\)$/
+
+/** Splits at top-level commas; null when the parentheses don't balance. */
+function topLevelLayers(v: string): string[] | null {
+  const layers: string[] = []
+  let depth = 0
+  let start = 0
+  for (let i = 0; i < v.length; i++) {
+    const ch = v[i]
+    if (ch === '(') depth++
+    else if (ch === ')' && --depth < 0) return null
+    else if (ch === ',' && depth === 0) {
+      layers.push(v.slice(start, i))
+      start = i + 1
+    }
+  }
+  layers.push(v.slice(start))
+  return depth === 0 ? layers : null
+}
+
+/**
+ * Share codes come from other people and the value is compiled straight into the theme's CSS, so only plain
+ * gradient layers pass: one `*-gradient(…)` call per comma-separated layer, nothing that loads a URL.
+ */
 function isGradient(v: string): boolean {
-  // No url() or expressions: share codes come from other people.
-  return /^(repeating-)?(linear|radial|conic)-gradient\([^;{}]*\)$/.test(v.trim()) && !/url\s*\(/i.test(v)
+  if (UNSAFE_PAINT.test(v)) return false
+  return (
+    topLevelLayers(v)?.every(layer => {
+      const inner = GRADIENT_CALL.exec(layer.trim())?.[1]
+      // The layer's own parenthesis must be the one that closes at its end: `linear-gradient(a) x (b)` is not one call.
+      return inner !== undefined && topLevelLayers(inner) !== null
+    }) ?? false
+  )
 }
 
 /** A colour or a url()-free gradient. */
@@ -543,6 +575,14 @@ function normalizeReactiveSettings(input: unknown): ReactiveSettings {
 /** Theme ids double as folder names in the helper, so they are restricted to safe path segments. */
 export function isSlug(s: string): boolean {
   return /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(s) && s.length <= 48
+}
+
+/**
+ * A theme's id is its folder name, so an id is kept whenever the helper accepts it as one (same rule as the
+ * helper's store.ValidID). Re-deriving it would make edits save to, and deletes remove, a different folder.
+ */
+function isThemeId(s: string): boolean {
+  return /^[A-Za-z0-9][A-Za-z0-9._-]{0,99}$/.test(s) && !s.includes('..')
 }
 
 export function slugify(name: string): string {

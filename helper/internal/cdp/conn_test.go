@@ -121,3 +121,21 @@ func TestIsSpotifyUI(t *testing.T) {
 		}
 	}
 }
+
+// A call made with an already-cancelled context (a broadcast racing shutdown) must fail alone, not close the
+// connection everyone shares.
+func TestCancelledCallLeavesConnectionUsable(t *testing.T) {
+	s := cdptest.New(t)
+	s.Handle("Runtime.evaluate", func(cdptest.Call) (any, error) { return map[string]any{}, nil })
+	c := dial(t, s)
+	cancelled, cancel := context.WithCancel(context.Background())
+	cancel()
+	for i := range 50 {
+		if err := c.Call(cancelled, "S1", "Runtime.evaluate", nil, nil); !errors.Is(err, context.Canceled) {
+			t.Fatalf("call %d with a cancelled ctx: err = %v, want context.Canceled", i, err)
+		}
+		if err := c.Call(context.Background(), "S1", "Runtime.evaluate", nil, nil); err != nil {
+			t.Fatalf("call %d after a cancelled one: %v", i, err)
+		}
+	}
+}

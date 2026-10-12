@@ -25,7 +25,10 @@ type fakeCapturer struct {
 	mu      sync.Mutex
 	err     error
 	silent  bool
-	open    int // streams currently open
+	stall   int           // stop delivering (but stay open) after this many batches; 0 = never
+	closing time.Duration // how long Close takes, like a real teardown
+	closed  chan struct{} // if set, signalled when a Close starts
+	open    int           // streams currently open
 	starts  int
 	targets []Target
 }
@@ -46,15 +49,18 @@ func (c *fakeCapturer) Start(target Target, onSamples func([]float32)) (Stream, 
 	}
 	c.open++
 	s := &fakeStream{c: c, stop: make(chan struct{}), done: make(chan struct{})}
-	silent := c.silent
+	silent, stall := c.silent, c.stall
 	go func() {
 		defer close(s.done)
 		n := 0
-		for {
+		for batch := 0; ; batch++ {
 			select {
 			case <-s.stop:
 				return
 			case <-time.After(2 * time.Millisecond):
+			}
+			if stall > 0 && batch >= stall {
+				continue
 			}
 			buf := make([]float32, 480)
 			if !silent {
@@ -72,6 +78,10 @@ func (c *fakeCapturer) Start(target Target, onSamples func([]float32)) (Stream, 
 func (s *fakeStream) SampleRate() int { return testRate }
 func (s *fakeStream) LatencyMs() int  { return 25 }
 func (s *fakeStream) Close() error {
+	if s.c.closed != nil {
+		s.c.closed <- struct{}{}
+	}
+	time.Sleep(s.c.closing)
 	close(s.stop)
 	<-s.done
 	s.c.mu.Lock()
@@ -128,6 +138,7 @@ func newService(c Capturer, running bool) (*Service, *sink) {
 		Capturer:       c,
 		Spotify:        fakeSpotify{running: running},
 		Sink:           out.push,
+		Notify:         out.push,
 		Log:            slog.New(slog.NewTextHandler(io.Discard, nil)),
 		FrameInterval:  5 * time.Millisecond,
 		SilenceTimeout: 60 * time.Millisecond,
@@ -236,5 +247,37 @@ func TestDigitalSilenceBecomesNoSignal(t *testing.T) {
 	eventually(t, "no-signal pushed to the page", func() bool { return out.has(`"state":"no-signal"`) })
 	if n := out.count(framePrefix); n > 1 {
 		t.Errorf("%d silent frames streamed, want at most one", n)
+	}
+}
+
+// A hot reload sends off (old page) then on (new page); the on must not be lost while the off is still tearing down.
+func TestWantOnDuringStopRestartsCapture(t *testing.T) {
+	c := &fakeCapturer{closing: 50 * time.Millisecond, closed: make(chan struct{}, 1)}
+	s, _ := newService(c, true)
+	s.Want(true)
+	go s.Want(false)
+	<-c.closed // teardown under way
+	if st := s.Want(true); st.State != StateListening {
+		t.Fatalf("Want(true) during teardown → %+v, want listening", st)
+	}
+	time.Sleep(80 * time.Millisecond) // past the old teardown
+	if c.openStreams() != 1 || s.Status().State != StateListening {
+		t.Fatalf("after teardown: open %d, %+v", c.openStreams(), s.Status())
+	}
+	s.Stop()
+}
+
+// A stream that stops delivering (Windows loopback on pause, a lost device) must not freeze the last frame on screen.
+func TestStalledStreamStopsStreamingFrames(t *testing.T) {
+	c := &fakeCapturer{stall: 10}
+	s, out := newService(c, true)
+	s.Want(true)
+	defer s.Stop()
+	eventually(t, "frames", func() bool { return out.count(framePrefix) >= 3 })
+	time.Sleep(100 * time.Millisecond) // stalled by now
+	n := out.count(framePrefix)
+	time.Sleep(50 * time.Millisecond)
+	if got := out.count(framePrefix); got != n {
+		t.Errorf("%d more frames streamed from a stalled stream", got-n)
 	}
 }

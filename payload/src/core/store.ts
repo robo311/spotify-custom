@@ -70,6 +70,8 @@ export function createStore(bridge: Bridge): Store & StoreInternals {
   let update: UpdateStatus = { state: 'none', current: '' }
   let ready = false
   let previewing: Theme | null = null
+  // A hot reload can dispose this instance while init() still awaits the helper; the next instance then owns the slots.
+  let disposed = false
   let state = buildState()
 
   // ---------- state plumbing ----------
@@ -125,6 +127,7 @@ export function createStore(bridge: Bridge): Store & StoreInternals {
   const compiled = createCompileCache()
 
   function apply(opts: { origin?: Point; instant?: boolean } = {}) {
+    if (disposed) return
     const theme = previewing ?? active
     const fileCss = previewing ? undefined : active.fileCss
     applyThemeCss(compiled.compile(theme, { iconPacks, fileCss }), { ...opts, cache: !previewing })
@@ -230,7 +233,8 @@ export function createStore(bridge: Bridge): Store & StoreInternals {
       const { fileCss: _fileCss, ...current } = active
       const previous = history.undo(current)
       if (!previous) return
-      replaceActive(previous)
+      // Renaming isn't an edit step: the snapshots' names are whatever the theme was called back then.
+      replaceActive({ ...previous, name: active.name })
       apply()
       emit()
     },
@@ -239,7 +243,7 @@ export function createStore(bridge: Bridge): Store & StoreInternals {
       const { fileCss: _fileCss, ...current } = active
       const next = history.redo(current)
       if (!next) return
-      replaceActive(next)
+      replaceActive({ ...next, name: active.name })
       apply()
       emit()
     },
@@ -350,6 +354,7 @@ export function createStore(bridge: Bridge): Store & StoreInternals {
     async init() {
       restoreCachedThemeCss()
       helper = await bridge.call('getState', null)
+      if (disposed) return
       settings = normalizeSettings(helper.settings, DEFAULT_PRESET.id)
       userThemes = helper.userThemes.flatMap(raw => {
         try {
@@ -404,6 +409,7 @@ export function createStore(bridge: Bridge): Store & StoreInternals {
     },
 
     dispose() {
+      disposed = true
       persistence.flush()
       clearMorphSuppression()
       recolor.dispose()

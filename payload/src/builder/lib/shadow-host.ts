@@ -11,12 +11,16 @@ export interface ShadowMount {
   unmount(): void
 }
 
-/** Ids of every element the builder puts into Spotify's DOM start with this, so pick mode can ignore them. */
 export const OWN_ID_PREFIX = 'sc-'
+
+/** Marks the builder's own hosts (drawer, entry button), so pick mode can ignore them. Not the `sc-` id prefix:
+ *  other features' injected elements (lyrics panel, stats shelf) share it and must stay pickable. */
+const OWN_ATTR = 'data-sc-builder-ui'
 
 export function createShadowMount(id: string, tag: string, store: Store, ui: Observable<UiSnapshot>, app: VNode): ShadowMount {
   const host = document.createElement(tag)
   host.id = `${OWN_ID_PREFIX}${id}`
+  host.setAttribute(OWN_ATTR, '')
   const root = host.attachShadow({ mode: 'open' })
   adoptSheets(root, [tokens])
   const mountPoint = document.createElement('div')
@@ -33,5 +37,5 @@ export function createShadowMount(id: string, tag: string, store: Store, ui: Obs
 }
 
 export function isOwnElement(el: Element): boolean {
-  return el.closest(`[id^="${OWN_ID_PREFIX}"]`) !== null
+  return el.closest(`[${OWN_ATTR}]`) !== null
 }

@@ -159,28 +159,47 @@ func (s *Service) fetchManifest(ctx context.Context) (Manifest, error) {
 }
 
 // Install starts installing the available update in the background; progress goes to OnChange. On success
-// the helper quits and the new version starts. No-op when nothing is available or an install is running.
+// the helper quits and the new version starts. When nothing is installed (no update, one already running, or a
+// manual install) the current status is still reported, because the page shows "installing" as soon as asked.
 func (s *Service) Install() {
 	s.mu.Lock()
 	m := s.manifest
 	if m == nil || s.status.State == StateInstalling {
 		s.mu.Unlock()
+		s.notify()
 		return
 	}
-	s.mu.Unlock()
-
 	if err := s.Installer.Check(); errors.Is(err, ErrManual) {
+		s.mu.Unlock()
 		s.Log.Info("update needs a manual install; opening the release page")
 		if err := s.Open(m.Page); err != nil {
 			s.Log.Warn("opening release page failed", "err", err)
 		}
+		s.notify()
 		return
 	}
-	s.set(Status{State: StateInstalling, Latest: m.Version})
+	// Claimed under the same lock as the check above, so two quick requests (tray and studio) start one install.
+	s.status = Status{State: StateInstalling, Latest: m.Version}
+	s.mu.Unlock()
+	s.notify()
 	go func() {
 		ctx, cancel := context.WithTimeout(context.Background(), installBudget)
 		defer cancel()
-		if err := s.install(ctx, *m); err != nil {
+		// The cached manifest can be hours old; a release pulled since then must not be installed.
+		fresh, err := s.fetchManifest(ctx)
+		if err == nil {
+			if _, ok := fresh.Asset(platformKey); !ok || !Newer(fresh.Version, s.Current) {
+				s.Log.Info("update no longer offered", "version", m.Version)
+				s.mu.Lock()
+				s.manifest = nil
+				s.mu.Unlock()
+				s.set(Status{State: StateNone})
+				return
+			}
+			m = &fresh
+			err = s.install(ctx, fresh)
+		}
+		if err != nil {
 			s.Log.Error("update failed", "version", m.Version, "err", err)
 			s.set(Status{State: StateFailed, Latest: m.Version, Message: err.Error()})
 			return
@@ -204,7 +223,14 @@ func (s *Service) set(st Status) {
 	changed := st != s.status
 	s.status = st
 	s.mu.Unlock()
-	if changed && s.OnChange != nil {
+	if changed {
+		s.notify()
+	}
+}
+
+// notify reports the current status, changed or not.
+func (s *Service) notify() {
+	if s.OnChange != nil {
 		s.OnChange(s.Status())
 	}
 }

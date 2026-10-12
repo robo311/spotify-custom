@@ -7,7 +7,7 @@
     "watch": "vite build --watch",
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
-    "inject": "node scripts/inject.mjs",
+    "inject": "node scripts/cdp.mjs inject",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "check": "tsc --noEmit && eslint . && vitest run"

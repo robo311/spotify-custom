@@ -249,7 +249,8 @@ func activateProcessLoopback(pid uint32) (*audioClient, error) {
 	defer comRelease(op)
 
 	ev, err := windows.WaitForSingleObject(h.done, activateTimeoutMs)
-	runtime.KeepAlive(params) // read asynchronously until activation completes
+	runtime.KeepAlive(params) // read asynchronously until activation completes, through pv
+	runtime.KeepAlive(pv)
 	runtime.KeepAlive(path)
 	if err != nil {
 		return nil, fmt.Errorf("wait for audio activation: %w", err)

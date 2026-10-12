@@ -101,7 +101,11 @@ func (c *Controller) quit(ctx context.Context, p Process) error {
 		return err
 	}
 	if err := c.platform.Kill(p); err != nil {
-		return fmt.Errorf("force quit spotify (quit request: %v): %w", requestErr, err)
+		// It may have exited between the last check and the kill (taskkill exit 128, ESRCH).
+		if _, running, serr := c.Status(); serr != nil || running {
+			return fmt.Errorf("force quit spotify (quit request: %v): %w", requestErr, err)
+		}
+		return nil
 	}
 	gone, err = c.waitGone(ctx, c.KillTimeout)
 	if err != nil {

@@ -56,7 +56,7 @@ func TestLiveService(t *testing.T) {
 	var mu sync.Mutex
 	var frames, beats int
 	var statuses []string
-	s := &Service{Capturer: NewCapturer(), Spotify: fakeSpotify{running: true}, Log: slogDiscard(), Sink: func(expr string) {
+	s := &Service{Capturer: NewCapturer(), Spotify: fakeSpotify{running: true}, Log: slogDiscard(), Notify: func(string) {}, Sink: func(expr string) {
 		mu.Lock()
 		defer mu.Unlock()
 		if f, ok := decodeFrameExpr(expr); ok {

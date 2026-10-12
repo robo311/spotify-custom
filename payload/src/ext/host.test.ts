@@ -115,6 +115,40 @@ describe('extension host lifecycle', () => {
     expect(seen).toEqual(['nord'])
   })
 
+  it('runs the cleanup a shelf render returned when the extension is switched off', () => {
+    const { host, store } = setup()
+    let cleaned = 0
+    host.register(
+      probe('ticker', {
+        start: ctx => {
+          ctx.addHomeShelf({ id: 'ticker-shelf', title: 'Ticker', render: () => () => { cleaned++ } })
+        },
+      }).def,
+      true,
+    )
+    store.setExtensionEnabled('ticker', false)
+    expect(cleaned).toBe(1)
+  })
+
+  it('does not restart a crashed extension when an unrelated setting changes', () => {
+    const { host, store, last } = setup()
+    let starts = 0
+    host.register(
+      probe('flaky', {
+        start: () => {
+          if (++starts === 1) throw new Error('boom')
+        },
+      }).def,
+      true,
+    )
+    expect(last()[0]?.error).toBe('boom')
+    store.editSettings(draft => {
+      draft.extensionData.other = { x: 1 }
+    })
+    expect(starts).toBe(1)
+    expect(last()[0]?.error).toBe('boom')
+  })
+
   it('stores ctx.settings under settings.extensionData[id]', () => {
     const { host, store } = setup()
     host.register(probe('memo', { start: ctx => ctx.settings.set('range', 'LONG_TERM') }).def, true)

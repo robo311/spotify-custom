@@ -274,10 +274,13 @@ func (a *App) serve(ctx context.Context, port int) (spotify.Trigger, bool) {
 	for {
 		select {
 		case err := <-done:
-			if err != nil && !errors.Is(err, cdp.ErrClosed) && ctx.Err() == nil {
-				a.deps.Log.Warn("connection to Spotify ended", "err", err)
-			}
 			a.setStatus(StatusWaiting)
+			if err != nil && !errors.Is(err, cdp.ErrClosed) && ctx.Err() == nil {
+				// Not Spotify going away (e.g. the connection was refused): retry after the usual pause, not at once.
+				a.deps.Log.Warn("connection to Spotify ended", "err", err)
+				return spotify.TriggerWatch, false
+			}
+			a.settle(ctx, port)
 			return spotify.TriggerWatch, true
 		case c := <-a.cmds:
 			if c == cmdOpen {
@@ -290,6 +293,27 @@ func (a *App) serve(ctx context.Context, port int) (spotify.Trigger, bool) {
 		case <-ctx.Done():
 			<-done
 			return spotify.TriggerWatch, false
+		}
+	}
+}
+
+// settle waits (up to StartupTimeout) after the connection closed until Spotify is either gone or reachable
+// again. Quitting closes the socket a moment before the process exits, and deciding in that moment would ask
+// to restart the Spotify the user just quit.
+func (a *App) settle(ctx context.Context, port int) {
+	step := min(a.cfg.PollInterval, 250*time.Millisecond)
+	deadline := time.Now().Add(a.cfg.StartupTimeout)
+	for time.Now().Before(deadline) {
+		if _, running, err := a.deps.Spotify.Status(); err != nil || !running {
+			return
+		}
+		if _, err := a.deps.Discover(ctx, port); err == nil {
+			return
+		}
+		select {
+		case <-ctx.Done():
+			return
+		case <-time.After(step):
 		}
 	}
 }

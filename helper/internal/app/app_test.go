@@ -21,7 +21,8 @@ type world struct {
 	debugPort int // port Spotify listens on; 0 = no debug port
 	uptime    time.Duration
 	pid       int
-	ignoreArg bool // a Spotify that never opens the debug port
+	ignoreArg bool          // a Spotify that never opens the debug port
+	linger    time.Duration // after quitting, the process stays visible this long (its socket closes first)
 
 	launches, restarts, focuses, serves int
 	notes                               []string
@@ -115,7 +116,16 @@ func (w *world) serve(ctx context.Context, _ int) error {
 		return ctx.Err()
 	case <-quit:
 		w.mu.Lock()
-		w.running, w.debugPort = false, 0
+		w.debugPort = 0
+		if w.linger == 0 {
+			w.running = false
+		} else {
+			time.AfterFunc(w.linger, func() {
+				w.mu.Lock()
+				w.running = false
+				w.mu.Unlock()
+			})
+		}
 		w.mu.Unlock()
 		return cdp.ErrClosed
 	}
@@ -230,6 +240,19 @@ func TestLaterUntouchedSpotifyIsAskedAboutOnce(t *testing.T) {
 	}
 	if lastStatus(w) != StatusUntouched {
 		t.Fatalf("status = %v", lastStatus(w))
+	}
+}
+
+// Quitting Spotify closes the connection a moment before the process is gone; that moment must not read as
+// "Spotify open without the theme".
+func TestQuittingSpotifyIsNotAskedAbout(t *testing.T) {
+	w := &world{linger: 60 * time.Millisecond}
+	run(t, w, Config{})
+	eventually(t, "connected", func() bool { return w.get(func(w *world) int { return w.serves }) == 1 })
+	close(w.serving)
+	time.Sleep(150 * time.Millisecond)
+	if c := w.counts(); c.confirms != 0 || c.restarts != 0 || c.launches != 1 {
+		t.Fatalf("counts=%+v; want no prompt and no relaunch after the user quit Spotify", c)
 	}
 }
 

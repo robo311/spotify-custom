@@ -5,6 +5,7 @@ import { useApp, useEnv } from '../context'
 import { css, useStyles } from '../styles/sheet'
 import { leaderLine, type Box, type PickTarget } from '../lib/pick'
 import { suspendWindowDrag } from '../lib/window-drag'
+import { listenEscape } from '../lib/escape-key'
 import type { PartDef } from '../../types'
 import { PartPopover } from './PartPopover'
 import { usePickTarget, type PickHover } from './use-pick-target'
@@ -146,7 +147,7 @@ interface Editing {
 
 export function PickLayer() {
   useStyles(styles)
-  const { ui } = useEnv()
+  const { ui, root } = useEnv()
   const libraryItems = useApp(s => s.libraryItems)
   const [editing, setEditing] = useState<Editing | null>(null)
   const onPick = useCallback(
@@ -165,19 +166,16 @@ export function PickLayer() {
 
   useEffect(suspendWindowDrag, [])
 
-  // Pick mode owns its exit: Esc leaves it wherever focus is, even with the drawer closed. While an editor popover
-  // is open, Esc belongs to the popover (Cancel), so this listener is off.
+  // Pick mode owns its exit: Esc leaves it wherever focus is, even with the drawer closed (a field in the drawer
+  // that handles Esc itself still gets it first). While an editor popover is open, Esc belongs to the popover
+  // (Cancel), so this listener is off.
   useEffect(() => {
     if (editing) return
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key !== 'Escape') return
+    return listenEscape(root, e => {
       e.preventDefault()
-      e.stopPropagation()
       ui.set(s => ({ ...s, picking: false }))
-    }
-    window.addEventListener('keydown', onKey, true)
-    return () => window.removeEventListener('keydown', onKey, true)
-  }, [editing, ui])
+    })
+  }, [editing, root, ui])
   const chipLabel = (target: PickTarget) =>
     target.kind === 'part' ? target.part.label : (libraryItems.find(i => i.uri === target.uri)?.name ?? 'Library item')
   const { hover, pointer } = usePickTarget(editing !== null, onPick)

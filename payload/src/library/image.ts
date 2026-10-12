@@ -27,13 +27,16 @@ export function encodeWithinBudget(encode: Encode, size: number, budget = IMAGE_
   const webpWorks = encode(1, 'image/webp', 0.5).startsWith('data:image/webp')
   const type = webpWorks ? 'image/webp' : 'image/jpeg'
   let smallest = ''
-  for (let s = size; s >= MIN_SIZE; s = Math.round(s * 0.75)) {
+  let s = size
+  // do…while: pictures already below MIN_SIZE still get one pass at their own size.
+  do {
     for (const quality of QUALITIES) {
       const url = encode(s, type, quality)
       if (url.length <= budget) return url
       if (smallest === '' || url.length < smallest.length) smallest = url
     }
-  }
+    s = Math.round(s * 0.75)
+  } while (s >= MIN_SIZE)
   return smallest
 }
 

@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"sync"
 	"sync/atomic"
+	"time"
 
 	"github.com/coder/websocket"
 )
@@ -109,9 +110,15 @@ func (c *Conn) Close() error {
 	return err
 }
 
+// writeTimeout bounds sending one command; a peer that can't take a message this long is gone.
+const writeTimeout = 10 * time.Second
+
 // Call sends a command and decodes its result into out (which may be nil).
 // sessionID scopes the command to an attached target; empty means browser level.
 func (c *Conn) Call(ctx context.Context, sessionID, method string, params, out any) error {
+	if err := ctx.Err(); err != nil {
+		return err
+	}
 	id := c.nextID.Add(1)
 	ch := make(chan reply, 1)
 
@@ -128,7 +135,12 @@ func (c *Conn) Call(ctx context.Context, sessionID, method string, params, out a
 		c.forget(id)
 		return fmt.Errorf("cdp %s: encode: %w", method, err)
 	}
-	if err := c.ws.Write(ctx, websocket.MessageText, data); err != nil {
+	// websocket closes the whole connection when a write's context ends, so the caller's ctx only bounds the wait
+	// for the reply; the write itself gets its own deadline.
+	wctx, cancel := context.WithTimeout(context.WithoutCancel(ctx), writeTimeout)
+	err = c.ws.Write(wctx, websocket.MessageText, data)
+	cancel()
+	if err != nil {
 		c.forget(id)
 		return fmt.Errorf("cdp %s: write: %w", method, err)
 	}

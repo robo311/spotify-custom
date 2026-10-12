@@ -42,21 +42,25 @@ const (
 	defaultFrameInterval  = time.Second / 30
 	defaultSilenceTimeout = 3 * time.Second
 	retryInterval         = 2 * time.Second
+	staleTicks            = 3 // ticks without any new samples before the stream counts as stalled
 	ringSize              = FFTSize * 4
 )
 
-// Service captures Spotify's audio while the page wants it and streams analysis frames to Sink.
+// Service captures Spotify's audio while the page wants it, streams analysis frames to Sink and status to Notify.
 // Audio only ever lives in a small in-memory ring; nothing is stored or logged.
 type Service struct {
 	Capturer Capturer
 	Spotify  SpotifyProcess
-	// Sink receives JavaScript to run in the Spotify page (frames ~30×/s, status on change). Must not block.
+	// Sink receives JavaScript to run in the Spotify page, ~30×/s; it may drop frames. Must not block.
 	Sink func(expr string)
-	Log  *slog.Logger
+	// Notify receives status JavaScript on change; it must deliver each one, in order. Must not block.
+	Notify func(expr string)
+	Log    *slog.Logger
 
 	FrameInterval  time.Duration // default 1/30 s
 	SilenceTimeout time.Duration // digital silence this long while capturing → no-signal (default 3 s)
 
+	op      sync.Mutex // serialises Want and Stop, so an on can't slip in while an off is still tearing down
 	mu      sync.Mutex
 	status  Status
 	cancel  context.CancelFunc // non-nil while a capture loop runs
@@ -67,8 +71,10 @@ type Service struct {
 
 // Want starts (on) or stops capturing and returns the resulting status. Starting waits for the first attempt.
 func (s *Service) Want(on bool) Status {
+	s.op.Lock()
+	defer s.op.Unlock()
 	if !on {
-		s.Stop()
+		s.stop()
 		return s.Status()
 	}
 	s.mu.Lock()
@@ -93,6 +99,12 @@ func (s *Service) Want(on bool) Status {
 
 // Stop ends any capture (connection to Spotify gone, or the page asked) and waits for it to close.
 func (s *Service) Stop() {
+	s.op.Lock()
+	defer s.op.Unlock()
+	s.stop()
+}
+
+func (s *Service) stop() {
 	s.mu.Lock()
 	cancel, stopped := s.cancel, s.stopped
 	s.mu.Unlock()
@@ -181,13 +193,21 @@ func (s *Service) analyse(ctx context.Context, an *Analyzer, latency int) {
 	window := make([]float32, FFTSize)
 	var silentFor time.Duration
 	lastZero := false
+	stale := 0
 	for {
 		select {
 		case <-ctx.Done():
 			return
 		case <-tick.C:
 		}
-		heard := s.samples.latest(window)
+		heard, fresh := s.samples.latest(window)
+		if fresh {
+			stale = 0
+		} else if stale++; stale >= staleTicks {
+			// The stream stopped delivering (Windows loopback while paused, a lost device): analyse silence rather
+			// than re-analysing the last window forever.
+			clear(window)
+		}
 		if heard {
 			silentFor = 0
 		} else {
@@ -222,7 +242,7 @@ func (s *Service) setStatus(st Status) {
 	if err != nil {
 		return
 	}
-	s.Sink("window.__sc?.audio?.status(" + string(data) + ")")
+	s.Notify("window.__sc?.audio?.status(" + string(data) + ")")
 }
 
 func statusFor(err error) Status {
@@ -237,11 +257,13 @@ func statusFor(err error) Status {
 	return Status{State: StateError, Message: err.Error()}
 }
 
-// sampleRing keeps the most recent samples and whether any non-zero sample arrived since the last read.
+// sampleRing keeps the most recent samples and whether any samples (fresh) and any non-zero sample (heard) arrived
+// since the last read.
 type sampleRing struct {
 	mu    sync.Mutex
 	buf   [ringSize]float32
 	pos   int
+	fresh bool
 	heard bool
 }
 
@@ -249,12 +271,13 @@ func (r *sampleRing) reset() {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 	clear(r.buf[:])
-	r.pos, r.heard = 0, false
+	r.pos, r.fresh, r.heard = 0, false, false
 }
 
 func (r *sampleRing) write(samples []float32) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
+	r.fresh = r.fresh || len(samples) > 0
 	for _, v := range samples {
 		r.buf[r.pos] = v
 		r.pos = (r.pos + 1) % ringSize
@@ -264,15 +287,16 @@ func (r *sampleRing) write(samples []float32) {
 	}
 }
 
-// latest fills out with the newest len(out) samples and reports (and clears) whether sound arrived.
-func (r *sampleRing) latest(out []float32) bool {
+// latest fills out with the newest len(out) samples and reports (and clears) whether sound, and any samples at all,
+// arrived.
+func (r *sampleRing) latest(out []float32) (heard, fresh bool) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 	start := (r.pos - len(out) + ringSize) % ringSize
 	for i := range out {
 		out[i] = r.buf[(start+i)%ringSize]
 	}
-	heard := r.heard
-	r.heard = false
-	return heard
+	heard, fresh = r.heard, r.fresh
+	r.heard, r.fresh = false, false
+	return heard, fresh
 }

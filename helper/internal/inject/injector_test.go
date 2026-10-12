@@ -8,6 +8,7 @@ import (
 	"log/slog"
 	"strconv"
 	"strings"
+	"sync"
 	"sync/atomic"
 	"testing"
 	"time"
@@ -327,4 +328,58 @@ func TestBroadcastEvaluatesInEveryPageAndDropsWhileBusy(t *testing.T) {
 	h.cancel()
 	<-h.done
 	h.in.Broadcast("late") // after the connection ended: no-op, no panic
+}
+
+func TestSendDeliversEveryMessageInOrderWhileBusy(t *testing.T) {
+	h := start(t, handlerFunc(noHandler))
+	release := make(chan struct{})
+	entered := make(chan struct{}, 1)
+	var mu sync.Mutex
+	var got []string
+	h.srv.Handle("Runtime.evaluate", func(c cdptest.Call) (any, error) {
+		var p struct {
+			Expression string `json:"expression"`
+		}
+		if json.Unmarshal(c.Params, &p) == nil {
+			switch p.Expression {
+			case "frame":
+				entered <- struct{}{}
+				<-release
+			case "s1", "s2", "s3":
+				mu.Lock()
+				got = append(got, p.Expression)
+				mu.Unlock()
+			}
+		}
+		return map[string]any{}, nil
+	})
+	h.createTarget("ui", "page", uiURL)
+	h.srv.WaitFor("Runtime.evaluate", 1) // payload injected
+
+	h.in.Broadcast("frame")
+	<-entered
+	h.in.Send("s1") // the page is busy with a frame: Send must not drop these
+	h.in.Send("s2")
+	h.in.Send("s3")
+	close(release)
+
+	deadline := time.Now().Add(3 * time.Second)
+	for {
+		mu.Lock()
+		n := len(got)
+		mu.Unlock()
+		if n == 3 {
+			break
+		}
+		if time.Now().After(deadline) {
+			t.Fatalf("sent messages delivered: %v", got)
+		}
+		time.Sleep(5 * time.Millisecond)
+	}
+	if got[0] != "s1" || got[1] != "s2" || got[2] != "s3" {
+		t.Errorf("order %v", got)
+	}
+	h.cancel()
+	<-h.done
+	h.in.Send("late") // after the connection ended: no-op, no panic
 }

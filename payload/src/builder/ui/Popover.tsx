@@ -3,7 +3,9 @@
 // picker opening inside it, say), so it always stays inside the window.
 import type { ComponentChildren } from 'preact'
 import { useEffect, useLayoutEffect, useRef, useState } from 'preact/hooks'
+import { useEnv } from '../context'
 import { css, useStyles } from '../styles/sheet'
+import { listenEscape } from '../lib/escape-key'
 import { placePopover, type Box } from '../lib/pick'
 
 const styles = css`
@@ -59,6 +61,7 @@ interface PopoverProps {
 
 export function Popover({ anchor, label, onClose, onEscape = onClose, gap = 12, onPlaced, children }: PopoverProps) {
   useStyles(styles)
+  const { root } = useEnv()
   const ref = useRef<HTMLDivElement>(null)
   const [pos, setPos] = useState({ x: anchor.x, y: anchor.y + anchor.height + 12 })
 
@@ -77,26 +80,30 @@ export function Popover({ anchor, label, onClose, onEscape = onClose, gap = 12, 
     return () => observer.disconnect()
   }, [anchor, gap, onPlaced])
 
+  // Callers pass fresh closures on every render; reading them through a ref keeps the effect below to one run per
+  // open, so re-renders (every edit) never steal focus from the control being used.
+  const handlersRef = useRef({ onClose, onEscape })
+  useLayoutEffect(() => {
+    handlersRef.current = { onClose, onEscape }
+  })
+
   useEffect(() => {
-    const returnFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null
+    // document.activeElement is retargeted to our shadow host; the root knows the real control.
+    const active = root.activeElement ?? document.activeElement
+    const returnFocus = active instanceof HTMLElement ? active : null
     // Focus the dialog itself, not its first control: a focus ring on the first option reads as a second selection.
     ref.current?.focus()
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key !== 'Escape') return
-      e.stopPropagation()
-      onEscape()
-    }
+    const stopEscape = listenEscape(root, () => handlersRef.current.onEscape())
     const onPress = (e: PointerEvent) => {
-      if (ref.current && !e.composedPath().includes(ref.current)) onClose()
+      if (ref.current && !e.composedPath().includes(ref.current)) handlersRef.current.onClose()
     }
-    window.addEventListener('keydown', onKey, true)
     window.addEventListener('pointerdown', onPress, true)
     return () => {
-      window.removeEventListener('keydown', onKey, true)
+      stopEscape()
       window.removeEventListener('pointerdown', onPress, true)
       returnFocus?.focus()
     }
-  }, [onClose, onEscape])
+  }, [root])
 
   return (
     <div ref={ref} class="b-pop" role="dialog" aria-label={label} tabIndex={-1} style={{ left: `${pos.x}px`, top: `${pos.y}px`, '--ox': `${anchor.x - pos.x + anchor.width / 2}px`, '--oy': `${anchor.y - pos.y}px` }}>

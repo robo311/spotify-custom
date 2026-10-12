@@ -66,8 +66,14 @@ export function startEffects(store: Store): () => void {
   let cover: ImageColors | null = null
   let coverSrc: string | null = null
   let observedBar: Element | null = null
+  let frame = 0
+  let disposed = false
   const observer = new MutationObserver(() => {
-    void refreshCover()
+    if (frame) return
+    frame = requestAnimationFrame(() => {
+      frame = 0
+      void refreshCover()
+    })
   })
 
   const theme = () => store.get().active
@@ -108,6 +114,7 @@ export function startEffects(store: Store): () => void {
       console.warn('[spotify-custom] could not read the cover colours', e)
       cover = null
     }
+    if (disposed) return // sampling outlived this instance; a hot-reloaded one owns the slot now
     render()
   }
 
@@ -142,9 +149,11 @@ export function startEffects(store: Store): () => void {
   render()
 
   return () => {
+    disposed = true
     unsubscribe()
     clearInterval(timer)
     observer.disconnect()
+    cancelAnimationFrame(frame)
     document.getElementById(GLOW_ID)?.remove()
     styleSlot('sc-effects').textContent = ''
   }

@@ -7,7 +7,7 @@ LDFLAGS     := -s -w -X main.version=$(VERSION)
 PKG         := ./cmd/spotifycustom
 TOOLS       := $(abspath .tools)
 STATICCHECK := $(TOOLS)/staticcheck
-WINRES      := go run github.com/tc-hib/go-winres@latest
+WINRES      := go run github.com/tc-hib/go-winres@v0.3.3
 
 .PHONY: build test lint vet icons release release-mac release-dmg release-windows live-test chrome-test
 
@@ -28,7 +28,7 @@ lint: vet $(STATICCHECK)
 
 # Built for the host so it can analyse other GOOS targets.
 $(STATICCHECK):
-	GOBIN=$(TOOLS) go install honnef.co/go/tools/cmd/staticcheck@latest
+	GOBIN=$(TOOLS) go install honnef.co/go/tools/cmd/staticcheck@v0.8.1
 
 ## Read-only checks against the running Spotify (needs --remote-debugging-port, SC_PORT default 9222).
 live-test:

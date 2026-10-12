@@ -101,8 +101,11 @@ async function main() {
 
     await check('layout.hidden friendActivity hides the button', async () => {
       await c.evaluate(`window.__sc.store.edit(t => { t.layout.hidden = [...new Set([...t.layout.hidden, 'friendActivity'])] })`)
-      await waitFor(c, `(() => { const el = document.querySelector('[data-testid="friend-activity-button"]'); return !el || getComputedStyle(el).display === 'none' })()`, { timeout: 2000 })
-      await c.evaluate('window.__sc.store.undo()')
+      try {
+        await waitFor(c, `(() => { const el = document.querySelector('[data-testid="friend-activity-button"]'); return !el || getComputedStyle(el).display === 'none' })()`, { timeout: 2000 })
+      } finally {
+        await c.evaluate('window.__sc.store.undo()')
+      }
     })
 
     await check('share code round-trip gives identical compiled CSS', async () => {
@@ -112,13 +115,16 @@ async function main() {
       const before = await c.evaluate('window.__e2e.css()')
       await c.evaluate(`window.__sc.store.selectTheme('spotify-original')`)
       await sleep(700)
-      await c.evaluate(`window.__sc.store.importTheme(window.__sc.store.parseShareCode(${JSON.stringify(code)}))`)
-      await sleep(700)
-      const after = await c.evaluate('window.__e2e.css()')
-      assert(before.length > 0, 'no compiled CSS found in #sc-theme')
-      assert(before === after, `compiled CSS differs (${before.length} vs ${after.length} chars)`)
-      const imported = await c.evaluate('window.__sc.store.get().settings.activeTheme')
-      await c.evaluate(`window.__sc.store.deleteTheme(${JSON.stringify(imported)})`)
+      try {
+        await c.evaluate(`window.__sc.store.importTheme(window.__sc.store.parseShareCode(${JSON.stringify(code)}))`)
+        await sleep(700)
+        const after = await c.evaluate('window.__e2e.css()')
+        assert(before.length > 0, 'no compiled CSS found in #sc-theme')
+        assert(before === after, `compiled CSS differs (${before.length} vs ${after.length} chars)`)
+      } finally {
+        // Only a theme the import created; if it failed, the active theme is still the preset.
+        await c.evaluate(`(() => { const s = window.__sc.store; const id = s.get().settings.activeTheme; if (s.get().userThemes.some(t => t.id === id)) s.deleteTheme(id) })()`)
+      }
     })
 
     await check('theme survives Page.reload without helper restart', async () => {
@@ -151,8 +157,11 @@ async function main() {
       const chips = `[...document.querySelectorAll('#main-view [data-carousel-item] > button[role="checkbox"][data-encore-id="chip"]')]`
       const statsDisplay = `getComputedStyle(document.querySelector('[data-sc-shelf-key="ext:stats"]')).display`
       await c.evaluate(`${chips}[1].click()`)
-      await waitFor(c, `${statsDisplay} === 'none'`, { timeout: 3000 })
-      await c.evaluate(`${chips}[0].click()`)
+      try {
+        await waitFor(c, `${statsDisplay} === 'none'`, { timeout: 3000 })
+      } finally {
+        await c.evaluate(`${chips}[0].click()`)
+      }
       await waitFor(c, `${statsDisplay} !== 'none'`, { timeout: 3000 })
     })
 

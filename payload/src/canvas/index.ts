@@ -5,7 +5,7 @@
 import type { Theme } from '../types'
 import { spotify } from '../spotify'
 import { coverTargets, OVERLAY_CSS, syncOverlays } from './overlay'
-import { PANEL_CANVAS_VIDEO } from './selectors'
+import { APP_ROOT, PANEL_CANVAS_VIDEO } from './selectors'
 
 const STYLE_ID = 'sc-canvas-cover'
 
@@ -27,7 +27,13 @@ export function startCanvasCover(getTheme: () => Theme): CanvasCover {
   let albumPath: string | null = null
   let warned = false
 
+  // A captured stream keeps mirroring until its tracks are stopped, even once nothing shows it.
+  const release = () => {
+    for (const track of stream?.getTracks() ?? []) track.stop()
+    stream = null
+  }
   const capture = () => {
+    release()
     try {
       stream = source?.captureStream?.() ?? null
     } catch (e) {
@@ -44,15 +50,20 @@ export function startCanvasCover(getTheme: () => Theme): CanvasCover {
     update()
   }
 
+  // Runs after every observed batch; writing identical CSS still replaces the sheet and its node.
+  const setCss = (css: string) => {
+    if (style.textContent !== css) style.textContent = css
+  }
+
   const update = () => {
     const theme = getTheme()
     const { canvasAlbum, canvasPlayerBar } = theme.effects
     if (!canvasAlbum && !canvasPlayerBar) {
-      style.textContent = ''
+      setCss('')
       syncOverlays([], null)
       return
     }
-    style.textContent = OVERLAY_CSS
+    setCss(OVERLAY_CSS)
     const video = document.querySelector<Capturable>(PANEL_CANVAS_VIDEO)
     if (video !== source) {
       source?.removeEventListener('loadeddata', onLoaded)
@@ -76,7 +87,7 @@ export function startCanvasCover(getTheme: () => Theme): CanvasCover {
   }
   // Covers, the panel and pages mount and unmount freely; re-place after each batch of changes.
   const observer = new MutationObserver(schedule)
-  observer.observe(document.querySelector('[data-testid="root"]') ?? document.body, { childList: true, subtree: true })
+  observer.observe(document.querySelector(APP_ROOT) ?? document.body, { childList: true, subtree: true })
   const stopPlayback = spotify.onPlayback(state => {
     albumPath = state?.track ? spotify.uriToPath(state.track.album.uri) : null
     schedule()
@@ -93,6 +104,7 @@ export function startCanvasCover(getTheme: () => Theme): CanvasCover {
       if (frame !== 0) cancelAnimationFrame(frame)
       source?.removeEventListener('loadeddata', onLoaded)
       syncOverlays([], null)
+      release()
       style.remove()
     },
   }

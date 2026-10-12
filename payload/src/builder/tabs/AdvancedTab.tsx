@@ -1,6 +1,7 @@
 // Advanced: hand-written CSS (applied live, last), the customisations folder, and restarting Spotify.
 import { useEffect, useRef, useState } from 'preact/hooks'
 import { FolderOpen, RotateCw } from 'lucide-static'
+import type { Store } from '../../types'
 import { useApp, useEnv } from '../context'
 import { css, useStyles } from '../styles/sheet'
 import { Button } from '../ui/Button'
@@ -58,21 +59,35 @@ const EXAMPLE = `/* Runs after everything else. The palette is available as vari
    --sc-text-subdued --sc-accent --sc-on-accent --sc-border */
 `
 
+function applyCss(store: Store, css: string) {
+  store.edit(t => {
+    t.css = css
+  }, { coalesceKey: 'css' })
+}
+
 function CssEditor() {
   const { store } = useEnv()
   const saved = useApp(s => s.active.css)
   const [draft, setDraft] = useState<string | null>(null)
   const timerRef = useRef<ReturnType<typeof setTimeout>>(undefined)
+  const pendingRef = useRef<string | null>(null)
 
-  useEffect(() => () => clearTimeout(timerRef.current), [])
+  // Leaving the tab mid-typing still applies the last keystrokes.
+  useEffect(
+    () => () => {
+      clearTimeout(timerRef.current)
+      if (pendingRef.current !== null) applyCss(store, pendingRef.current)
+    },
+    [store],
+  )
 
   const change = (value: string) => {
     setDraft(value)
+    pendingRef.current = value
     clearTimeout(timerRef.current)
     timerRef.current = setTimeout(() => {
-      store.edit(t => {
-        t.css = value
-      }, { coalesceKey: 'css' })
+      pendingRef.current = null
+      applyCss(store, value)
       setDraft(null)
     }, APPLY_DELAY_MS)
   }

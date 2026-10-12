@@ -5,18 +5,32 @@ import { loadPrefs, pushRecent, savePrefs } from '../../lib/prefs'
 
 const SETTLE_MS = 700
 
+function save(hex: string): string[] {
+  const next = pushRecent(loadPrefs().recentColors, hex)
+  savePrefs({ recentColors: next })
+  return next
+}
+
 export function useRecentColors(): [string[], (hex: string) => void] {
   const [recent, setRecent] = useState(() => loadPrefs().recentColors)
   const timerRef = useRef<ReturnType<typeof setTimeout>>(undefined)
+  const pendingRef = useRef<string | null>(null)
 
-  useEffect(() => () => clearTimeout(timerRef.current), [])
+  // A picker closing mid-settle still records where the drag ended.
+  useEffect(
+    () => () => {
+      clearTimeout(timerRef.current)
+      if (pendingRef.current !== null) save(pendingRef.current)
+    },
+    [],
+  )
 
   const remember = (hex: string) => {
+    pendingRef.current = hex
     clearTimeout(timerRef.current)
     timerRef.current = setTimeout(() => {
-      const next = pushRecent(loadPrefs().recentColors, hex)
-      savePrefs({ recentColors: next })
-      setRecent(next)
+      pendingRef.current = null
+      setRecent(save(hex))
     }, SETTLE_MS)
   }
 

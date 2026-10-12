@@ -78,9 +78,9 @@ func (r *Rotating) rotate() error {
 	if err := r.f.Close(); err != nil {
 		return fmt.Errorf("rotate log: %w", err)
 	}
-	if err := os.Rename(r.path, r.path+".1"); err != nil {
-		return fmt.Errorf("rotate log: %w", err)
-	}
+	// If the rename fails (on Windows the file may be open elsewhere), keep appending to the current file
+	// rather than leaving r.f closed for the rest of the session; the next write tries again.
+	_ = os.Rename(r.path, r.path+".1")
 	return r.open()
 }
 

@@ -45,3 +45,26 @@ func TestReopenContinuesCountingExistingSize(t *testing.T) {
 		t.Fatal("expected rotation because existing content counts towards the limit")
 	}
 }
+
+// If the old file can't be moved aside (on Windows another process may hold it open), logging carries on in the
+// current file rather than stopping for the rest of the session.
+func TestFailedRotationKeepsLogging(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "helper.log")
+	if err := os.MkdirAll(filepath.Join(path+".1", "blocker"), 0o755); err != nil { // rename onto it fails
+		t.Fatal(err)
+	}
+	r, err := OpenRotating(path, 10)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer r.Close()
+	for _, line := range []string{"first line\n", "second line\n", "third line\n"} {
+		if _, err := r.Write([]byte(line)); err != nil {
+			t.Fatalf("write %q: %v", line, err)
+		}
+	}
+	data, _ := os.ReadFile(path)
+	if !strings.Contains(string(data), "third line") {
+		t.Fatalf("log = %q, want the later lines kept", data)
+	}
+}

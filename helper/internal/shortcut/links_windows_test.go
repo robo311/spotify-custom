@@ -80,13 +80,13 @@ func TestRetargetRealShortcut(t *testing.T) {
 		if err := (windowsLinks{}).Retarget(lnk, self, Marker, spotify); err != nil {
 			t.Fatalf("round %d, point at us: %v", round, err)
 		}
-		if target, args := readLink(t, lnk); !samePath(target, self) || args != Marker {
+		if target, args := readLink(t, lnk); !sameFile(target, self) || args != Marker {
 			t.Fatalf("round %d, after pointing at us: %q %q", round, target, args)
 		}
 		if err := (windowsLinks{}).Retarget(lnk, spotify, "", spotify); err != nil {
 			t.Fatalf("round %d, restore: %v", round, err)
 		}
-		if target, args := readLink(t, lnk); !samePath(target, spotify) || args != "" {
+		if target, args := readLink(t, lnk); !sameFile(target, spotify) || args != "" {
 			t.Fatalf("round %d, after restore: %q %q", round, target, args)
 		}
 	}

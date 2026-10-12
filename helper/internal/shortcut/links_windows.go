@@ -4,6 +4,7 @@ package shortcut
 
 import (
 	"fmt"
+	"os"
 	"path/filepath"
 	"runtime"
 	"strings"
@@ -247,8 +248,19 @@ func verify(path, target string) error {
 	if err != nil {
 		return err
 	}
-	if !samePath(got, target) {
+	if !sameFile(got, target) {
 		return fmt.Errorf("saved, but it still opens %s", got)
 	}
 	return nil
+}
+
+// sameFile reports whether a and b are the same file, so a short 8.3 name (C:\Users\RUNNER~1\…) matches its long
+// form, which is what a link reports back. Paths that can't be looked up are compared as text.
+func sameFile(a, b string) bool {
+	fa, errA := os.Stat(a)
+	fb, errB := os.Stat(b)
+	if errA != nil || errB != nil {
+		return samePath(a, b)
+	}
+	return os.SameFile(fa, fb)
 }

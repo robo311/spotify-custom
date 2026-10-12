@@ -14,7 +14,7 @@ describe('compile cache', () => {
     const cache = createCompileCache()
     for (let i = 0; i < 3; i++) for (const p of PRESETS) cache.compile(p, ctx)
     expect(compileTheme).toHaveBeenCalledTimes(PRESETS.length)
-    expect(cache.compile(structuredClone(PRESETS[0]), ctx)).toBe('css:darcula')
+    expect(cache.compile(structuredClone(PRESETS[0]), ctx)).toBe(`css:${PRESETS[0].id}`)
     expect(compileTheme).toHaveBeenCalledTimes(PRESETS.length)
   })
 

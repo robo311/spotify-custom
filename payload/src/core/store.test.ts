@@ -27,8 +27,8 @@ describe('store', () => {
   it('starts on the default preset and applies it', () => {
     const s = store.get()
     expect(s).toMatchObject({ ready: true, activeIsPreset: true })
-    expect(s.active.id).toBe('darcula')
-    expect(themeCss()).toContain('--sc-background: #1e1f22')
+    expect(s.active.id).toBe('tokyo-night')
+    expect(themeCss()).toContain('--sc-background: #1a1b26')
   })
 
   it('forks a preset on first edit and saves the copy', async () => {
@@ -37,7 +37,7 @@ describe('store', () => {
     })
     const s = store.get()
     expect(s.activeIsPreset).toBe(false)
-    expect(s.active).toMatchObject({ name: 'Darcula (my version)', basedOn: 'darcula' })
+    expect(s.active).toMatchObject({ name: 'Tokyo Night (my version)', basedOn: 'tokyo-night' })
     expect(s.settings.activeTheme).toBe(s.active.id)
     expect(themeCss()).toContain('--sc-accent: #ff0000')
     await vi.runAllTimersAsync()
@@ -83,7 +83,7 @@ describe('store', () => {
     expect(localStorage.getItem('sc:last-theme-css')).toBe(cached)
     store.preview(null)
     expect(localStorage.getItem('sc:last-theme-css')).toBe(cached)
-    expect(store.get().active.id).toBe('darcula')
+    expect(store.get().active.id).toBe('tokyo-night')
   })
 
   it('exposes the save status: pending while a change is queued, local once saved to the mock; previews never change it', async () => {
@@ -152,9 +152,9 @@ describe('store', () => {
     if (!nord) throw new Error('missing preset')
     store.preview(nord)
     expect(themeCss()).toContain('#2e3440')
-    expect(store.get().active.id).toBe('darcula')
+    expect(store.get().active.id).toBe('tokyo-night')
     store.preview(null)
-    expect(themeCss()).toContain('--sc-background: #1e1f22')
+    expect(themeCss()).toContain('--sc-background: #1a1b26')
   })
 
   it('keeps unchanged settings slices identical (cheap change detection)', () => {
@@ -194,7 +194,7 @@ describe('store', () => {
     store.renameTheme(id, 'Late shift')
     expect(store.get().active.name).toBe('Late shift')
     store.deleteTheme(id)
-    expect(store.get().active.id).toBe('darcula')
+    expect(store.get().active.id).toBe('tokyo-night')
     await vi.runAllTimersAsync()
     expect(savedState().userThemes).toEqual([])
   })

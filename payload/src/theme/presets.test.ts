@@ -7,10 +7,10 @@ import { validateTheme } from './model'
 describe('presets', () => {
   it('ships the 10 agreed presets with unique ids, default first', () => {
     expect(PRESETS.map(p => p.id)).toEqual([
+      'tokyo-night',
       'darcula',
       'spotify-original',
       'catppuccin-mocha',
-      'tokyo-night',
       'gruvbox-dark',
       'nord',
       'midnight-blue',

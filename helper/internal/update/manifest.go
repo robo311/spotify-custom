@@ -1,5 +1,5 @@
 // Package update keeps the helper current. Every GitHub release publishes latest.json (a Manifest); the
-// helper reads it on start and every few hours, and on request downloads its platform's package, verifies
+// helper reads it on start and every hour, and on request downloads its platform's package, verifies
 // the SHA-256 and hands it to the per-OS Installer, which arranges for the new version to start.
 package update
 

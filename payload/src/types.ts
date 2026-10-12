@@ -235,7 +235,7 @@ export interface UserExtensionFile {
 }
 
 /**
- * Helper self-update. The helper checks GitHub Releases on start and every few hours. Changes arrive as
+ * Helper self-update. The helper checks GitHub Releases on start and every hour. Changes arrive as
  * window.__sc?.update?.(UpdateStatus) and in HelperState.update.
  */
 export interface UpdateStatus {

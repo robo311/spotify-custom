@@ -6,6 +6,7 @@ import type { Observable } from '../lib/observable'
 import { createShadowMount } from '../lib/shadow-host'
 import { ENTRY_ANCHORS, NAV_BAR } from '../selectors'
 import { EntryButton } from './EntryButton'
+import { UpdateButton } from './UpdateButton'
 
 const RECHECK_MS = 2000
 
@@ -18,8 +19,17 @@ function findAnchor(): Element | null {
 }
 
 export function mountEntry(store: Store, ui: Observable<UiSnapshot>): () => void {
-  const mount = createShadowMount('entry', 'span', store, ui, <EntryButton />)
-  Object.assign(mount.host.style, { display: 'inline-flex', flex: 'none' })
+  const mount = createShadowMount(
+    'entry',
+    'span',
+    store,
+    ui,
+    <>
+      <UpdateButton />
+      <EntryButton />
+    </>,
+  )
+  Object.assign(mount.host.style, { display: 'inline-flex', alignItems: 'center', flex: 'none' })
 
   let observedBar: Element | null = null
   let frame = 0

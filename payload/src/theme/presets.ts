@@ -4,7 +4,7 @@
 import type { Effects, LayoutConfig, LyricsStyle, Palette, Theme } from '../types'
 import { defaultEffects, defaultHomeStyle, defaultLayout, defaultLyrics, defaultPageStyle, defaultReactiveLook, THEME_SCHEMA } from './model'
 
-export const DEFAULT_PRESET_ID = 'darcula'
+export const DEFAULT_PRESET_ID = 'tokyo-night'
 export const SPOTIFY_ORIGINAL_ID = 'spotify-original'
 
 /** Spotify's own dark-theme values (probed from 1.3.3). Used to detect "native" palettes. */
@@ -58,6 +58,21 @@ function preset(spec: PresetSpec): Theme {
 
 export const PRESETS: Theme[] = [
   preset({
+    id: 'tokyo-night',
+    name: 'Tokyo Night',
+    palette: {
+      background: '#1a1b26', // bg
+      surface: '#16161e', // bg_dark
+      elevated: '#292e42', // bg_highlight
+      text: '#c0caf5', // fg
+      textSubdued: '#a9b1d6', // fg_dark
+      accent: '#7aa2f7', // blue
+      onAccent: '#16161e', // bg_dark
+      border: '#3b4261', // fg_gutter
+    },
+    radius: 10,
+  }),
+  preset({
     id: 'darcula',
     name: 'Darcula',
     // JetBrains New UI dark: editor-dark panels inside lighter tool-window chrome, JetBrains blue.
@@ -96,21 +111,6 @@ export const PRESETS: Theme[] = [
       border: '#45475a', // surface1
     },
     radius: 12,
-  }),
-  preset({
-    id: 'tokyo-night',
-    name: 'Tokyo Night',
-    palette: {
-      background: '#1a1b26', // bg
-      surface: '#16161e', // bg_dark
-      elevated: '#292e42', // bg_highlight
-      text: '#c0caf5', // fg
-      textSubdued: '#a9b1d6', // fg_dark
-      accent: '#7aa2f7', // blue
-      onAccent: '#16161e', // bg_dark
-      border: '#3b4261', // fg_gutter
-    },
-    radius: 10,
   }),
   preset({
     id: 'gruvbox-dark',

@@ -30,7 +30,7 @@ describe('booting before <html> exists', () => {
     await new Promise(r => setTimeout(r, 0))
 
     expect(slotIds()).toEqual(['sc-base', 'sc-theme', 'sc-recolor', 'sc-effects'])
-    expect(document.getElementById('sc-theme')?.textContent).toContain('--sc-background: #1e1f22')
+    expect(document.getElementById('sc-theme')?.textContent).toContain('--sc-background: #1a1b26') // Tokyo Night, the default
 
     stopEffects()
     store.dispose()

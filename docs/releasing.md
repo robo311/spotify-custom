@@ -1,7 +1,7 @@
 # Releasing an update
 
-Every release is built by GitHub Actions from a tag. Installed copies check the newest release every few hours and offer
-the update in the theme studio and the tray menu.
+Every release is built by GitHub Actions from a tag. Installed copies check the newest release every hour and offer
+the update in Spotify's top bar, the theme studio and the tray menu.
 
 ## Publish
 

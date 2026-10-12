@@ -42,7 +42,7 @@ release: payload check
 	$(MAKE) -C $(HELPER) release OUT=$(abspath dist)
 
 ## Publish a release: tags vVERSION and pushes the tag; GitHub Actions builds, tests and publishes it, and
-## installed copies offer the update within hours. Usage: make publish VERSION=0.2.0
+## installed copies offer the update within the hour. Usage: make publish VERSION=0.2.0
 publish:
 	@test -n "$(VERSION)" || (echo "usage: make publish VERSION=x.y.z"; false)
 	@echo "$(VERSION)" | grep -Eq "^[0-9]+\.[0-9]+\.[0-9]+$$" || (echo "VERSION must be x.y.z"; false)

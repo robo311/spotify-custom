@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { FOLDER_IMAGE_MAX_CHARS, PART_SIZE_MAX, ThemeValidationError, defaultHomeStyle, defaultLayout, defaultNowPlaying, defaultPageStyle, defaultLyrics, defaultReactiveLook, forkTheme, isSlug, normalizeSettings, slugify, uniqueId, validateTheme } from './model'
 import { PRESETS } from './presets'
 
-const darcula = PRESETS[0]
+const [darcula] = PRESETS.filter(p => p.id === 'darcula')
 
 describe('validateTheme', () => {
   it('fills optional fields with defaults', () => {

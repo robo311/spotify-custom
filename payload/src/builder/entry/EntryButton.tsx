@@ -1,7 +1,7 @@
 // The studio's door: an outline artist's palette drawn like Spotify's own top-bar icons (16px, ~1.5px stroke).
 // At rest it is as quiet as its neighbours; colour appears only with intent: on hover and while the studio is open the
 // palette tilts and its paint dots pop in the theme's colours, and a theme change makes them flash once. A breathing
-// ring shows Album Mode is steering the colours. The active dot also stays lit while a Spotify Custom update is waiting.
+// ring shows Album Mode is steering the colours. (A waiting update has its own button beside it: UpdateButton.)
 import { useEffect, useMemo, useRef, useState } from 'preact/hooks'
 import { contrastRatio } from '../../theme/palette'
 import { useApp, useEnv, useUi } from '../context'
@@ -82,8 +82,7 @@ const styles = css`
     transform: scale(0);
     transition: transform 240ms var(--b-spring);
   }
-  .b-entry[aria-expanded='true'] .b-entry__active,
-  .b-entry[data-update='true'] .b-entry__active {
+  .b-entry[aria-expanded='true'] .b-entry__active {
     transform: scale(1);
   }
 
@@ -155,8 +154,6 @@ export function EntryButton() {
   const open = useUi(s => s.open)
   const palette = useApp(s => s.active.palette)
   const albumMode = useApp(s => s.active.effects.albumMode)
-  const updateAvailable = useApp(s => s.update.state === 'available')
-  const label = updateAvailable ? 'Theme studio · Spotify Custom update available' : 'Theme studio'
   const dots = useMemo(() => entryDotColors(palette, contrastRatio), [palette])
   const ping = usePing(dots.join())
 
@@ -164,10 +161,9 @@ export function EntryButton() {
     <button
       type="button"
       class={ping ? 'b-entry is-ping' : 'b-entry'}
-      aria-label={label}
-      title={label}
+      aria-label="Theme studio"
+      title="Theme studio"
       aria-expanded={open}
-      data-update={updateAvailable}
       onClick={() => ui.set(s => ({ ...s, open: !s.open, picking: s.open ? false : s.picking }))}
     >
       <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">

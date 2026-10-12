@@ -38,12 +38,13 @@ You install it once. After that, Spotify Custom tells you when there's a new ver
 
 ## Updates
 
-Spotify Custom checks for a new version when it starts and every few hours. When there is one:
+Spotify Custom checks for a new version when it starts and every hour. When there is one:
 
+- Spotify's top bar shows an **Update x.y.z** button next to the theme studio button,
 - the theme studio shows **"Spotify Custom x.y.z is available"** with an **Update** button, and
 - the tray / menu bar menu shows **Update to version x.y.z…**
 
-Click either one. Spotify Custom downloads the new version, checks it isn't damaged, installs it and starts again.
+Click any of them. Spotify Custom downloads the new version, checks it isn't damaged, installs it and starts again.
 Your theme disappears for a few seconds while it restarts. Your themes and settings are kept.
 
 On a Mac, the first time you use music-reactive effects after an update, macOS asks again whether Spotify Custom may

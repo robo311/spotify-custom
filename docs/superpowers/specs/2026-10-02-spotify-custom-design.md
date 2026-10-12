@@ -47,7 +47,7 @@ public release.
 1. **Install:** unzip `SpotifyCustom.app` (Mac) or run `SpotifyCustom.exe` (Windows). First run needs the one-time OS
    override (Mac: System Settings → Privacy & Security → Open Anyway; Windows: SmartScreen → More info → Run anyway).
    `docs/install-guide.md` walks through this with screenshots.
-2. **Run:** a tray icon appears and Spotify opens themed (default preset: Darcula).
+2. **Run:** a tray icon appears and Spotify opens themed (default preset: Tokyo Night).
 3. **Customise:** a 🎨 button in Spotify's top bar opens the theme builder drawer, and every change applies live.
 4. **Tray menu:** Open Spotify · Restart themed · Open my customisations folder · Start at login ✓ · Quit.
 
@@ -165,8 +165,8 @@ Fonts Inter and JetBrains Mono (both OFL) are bundled as woff2 inside the payloa
 
 ## 7. Presets (v1)
 
-Read-only and shipped inside the payload: **Darcula** (default), **Spotify Original** (palette = Spotify's own default
-colours, font `spotify`, icons `spotify`, so it looks the way Spotify ships), **Catppuccin Mocha, Tokyo Night, Gruvbox Dark, Nord, Midnight Blue, Sunset, Forest, Mono**. All dark.
+Read-only and shipped inside the payload: **Darcula**, **Spotify Original** (palette = Spotify's own default
+colours, font `spotify`, icons `spotify`, so it looks the way Spotify ships), **Tokyo Night** (default), **Catppuccin Mocha, Gruvbox Dark, Nord, Midnight Blue, Sunset, Forest, Mono**. All dark.
 Editing a preset forks it into a user theme named "<Preset> (my version)" and saves it to `themes/`.
 
 ## 8. Theme builder

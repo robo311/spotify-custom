@@ -179,3 +179,10 @@ Done = `internal/update` tests (version compare, manifest, asset pick, sha256, m
 - [x] CI: ci.yml (push: check mac + windows go test) · release.yml (tag: build, publish)
 - [x] docs: install guide (dmg/setup, updates), RELEASING.md, README
 - [ ] commit, push, tag v0.1.0, watch CI
+
+## Phase 15: After 0.2.0 (2026-10-12)
+- [x] Released 0.2.0 (hardening round) — CI green, latest.json → 0.2.0
+- [x] (user) Update more visible: accent "Update x.y.z" pill in Spotify's top bar beside the studio button (builder/entry/UpdateButton.tsx; updating / failed·retry states); palette's update dot removed; helper checks hourly (was 6 h). Tests first (5). Not seen live (Spotify here not on a debug port).
+- [x] (user) First-run default theme = Tokyo Night (DEFAULT_PRESET_ID, first in the gallery). Existing installs keep their saved theme.
+- [ ] (user) New app icon: hint at Spotify (music) + theming, no Spotify mark. Concepts A–D in /tmp/sc-logo/sheet.png, waiting on the user's pick → redraw in helper/tools/mkicon, `make icons`
+- [ ] (user) Windows lyrics view: window buttons vanish on hover; empty full-height right column. Needs DOM dump from Windows (console snippet given)

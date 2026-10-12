@@ -49,7 +49,7 @@ const platformKey = runtime.GOOS
 
 const (
 	firstCheck    = 20 * time.Second // let Spotify start first
-	checkInterval = 6 * time.Hour
+	checkInterval = time.Hour        // a new release shows up within the hour, without a restart
 	installBudget = 10 * time.Minute
 )
 

@@ -16,11 +16,12 @@ import (
 
 // shell adapts the app loop, store and desktop to what the tray menu and the bridge need.
 type shell struct {
-	loop    *app.App
-	store   *store.Store
-	desk    desktop.Desktop
-	updates *update.Service
-	log     *slog.Logger
+	loop      *app.App
+	store     *store.Store
+	desk      desktop.Desktop
+	updates   *update.Service
+	shortcuts *spotifyShortcuts
+	log       *slog.Logger
 }
 
 func (s *shell) OpenSpotify()   { s.loop.OpenSpotify() }
@@ -56,6 +57,10 @@ func (s *shell) SetStartAtLogin(on bool) error {
 	}
 	return err
 }
+
+func (s *shell) StartWithSpotify() bool { return s.shortcuts.On() }
+
+func (s *shell) SetStartWithSpotify(on bool) error { return s.shortcuts.Set(on) }
 
 // statusSink forwards app status to the tray menu, remembering it until the menu exists.
 type statusSink struct {

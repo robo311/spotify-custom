@@ -12,6 +12,7 @@ export interface UiSnapshot {
   tab: TabId
   picking: boolean // pick mode active
   editingArtwork: string | null // folder URI to open in the Library tab (e.g. picked in pick mode)
+  tour?: number // index of the guided-tour step on screen; absent when no tour is running
 }
 
 export interface BuilderEnv {

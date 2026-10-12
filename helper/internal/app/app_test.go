@@ -226,11 +226,12 @@ func TestLaterUntouchedSpotifyIsAskedAboutOnce(t *testing.T) {
 	run(t, w, Config{})
 	eventually(t, "connected", func() bool { return w.get(func(w *world) int { return w.serves }) == 1 })
 
-	// User quits Spotify, then opens it from its own icon (no debug port).
+	// User quits Spotify, then a Spotify without our port turns up that has been open for a while (e.g. it was
+	// started while Spotify Custom wasn't watching): it may be playing, so ask.
 	close(w.serving)
 	eventually(t, "waiting", func() bool { return lastStatus(w) == StatusWaiting })
 	w.mu.Lock()
-	w.running, w.uptime, w.pid = true, 5*time.Second, 99
+	w.running, w.uptime, w.pid = true, 10*time.Minute, 99
 	w.mu.Unlock()
 
 	eventually(t, "asked", func() bool { return w.get(func(w *world) int { return w.confirms }) == 1 })
@@ -240,6 +241,26 @@ func TestLaterUntouchedSpotifyIsAskedAboutOnce(t *testing.T) {
 	}
 	if lastStatus(w) != StatusUntouched {
 		t.Fatalf("status = %v", lastStatus(w))
+	}
+}
+
+// Opening Spotify from its own icon while we watch: it only just started and can't be playing, so it is restarted
+// with the theme straight away, without a dialog.
+func TestSpotifyOpenedFromItsIconIsThemedWithoutAsking(t *testing.T) {
+	w := &world{}
+	run(t, w, Config{})
+	eventually(t, "connected", func() bool { return w.get(func(w *world) int { return w.serves }) == 1 })
+
+	close(w.serving)
+	eventually(t, "waiting", func() bool { return lastStatus(w) == StatusWaiting })
+	w.mu.Lock()
+	w.running, w.uptime, w.pid = true, 3*time.Second, 99
+	w.mu.Unlock()
+
+	eventually(t, "restarted", func() bool { return w.get(func(w *world) int { return w.restarts }) == 1 })
+	eventually(t, "connected again", func() bool { return w.get(func(w *world) int { return w.serves }) == 2 })
+	if c := w.get(func(w *world) int { return w.confirms }); c != 0 {
+		t.Fatalf("confirms = %d; want no dialog", c)
 	}
 }
 

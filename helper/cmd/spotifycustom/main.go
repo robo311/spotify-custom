@@ -25,6 +25,7 @@ import (
 	"spotifycustom/internal/inject"
 	"spotifycustom/internal/instance"
 	"spotifycustom/internal/logging"
+	"spotifycustom/internal/shortcut"
 	"spotifycustom/internal/spotify"
 	"spotifycustom/internal/store"
 	"spotifycustom/internal/tray"
@@ -42,6 +43,10 @@ type options struct {
 	payload string
 	port    int
 	login   bool
+	// fromShortcut: opened from one of Spotify's own shortcuts that "Start with Spotify" points at us.
+	fromShortcut bool
+	// restoreShortcuts: point Spotify's shortcuts back at Spotify and exit (run by the uninstaller).
+	restoreShortcuts bool
 }
 
 func main() { os.Exit(run()) }
@@ -52,6 +57,8 @@ func parseFlags() options {
 	flag.StringVar(&o.payload, "payload", "", "inject this payload file instead of the embedded one and re-inject when it changes")
 	flag.IntVar(&o.port, "port", 0, "use this DevTools port instead of the remembered one")
 	flag.BoolVar(&o.login, autostart.LoginFlag[2:], false, "started at login (set by the login item)")
+	flag.BoolVar(&o.fromShortcut, shortcut.Marker[2:], false, "opened from one of Spotify's shortcuts (set by Start with Spotify)")
+	flag.BoolVar(&o.restoreShortcuts, "restore-shortcuts", false, "point Spotify's shortcuts back at Spotify, then exit")
 	flag.Parse()
 	return o
 }
@@ -73,7 +80,11 @@ func run() int {
 		return 1
 	}
 	defer logFile.Close()
-	log.Info("starting", "version", version, "dev", opts.dev, "login", opts.login)
+	log.Info("starting", "version", version, "dev", opts.dev, "login", opts.login, "fromShortcut", opts.fromShortcut)
+	if opts.restoreShortcuts {
+		restoreSpotifyShortcuts(log)
+		return 0
+	}
 
 	lock, err := instance.Acquire(filepath.Join(dir, "helper.lock"))
 	if errors.Is(err, instance.ErrAlreadyRunning) {
@@ -135,8 +146,16 @@ func run() int {
 			OnStatus: status.set,
 		},
 	)
-	sh := &shell{loop: loop, store: st, desk: desk, updates: updater, log: log}
+	exe, exeErr := os.Executable()
+	shortcuts := &spotifyShortcuts{links: shortcut.NewLinks(), runtime: st, spotify: ctrl.Install().Path, self: exe,
+		release: version != "dev" && exeErr == nil, log: log}
+	sh := &shell{loop: loop, store: st, desk: desk, updates: updater, shortcuts: shortcuts, log: log}
 	handler.Actions = sh
+	if exeErr == nil {
+		if err := applyLoginDefault(st, exe, version != "dev", autostart.Enable); err != nil {
+			log.Warn("switching on start at login failed", "err", err)
+		}
+	}
 	healAutostart(log)
 
 	loopDone := make(chan struct{})
@@ -145,6 +164,7 @@ func run() int {
 			status.attach(menu)
 			updates.attach(menu)
 			go updater.Run(ctx)
+			go shortcuts.Run(ctx)
 			go func() {
 				defer close(loopDone)
 				if err := loop.Run(ctx); err != nil {
@@ -173,6 +193,18 @@ func run() int {
 	}
 	log.Info("stopped")
 	return 0
+}
+
+// restoreSpotifyShortcuts points every shortcut of ours back at Spotify. Without Spotify there's nothing to point
+// them at; they open nothing either way then.
+func restoreSpotifyShortcuts(log *slog.Logger) {
+	inst, err := spotify.NewPlatform().Locate()
+	if err != nil {
+		log.Warn("restoring spotify shortcuts: spotify not found", "err", err)
+		return
+	}
+	n, err := shortcut.Sync(shortcut.NewLinks(), false, inst.Path, "")
+	log.Info("spotify shortcuts restored", "changed", n, "err", err)
 }
 
 // serveStoppingAudio ends music capture whenever a Spotify connection ends: nobody is left to want it.

@@ -58,7 +58,7 @@ export function ShareTab() {
 
   return (
     <>
-      <Section title="Share this theme">
+      <Section title="Share this theme" tour="share">
         <span class="b-hint">Send the code to a friend. They paste it here and get exactly your look.</span>
         <div class="b-share__code b-mono" title={code}>
           {code}

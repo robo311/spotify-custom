@@ -1,9 +1,8 @@
 // Command mkicon renders the app and tray icons from vector shapes (signed distance fields), so every
 // size is drawn crisply instead of being downscaled. Run via `make icons`.
 //
-// Motif: a synth-knob gauge — a 270° arc whose gradient runs through a theme palette, over a dim
-// track, around a light centre dot (the knob / a record's spindle), on a Darcula-dark rounded square.
-// "Pro instrument", per docs/creative-direction.md.
+// Motif: a painted equaliser: five rounded level bars, each one a theme swatch (Spotify-ish green, then blue,
+// violet, coral, amber), on a dark green-tinted rounded square. Music and theming in one glyph, with no Spotify mark.
 package main
 
 import (
@@ -53,45 +52,29 @@ func sdRoundRect(px, py, half, radius float64) float64 {
 	return outside + math.Min(math.Max(qx, qy), 0) - radius
 }
 
-func sdCircle(px, py, r float64) float64 { return math.Hypot(px, py) - r }
-
-// sdArc is a ring segment centred on the origin from angle a0 to a1 (radians, CCW) with round caps.
-func sdArc(px, py, radius, width, a0, a1 float64) float64 {
-	theta := math.Atan2(py, px)
-	for theta < a0 {
-		theta += 2 * math.Pi
-	}
-	if theta <= a1 {
-		return math.Abs(math.Hypot(px, py)-radius) - width/2
-	}
-	d0 := math.Hypot(px-radius*math.Cos(a0), py-radius*math.Sin(a0))
-	d1 := math.Hypot(px-radius*math.Cos(a1), py-radius*math.Sin(a1))
-	return math.Min(d0, d1) - width/2
+// sdCapsule is a vertical bar from y0 up to y1 at x with round ends of radius r.
+func sdCapsule(px, py, x, y0, y1, r float64) float64 {
+	cy := math.Max(y0, math.Min(y1, py))
+	return math.Hypot(px-x, py-cy) - r
 }
 
-// gaugeStops is the arc's gradient from its start (bottom-left) to its end (bottom-right).
-var gaugeStops = []rgba{hex("#548AF7"), hex("#A07CF7"), hex("#F0786E"), hex("#F2C55C")} // blue, violet, coral, amber
-
-// gradient samples evenly spaced stops at t in 0..1.
-func gradient(stops []rgba, t float64) rgba {
-	t = math.Max(0, math.Min(1, t)) * float64(len(stops)-1)
-	i := int(math.Min(t, float64(len(stops)-2)))
-	return lerp(stops[i], stops[i+1], t-float64(i))
+// bar is one equaliser level in glyph units (the glyph spans about -1.02..1.02 across, -0.86..0.86 up).
+type bar struct {
+	x, top float64
+	colour rgba
 }
 
-// arcProgress is how far along the arc (0..1) the point's angle is, clamped at the caps.
-func arcProgress(px, py, a0, a1 float64) float64 {
-	theta := math.Atan2(py, px)
-	for theta < a0 {
-		theta += 2 * math.Pi
-	}
-	if theta > a1 { // in the gap: snap to the nearer cap
-		if theta-a1 < a0+2*math.Pi-theta {
-			return 1
-		}
-		return 0
-	}
-	return (theta - a0) / (a1 - a0)
+const (
+	barRadius = 0.156
+	barBottom = -0.70 // centre of the bottom cap; every bar stands on the same baseline
+)
+
+var bars = []bar{
+	{-0.86, -0.39, hex("#1ED760")}, // green
+	{-0.43, 0.31, hex("#548AF7")},  // blue
+	{0, 0.70, hex("#A07CF7")},      // violet
+	{0.43, 0.16, hex("#F0786E")},   // coral
+	{0.86, -0.16, hex("#F2C55C")},  // amber
 }
 
 type style struct {
@@ -104,13 +87,9 @@ type style struct {
 func render(size int, st style) *image.NRGBA {
 	img := image.NewNRGBA(image.Rect(0, 0, size, size))
 	px := float64(size) / 2 // pixels per unit
-	top, bottom := hex("#43454A"), hex("#1E1F22")
-	ink := hex("#DFE1E5")
+	top, bottom := hex("#2A2F2C"), hex("#121513")
 	black := rgba{0, 0, 0, 1}
 
-	const ringR, ringW = 0.58, 0.2
-	// The gauge sweeps clockwise from 7:30 to 4:30, like a knob's travel.
-	const a0, a1 = -math.Pi / 4, 5 * math.Pi / 4 // CCW from 4:30 to 7:30; drawn as end→start
 	for y := range size {
 		for x := range size {
 			ux := (float64(x)+0.5)/px - 1
@@ -130,20 +109,13 @@ func render(size int, st style) *image.NRGBA {
 
 			gx, gy := ux/st.glyphScale, uy/st.glyphScale
 			scale := px * st.glyphScale
-			if !st.mono {
-				track := sdArc(gx, gy, ringR, ringW, -math.Pi, math.Pi)
-				c = over(c, rgba{1, 1, 1, 1}, coverage(track*scale)*0.07)
+			for _, b := range bars {
+				col := b.colour
+				if st.mono {
+					col = black
+				}
+				c = over(c, col, coverage(sdCapsule(gx, gy, b.x, barBottom, b.top, barRadius)*scale))
 			}
-			col := black
-			if !st.mono {
-				col = gradient(gaugeStops, 1-arcProgress(gx, gy, a0, a1)) // clockwise from 7:30
-			}
-			c = over(c, col, coverage(sdArc(gx, gy, ringR, ringW, a0, a1)*scale))
-			dot := ink
-			if st.mono {
-				dot = black
-			}
-			c = over(c, dot, coverage(sdCircle(gx, gy, 0.2)*scale))
 
 			img.SetNRGBA(x, y, toNRGBA(c))
 		}
@@ -205,17 +177,17 @@ func main() {
 	trayDir := flag.String("tray", "internal/tray/assets", "output folder for tray icons")
 	flag.Parse()
 
-	app := style{background: true, glyphScale: 0.62}
+	app := style{background: true, glyphScale: 0.5}
 	for _, s := range []int{16, 32, 128, 256, 512} {
 		write(filepath.Join(*assets, "AppIcon.iconset", fmt.Sprintf("icon_%dx%d.png", s, s)), encodePNG(render(s, app)))
 		write(filepath.Join(*assets, "AppIcon.iconset", fmt.Sprintf("icon_%dx%d@2x.png", s, s)), encodePNG(render(2*s, app)))
 	}
 	write(filepath.Join(*assets, "icon-512.png"), encodePNG(render(512, app)))
 
-	write(filepath.Join(*trayDir, "tray-template.png"), encodePNG(render(32, style{mono: true, glyphScale: 1.05})))
+	write(filepath.Join(*trayDir, "tray-template.png"), encodePNG(render(32, style{mono: true, glyphScale: 0.92})))
 	var trayICO []*image.NRGBA
 	for _, s := range []int{16, 24, 32, 48} {
-		trayICO = append(trayICO, render(s, style{glyphScale: 1.05}))
+		trayICO = append(trayICO, render(s, style{glyphScale: 0.92}))
 	}
 	write(filepath.Join(*trayDir, "tray.ico"), encodeICO(trayICO))
 	log.Printf("icons written to %s and %s", *assets, *trayDir)

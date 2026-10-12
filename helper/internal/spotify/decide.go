@@ -46,6 +46,11 @@ func (a Action) String() string {
 // nothing is playing yet, so a quick restart beats asking.
 const FreshStart = 60 * time.Second
 
+// FreshLaunch is how recently Spotify must have started for a restart while watching to go unannounced: the user
+// just opened Spotify from its own icon (we notice within a poll), and nothing is playing yet. Shorter than
+// StartupTimeout in the app, so a launch of ours that never opens the port can't trigger restart after restart.
+const FreshLaunch = 15 * time.Second
+
 // Situation is everything Decide needs to know.
 type Situation struct {
 	Trigger   Trigger
@@ -54,8 +59,8 @@ type Situation struct {
 	Uptime    time.Duration // age of the Spotify main process (when Running)
 }
 
-// Decide implements the launch/restart rules from the spec (§5.1). It never interrupts possible
-// playback without asking unless the user just asked for Spotify themselves.
+// Decide implements the launch/restart rules. It never interrupts possible playback without asking unless the user
+// just asked for Spotify themselves, or Spotify only just started (nothing can be playing yet).
 func Decide(s Situation) Action {
 	if s.Trigger == TriggerRestart {
 		if s.Running || s.Reachable {
@@ -81,6 +86,9 @@ func Decide(s Situation) Action {
 		}
 		return ActionAskRestart
 	default:
+		if s.Uptime < FreshLaunch {
+			return ActionRestart
+		}
 		return ActionAskRestart
 	}
 }

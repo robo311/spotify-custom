@@ -118,7 +118,7 @@ export function AdvancedTab() {
 
   return (
     <>
-      <Section title="Custom CSS">
+      <Section title="Custom CSS" tour="advanced">
         <span class="b-hint">For people who know CSS. Changes apply as you type and are saved with this theme.</span>
         <CssEditor />
       </Section>

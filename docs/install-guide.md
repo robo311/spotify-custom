@@ -36,6 +36,17 @@ You install it once. After that, Spotify Custom tells you when there's a new ver
 4. A small icon appears in the system tray (bottom right, next to the clock; you may need to click **^** to see it),
    and Spotify opens with the new look.
 
+## Starting with Spotify
+
+Spotify Custom starts when you log in and waits in the tray / menu bar (turn this off with **Start at login** in its
+menu). Then:
+
+- **Open Spotify from its own icon** and Spotify comes up, closes and reopens once with your look, within a couple of
+  seconds. A Spotify that has been open (and maybe playing) for a while is never restarted without asking.
+- **Windows: Start with Spotify** (on by default) goes further: Spotify's icons in the Start menu, on the desktop and
+  on the taskbar open Spotify Custom, which opens Spotify with your look straight away, even if you quit Spotify Custom
+  earlier. Turn it off in the tray menu and the icons belong to Spotify again; then start Spotify Custom yourself.
+
 ## Updates
 
 Spotify Custom checks for a new version when it starts and every hour. When there is one:
@@ -58,20 +69,22 @@ listen to Spotify's sound. Allow it as before.
   and so on) to change just that part.
 - **Album Mode:** with this on, Spotify's colours follow the cover of each song you play.
 - **Share your look:** **Share → Copy share code** and send the code to a friend. They paste it into **Share → Import**.
-- **Tray / menu bar icon:** *Open Spotify*, *Restart themed*, *Open my customisations folder*, *Start at login*, *Quit*.
+- **Tray / menu bar icon:** *Open Spotify*, *Restart themed*, *Open my customisations folder*, *Start at login*,
+  *Start with Spotify* (Windows), *Quit*.
 
 ## Something's not right?
 
 | What you see | What to do |
 |---|---|
-| Spotify opened with its normal look | Click the tray/menu bar icon → **Restart themed**. This happens when Spotify was opened from its own icon. |
+| Spotify opened with its normal look | Click the tray/menu bar icon → **Restart themed**. This happens when Spotify Custom wasn't running when Spotify opened (on a Mac, or with **Start with Spotify** off). |
 | A part of the theme stopped working after a Spotify update | The palette panel marks it "not found in this Spotify version". Everything else keeps working, and an updated Spotify Custom will fix it. |
-| I want plain Spotify back | Palette button → **Start → Spotify Original**. Or quit Spotify Custom from the tray icon and open Spotify normally. |
+| I want plain Spotify back | Palette button → **Start → Spotify Original**. Or quit Spotify Custom from the tray icon (on Windows, turn off **Start with Spotify** first) and open Spotify normally. |
 
 ## Uninstall
 
 - **Mac:** menu bar icon → turn off **Start at login**, then **Quit**. Drag SpotifyCustom from Applications to the Bin.
-- **Windows:** **Settings → Apps → Installed apps → Spotify Custom → Uninstall** (this also turns off Start at login).
+- **Windows:** **Settings → Apps → Installed apps → Spotify Custom → Uninstall** (this also turns off Start at login and gives
+  Spotify's icons back to Spotify).
 - Optional: delete your saved themes, in the folder that **Open my customisations folder** shows
   (Mac: `~/Library/Application Support/SpotifyCustom`, Windows: `%APPDATA%\SpotifyCustom`).
 

@@ -35,12 +35,14 @@ interface SectionProps {
   title?: string
   aside?: ComponentChildren
   children: ComponentChildren
+  /** Anchor the guided tour points at (tour/steps.ts). */
+  tour?: string
 }
 
-export function Section({ title, aside, children }: SectionProps) {
+export function Section({ title, aside, children, tour }: SectionProps) {
   useStyles(styles)
   return (
-    <section class="b-section">
+    <section class="b-section" data-tour={tour}>
       {(title ?? aside) && (
         <div class="b-section__head">
           {title && <h3 class="b-section__title">{title}</h3>}

@@ -38,6 +38,7 @@ export function LyricsTab() {
     <>
       <Section
         title="Background"
+        tour="lyrics"
         aside={
           <Button icon={MicVocal} onClick={() => document.querySelector<HTMLElement>(LYRICS_BUTTON)?.click()}>
             Show lyrics

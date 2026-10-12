@@ -51,7 +51,7 @@ export function PagesTab() {
   return (
     <>
       {/* Same inset as the sections (Section: margin 0 12px, 12px above the first). */}
-      <div style={{ margin: '12px 12px 0' }}>
+      <div style={{ margin: '12px 12px 0' }} data-tour="pages">
         <KeyTabs label="Page type" tabs={TABS} value={tab} onChange={choose} />
       </div>
       {/* Inset from the tabs, a little short of the section titles below. */}

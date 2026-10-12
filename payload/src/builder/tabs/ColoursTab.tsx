@@ -97,7 +97,7 @@ export function ColoursTab() {
         </div>
       )}
 
-      <Section title="Accent">
+      <Section title="Accent" tour="accent">
         <ColorPicker value={palette.accent} onChange={hex => setColor('accent', hex)} suggestions={suggestions} footer={<ContrastBadge colorKey="accent" />} />
       </Section>
 

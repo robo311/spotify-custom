@@ -19,7 +19,7 @@ export function StartTab() {
         <StartFrom />
       </Section>
 
-      <Section title="Effects">
+      <Section title="Effects" tour="effects">
         <Toggle
           label="Album Mode"
           description="Colours follow the cover of whatever’s playing"

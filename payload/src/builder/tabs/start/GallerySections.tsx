@@ -36,7 +36,7 @@ export function GallerySections() {
   return (
     <GalleryPreviewContext.Provider value={preview}>
       <div onPointerLeave={() => preview.leaveGallery()}>
-        <Section title="Presets">
+        <Section title="Presets" tour="presets">
           <ThemeGallery themes={presets} />
         </Section>
         <Section

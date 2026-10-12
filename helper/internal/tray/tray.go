@@ -22,6 +22,9 @@ type Actions interface {
 	OpenDataFolder()
 	StartAtLogin() bool
 	SetStartAtLogin(on bool) error
+	// StartWithSpotify: Spotify's own icons open Spotify Custom too (Windows only; the item is hidden elsewhere).
+	StartWithSpotify() bool
+	SetStartWithSpotify(on bool) error
 	InstallUpdate()
 }
 
@@ -59,6 +62,19 @@ func (m *Menu) SetUpdate(label string, enabled bool) {
 	m.update.Show()
 }
 
+// toggle flips a checkbox item, keeping its tick in step with whether set succeeded.
+func toggle(item *systray.MenuItem, set func(on bool) error) {
+	want := !item.Checked()
+	if set(want) != nil {
+		return
+	}
+	if want {
+		item.Check()
+	} else {
+		item.Uncheck()
+	}
+}
+
 func build(title string, a Actions) *Menu {
 	if runtime.GOOS == "windows" {
 		systray.SetIcon(windowsIcon)
@@ -77,6 +93,10 @@ func build(title string, a Actions) *Menu {
 	folder := systray.AddMenuItem("Open my customisations folder", "Your themes, icon packs and extensions")
 	systray.AddSeparator()
 	login := systray.AddMenuItemCheckbox("Start at login", "Start "+title+" when you log in", a.StartAtLogin())
+	withSpotify := systray.AddMenuItemCheckbox("Start with Spotify", "Opening Spotify from its own icons starts "+title+" too", a.StartWithSpotify())
+	if runtime.GOOS != "windows" {
+		withSpotify.Hide()
+	}
 	systray.AddSeparator()
 	quit := systray.AddMenuItem("Quit "+title, "")
 
@@ -92,14 +112,9 @@ func build(title string, a Actions) *Menu {
 			case <-folder.ClickedCh:
 				a.OpenDataFolder()
 			case <-login.ClickedCh:
-				want := !login.Checked()
-				if a.SetStartAtLogin(want) == nil {
-					if want {
-						login.Check()
-					} else {
-						login.Uncheck()
-					}
-				}
+				toggle(login, a.SetStartAtLogin)
+			case <-withSpotify.ClickedCh:
+				toggle(withSpotify, a.SetStartWithSpotify)
 			case <-quit.ClickedCh:
 				systray.Quit()
 				return

@@ -61,6 +61,10 @@ type ExtensionFile struct {
 type Runtime struct {
 	Port        int `json:"port"`
 	ControlPort int `json:"controlPort,omitempty"`
+	// LoginDefaulted: "Start at login" was switched on once, on first run; from then on it is the user's choice.
+	LoginDefaulted bool `json:"loginDefaulted,omitempty"`
+	// NoSpotifyShortcuts: the user turned "Start with Spotify" off (Windows), so Spotify's shortcuts stay Spotify's.
+	NoSpotifyShortcuts bool `json:"noSpotifyShortcuts,omitempty"`
 }
 
 // Store reads and writes the data folder.

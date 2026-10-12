@@ -1,4 +1,4 @@
-// Builder UI preferences (not part of any theme): panel size and placement, last tab, recent colours.
+// Builder UI preferences (not part of any theme): panel size and placement, last tab, recent colours, whether the tour was offered.
 import type { TabId } from '../context'
 import { isPlacement, type Placement } from './panel-geometry'
 
@@ -9,11 +9,12 @@ export interface BuilderPrefs {
   tab: TabId
   recentColors: string[]
   placement: Placement
+  tourSeen: boolean // the first-run "take the tour?" prompt was answered (or the studio opened); never shown again
 }
 
 export const DRAWER_MIN = 340
 export const DRAWER_MAX = 640
-const DEFAULTS: BuilderPrefs = { width: 384, tab: 'start', recentColors: [], placement: { mode: 'docked' } }
+const DEFAULTS: BuilderPrefs = { width: 384, tab: 'start', recentColors: [], placement: { mode: 'docked' }, tourSeen: false }
 
 export function loadPrefs(): BuilderPrefs {
   try {
@@ -25,6 +26,7 @@ export function loadPrefs(): BuilderPrefs {
       tab: typeof p.tab === 'string' ? (p.tab as TabId) : DEFAULTS.tab,
       recentColors: Array.isArray(p.recentColors) ? p.recentColors.filter((c): c is string => typeof c === 'string').slice(0, 10) : [],
       placement: isPlacement(p.placement) ? p.placement : DEFAULTS.placement,
+      tourSeen: p.tourSeen === true,
     }
   } catch {
     return DEFAULTS

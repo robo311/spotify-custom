@@ -23,7 +23,9 @@ func TestDecide(t *testing.T) {
 		{"login, reachable → connect", Situation{Trigger: TriggerLogin, Running: true, Reachable: true}, ActionConnect},
 
 		{"watch, not running → wait", Situation{Trigger: TriggerWatch}, ActionWait},
-		{"watch, untouched even if fresh → ask", Situation{Trigger: TriggerWatch, Running: true, Uptime: fresh}, ActionAskRestart},
+		{"watch, just opened by the user → restart silently", Situation{Trigger: TriggerWatch, Running: true, Uptime: fresh}, ActionRestart},
+		{"watch, boundary uptime → ask", Situation{Trigger: TriggerWatch, Running: true, Uptime: FreshLaunch}, ActionAskRestart},
+		{"watch, open for a while → ask", Situation{Trigger: TriggerWatch, Running: true, Uptime: old}, ActionAskRestart},
 		{"watch, reachable → connect", Situation{Trigger: TriggerWatch, Running: true, Reachable: true}, ActionConnect},
 		{"reachable without detected process → connect", Situation{Trigger: TriggerWatch, Reachable: true}, ActionConnect},
 

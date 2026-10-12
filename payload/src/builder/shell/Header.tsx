@@ -1,14 +1,15 @@
-// Panel header: which theme you're editing (renamable if it's yours), undo/redo, dock and close, and the palette
+// Panel header: which theme you're editing (renamable if it's yours), the tour, undo/redo, dock and close, and the palette
 // ribbon: the theme's colours as one segmented strip along the bottom edge, morphing with every palette edit
 // (a click opens Colours). It is also the panel's drag handle: press anywhere that isn't a control and drag;
 // double-click to dock.
 import { useState } from 'preact/hooks'
-import { PanelRight, Redo2, Undo2, X } from 'lucide-static'
+import { CircleQuestionMark, PanelRight, Redo2, Undo2, X } from 'lucide-static'
 import type { Palette } from '../../types'
 import { useApp, useEnv } from '../context'
 import { savePrefs } from '../lib/prefs'
 import { css, useStyles } from '../styles/sheet'
 import { IconButton } from '../ui/Button'
+import { startTour } from '../tour/tour'
 import { SaveIndicator } from './SaveIndicator'
 
 const styles = css`
@@ -200,6 +201,7 @@ export function Header({ onDragStart, onDock }: HeaderProps) {
         </div>
       </div>
       <div class="b-header__actions">
+        <IconButton icon={CircleQuestionMark} label="Take the tour" data-tour="replay" onClick={() => startTour(ui)} />
         <span class="b-header__history">
           <IconButton icon={Undo2} label="Undo" disabled={!canUndo} onClick={() => store.undo()} />
           <IconButton icon={Redo2} label="Redo" disabled={!canRedo} onClick={() => store.redo()} />

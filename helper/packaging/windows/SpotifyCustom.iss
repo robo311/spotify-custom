@@ -55,6 +55,8 @@ Filename: "{app}\SpotifyCustom.exe"; Description: "Open Spotify Custom"; Flags: 
 
 [UninstallRun]
 Filename: "{sys}\taskkill.exe"; Parameters: "/F /IM SpotifyCustom.exe"; Flags: runhidden; RunOnceId: "StopHelper"
+; "Start with Spotify" points Spotify's own shortcuts at us: give them back to Spotify before the exe goes.
+Filename: "{app}\SpotifyCustom.exe"; Parameters: "--restore-shortcuts"; Flags: runhidden waituntilterminated; RunOnceId: "RestoreSpotifyShortcuts"
 
 [Registry]
 ; "Start at login" is written by the helper itself (internal/autostart); remove it with the app.

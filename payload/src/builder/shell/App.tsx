@@ -1,8 +1,11 @@
-// Root of the drawer layer: the drawer itself (mounted on first open) and pick mode.
+// Root of the drawer layer: the drawer itself (mounted on first open), pick mode, and the guided tour with its
+// first-run prompt.
 import { useState } from 'preact/hooks'
 import { useUi } from '../context'
 import { Drawer } from './Drawer'
 import { PickLayer } from '../pick/PickLayer'
+import { TourLayer } from '../tour/TourLayer'
+import { TourPrompt } from '../tour/TourPrompt'
 import { useShortcuts } from './use-shortcuts'
 
 export function App() {
@@ -17,6 +20,8 @@ export function App() {
     <>
       {picking && <PickLayer />}
       {everOpened && <Drawer open={open} />}
+      <TourLayer />
+      <TourPrompt />
     </>
   )
 }

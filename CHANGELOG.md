@@ -3,6 +3,33 @@
 All notable changes to Spotify Custom. Versions follow `X.Y.Z`; installed copies update themselves (see
 [docs/install-guide.md](docs/install-guide.md#updates)).
 
+## 0.2.2 — 2026-10-12
+
+### Added
+
+- **Guided tour of the theme studio.** The first time Spotify starts with Spotify Custom, a small card under the
+  studio button offers a short tour (**Show me** or **Not now**, asked once). The tour walks through presets,
+  pointing at a part of Spotify to restyle it, colours, Album Mode, album/playlist/artist pages, lyrics, the other
+  sections, sharing and, at the end, custom CSS in Advanced. Each step highlights the real control so it can be tried
+  on the spot. Replay it any time with the **?** button in the studio's header.
+- **Start with Spotify (Windows, on by default).** Spotify's own icons (Start menu, desktop, taskbar) open Spotify
+  Custom, which opens Spotify with your look, even after you quit Spotify Custom. Turn it off in the tray menu to give
+  the icons back to Spotify; uninstalling gives them back too.
+
+### Changed
+
+- **Start at login is switched on** once, on the first start of this version (new installs and updates alike);
+  after that it's your choice in the tray menu.
+- **Opening Spotify from its own icon no longer asks** whether to restart it: a Spotify that only just started is
+  restarted once with your look straight away. One that has been open for a while is still asked about first.
+- **New app icon**: five equaliser bars, each in a theme colour, on a dark tile, replacing the gauge knob. Used for
+  the app and its shortcuts, the Windows tray and the Mac menu bar.
+
+### Docs
+
+- Install guide: new **Starting with Spotify** section (start at login, opening Spotify from its own icon, Start with
+  Spotify on Windows); the tray menu list, troubleshooting table and uninstall steps cover the new option.
+
 ## 0.2.1 — 2026-10-12
 
 ### Added

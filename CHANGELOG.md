@@ -3,6 +3,14 @@
 All notable changes to Spotify Custom. Versions follow `X.Y.Z`; installed copies update themselves (see
 [docs/install-guide.md](docs/install-guide.md#updates)).
 
+## Unreleased
+
+### Fixed
+
+- **Theme studio at the top of the window.** With the panel (or one of its popovers) moved up over Spotify's top bar,
+  you can drag it and use its header buttons again. Before, the window's own drag strip took the mouse there and
+  dragged the whole Spotify window instead.
+
 ## 0.2.4 — 2026-10-13
 
 ### Added

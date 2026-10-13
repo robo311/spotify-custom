@@ -28,6 +28,9 @@ const styles = css`
       0 0 0 1px rgb(0 0 0 / 0.25),
       0 22px 60px rgb(0 0 0 / 0.5);
     pointer-events: auto;
+    /* Same as the drawer: opt out of Spotify's top window-drag strip. */
+    -webkit-app-region: no-drag;
+    app-region: no-drag;
     animation: b-pop-in var(--b-med) var(--b-ease);
     transform-origin: var(--ox) var(--oy);
     transition:

@@ -25,6 +25,9 @@ const styles = css`
       inset 0 0 0 1px var(--b-line),
       0 24px 64px rgb(0 0 0 / 0.5);
     pointer-events: auto;
+    /* Spotify's top strip is a window-drag region: without this the OS takes the mouse wherever the panel overlaps it. */
+    -webkit-app-region: no-drag;
+    app-region: no-drag;
     transform-origin: top right;
     transition:
       transform 280ms var(--b-ease),

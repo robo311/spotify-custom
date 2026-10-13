@@ -3,7 +3,8 @@
 import type { ArtworkStyle } from '../types'
 import type { ArtworkCss } from './css-values'
 import { folderCss } from './folder-css'
-import { folderIdFromUri, LIKED_SONGS_URI } from './keys'
+import { episodesCss } from './episodes-css'
+import { folderIdFromUri, LIKED_SONGS_URI, YOUR_EPISODES_URI } from './keys'
 import { likedCss } from './liked-css'
 
 export function compileArtworkCss(styles: Record<string, ArtworkStyle>, iconSvg: (id: string) => string | undefined): string {
@@ -13,6 +14,7 @@ export function compileArtworkCss(styles: Record<string, ArtworkStyle>, iconSvg:
     const varPrefix = `--sc-art-${index}`
     let css: ArtworkCss | null = null
     if (uri === LIKED_SONGS_URI) css = likedCss(varPrefix, style, iconSvg)
+    else if (uri === YOUR_EPISODES_URI) css = episodesCss(varPrefix, style, iconSvg)
     else {
       const folderId = folderIdFromUri(uri)
       if (folderId) css = folderCss(varPrefix, folderId, style, iconSvg)

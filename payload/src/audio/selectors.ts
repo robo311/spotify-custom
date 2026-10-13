@@ -12,3 +12,10 @@ export const PLAY_PAUSE = '[data-testid="control-button-playpause"]'
 /** Our own theme studio button host (builder/entry). */
 export const ENTRY = '#sc-entry'
 export const LYRICS_LINE = '[data-testid="lyrics-line"]'
+/**
+ * The lyrics view's scroll host: it paints the view's background and doesn't scroll (its viewport inside does). Found
+ * from a line under the element carrying the view's inline background variables, so the Now playing panel's lyrics
+ * preview never matches. Query it once at a time (closest()), never inside :has(): style attributes change every frame.
+ */
+export const LYRICS_VIEW_LINE = '[style*="--cinema-mode-bg-color-from"] [data-testid="lyrics-line"]'
+export const SCROLL_HOST = '[data-overlayscrollbars]'

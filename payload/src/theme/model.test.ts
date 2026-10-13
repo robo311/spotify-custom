@@ -206,6 +206,7 @@ describe('themes saved before lyrics and Now playing layout existed', () => {
       lyricsKeepLibrary: false,
       lyricsImmersive: false,
       lyricsNowPlaying: false,
+      lyricsNowPlayingVideo: true,
     })
     expect(t.lyrics).toEqual({ background: 'spotify', fontScale: 1, font: 'theme', align: 'left' })
     expect(validateTheme(t)).toEqual(t)
@@ -260,6 +261,12 @@ describe('folder styles', () => {
     }
   })
 
+  it('accepts Your Episodes (exact spotify:collection:your-episodes) and rejects look-alikes', () => {
+    const episodes = 'spotify:collection:your-episodes'
+    expect(styles({ [episodes]: { icon: 'star' } })).toEqual({ [episodes]: { icon: 'star' } })
+    for (const key of [`${episodes}-1`, 'spotify:collection:episodes', `${episodes} `]) expect(styles({ [key]: { icon: 'star' } })).toEqual({})
+  })
+
   it('migrates the old folderStyles key, preferring artworkStyles when both exist', () => {
     expect(normalizeSettings({ folderStyles: { [uri]: { icon: 'star' } } }, 'darcula').artworkStyles).toEqual({ [uri]: { icon: 'star' } })
     expect(normalizeSettings({ folderStyles: { [uri]: { icon: 'star' } }, artworkStyles: {} }, 'darcula').artworkStyles).toEqual({})
@@ -296,6 +303,12 @@ describe('lyrics page Now playing column', () => {
     expect(validateTheme({ ...darcula, layout: { compactPlayer: true } }).layout.lyricsNowPlaying).toBe(false)
     expect(validateTheme({ ...darcula, layout: { lyricsNowPlaying: true } }).layout.lyricsNowPlaying).toBe(true)
     expect(validateTheme({ ...darcula, layout: { lyricsNowPlaying: 'yes' } }).layout.lyricsNowPlaying).toBe(false)
+  })
+
+  it("plays the Canvas in the column unless a theme turns it off (old themes keep it on)", () => {
+    expect(validateTheme({ ...darcula, layout: {} }).layout.lyricsNowPlayingVideo).toBe(true)
+    expect(validateTheme({ ...darcula, layout: { lyricsNowPlayingVideo: false } }).layout.lyricsNowPlayingVideo).toBe(false)
+    expect(validateTheme({ ...darcula, layout: { lyricsNowPlayingVideo: 'no' } }).layout.lyricsNowPlayingVideo).toBe(true)
   })
 
   it('keeps a valid top bar search position, else centre', () => {

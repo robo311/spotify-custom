@@ -75,6 +75,7 @@ export function defaultLayout(): LayoutConfig {
     lyricsKeepLibrary: false,
     lyricsImmersive: false,
     lyricsNowPlaying: false,
+    lyricsNowPlayingVideo: true,
   }
 }
 
@@ -256,6 +257,7 @@ function validateLayout(input: unknown): LayoutConfig {
     lyricsKeepLibrary: raw.lyricsKeepLibrary === true,
     lyricsImmersive: raw.lyricsImmersive === true,
     lyricsNowPlaying: raw.lyricsNowPlaying === true,
+    lyricsNowPlayingVideo: raw.lyricsNowPlayingVideo !== false,
   }
 }
 
@@ -492,10 +494,11 @@ function isPaint(v: unknown): v is string {
 }
 
 /**
- * Library items that can carry custom artwork: folders, and Liked Songs under the URI Spotify itself uses for it
- * (`spotify:collection:tracks`; its sidebar row has a per-user playlist URI instead, so library/ keys it by cover).
+ * Library items that can carry custom artwork: folders, Liked Songs under the URI Spotify itself uses for it
+ * (`spotify:collection:tracks`; its sidebar row has a per-user playlist URI instead, so library/ keys it by cover),
+ * and Your Episodes (`spotify:collection:your-episodes`).
  */
-const ARTWORK_URI = /^(?:spotify:user:[^:\s]+:folder:[A-Za-z0-9]+|spotify:collection:tracks)$/
+const ARTWORK_URI = /^(?:spotify:user:[^:\s]+:folder:[A-Za-z0-9]+|spotify:collection:tracks|spotify:collection:your-episodes)$/
 const FOLDER_IMAGE = /^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/]+=*$/
 /** Folder art is downscaled to ≤ 256 px before saving; anything bigger is not ours and would bloat settings.json. */
 export const FOLDER_IMAGE_MAX_CHARS = 200 * 1024

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { defaultNowPlaying } from '../theme/model'
 import type { LayoutConfig, LyricsStyle } from '../types'
-import { compileLyrics, compileLyricsIdle, compileLyricsLayout, compileLyricsMotion } from './lyrics'
+import { LYRICS_INTRO_ATTR, LYRICS_INTRO_MS, compileLyrics, compileLyricsIdle, compileLyricsLayout, compileLyricsMotion } from './lyrics'
 
 const SPOTIFY: LyricsStyle = { background: 'spotify', fontScale: 1, font: 'theme', align: 'left' }
 const LAYOUT: LayoutConfig = {
@@ -13,6 +13,7 @@ const LAYOUT: LayoutConfig = {
   lyricsKeepLibrary: false,
   lyricsImmersive: false,
   lyricsNowPlaying: false,
+  lyricsNowPlayingVideo: true,
 }
 
 describe('compileLyrics', () => {
@@ -300,6 +301,20 @@ describe('lyrics view motion', () => {
     expect(css).toContain('animation-fill-mode: backwards')
   })
 
+  // Spotify remounts the outgoing and incoming lines on every line change: a cascade tied to the open view alone
+  // replays on those new nodes and hides them for up to a second and a half.
+  it('cascades the lines only during the opening (the intro mark), never on later line remounts', () => {
+    const lines = compileLyricsMotion(theme({}, { background: 'theme' }))
+      .split('\n')
+      .filter(l => l.includes('sc-lyric-in') && l.includes('nth-child'))
+    expect(lines).toHaveLength(14)
+    for (const line of lines) expect(line).toContain(`[${LYRICS_INTRO_ATTR}] `)
+  })
+
+  it('keeps the intro mark long enough for the last line to finish rising', () => {
+    expect(LYRICS_INTRO_MS).toBe(160 + 13 * 45 + 640)
+  })
+
   it('slides our Now playing column in and out as its own transition layer', () => {
     const css = compileLyricsMotion(theme({ lyricsNowPlaying: true }))
     expect(css).toContain('view-transition-name: sc-lyrics-npv')
@@ -312,7 +327,7 @@ describe('lyrics view motion', () => {
   it("fades the Now playing panel's content in with the cover when the lyrics view closes", () => {
     const css = compileLyricsMotion(theme({}, { background: 'theme' }))
     expect(css).toContain(
-      '[data-cinema-npv-duringexit], [data-cinema-library-npv-duringexit]) [data-overlayscrollbars-viewport]:has([data-testid="NPV_Panel_OpenDiv"]) { view-transition-name: sc-npv-content; }',
+      '[data-cinema-npv-duringexit], [data-cinema-library-npv-duringexit]) :is([data-overlayscrollbars-viewport]:has([data-testid="NPV_Panel_OpenDiv"]), [data-npv-root] [data-overlayscrollbars-viewport]) { view-transition-name: sc-npv-content; }',
     )
   })
 })

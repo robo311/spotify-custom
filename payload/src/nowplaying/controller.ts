@@ -6,17 +6,19 @@ import { h, render } from 'preact'
 import type { PlaybackState, PlaybackTrack } from '../types'
 import { LYRICS_COLUMN_SLOT as SLOT } from '../parts'
 import { spotify } from '../spotify'
+import type { CanvasLoader } from './CanvasVideo'
 import { Column } from './Column'
 import { APP_ROOT, QUEUE_BUTTON } from './selectors'
 
 export interface LyricsColumnController {
-  /** Re-check after the layout changed (option turned on or off). */
+  /** Re-check after the layout changed (column or its video turned on or off). */
   refresh(): void
   dispose(): void
 }
 
 export interface PlaybackSource {
   onPlayback(fn: (s: PlaybackState | null) => void): () => void
+  loadCanvas: CanvasLoader
 }
 
 interface Mounted {
@@ -33,18 +35,25 @@ function open(uri: string) {
   if (path) spotify.navigate(path)
 }
 
-export function startLyricsColumn(enabled: () => boolean, source: PlaybackSource = spotify): LyricsColumnController {
+export function startLyricsColumn(enabled: () => boolean, showVideo: () => boolean, source: PlaybackSource = spotify): LyricsColumnController {
   let mounted: Mounted | null = null
+  let last: PlaybackState | null = null
   const html = document.documentElement
 
   const show = (m: Mounted, state: PlaybackState | null) => {
+    last = state
     if (!hasTrack(state)) {
       render(null, m.body)
       html.removeAttribute(SLOT.readyAttr)
       return
     }
     render(
-      h(Column, { state, onOpen: open, onQueue: () => document.querySelector<HTMLElement>(QUEUE_BUTTON)?.click() }),
+      h(Column, {
+        state,
+        onOpen: open,
+        onQueue: () => document.querySelector<HTMLElement>(QUEUE_BUTTON)?.click(),
+        loadCanvas: showVideo() ? source.loadCanvas : null,
+      }),
       m.body,
     )
     html.setAttribute(SLOT.readyAttr, '')
@@ -94,6 +103,7 @@ export function startLyricsColumn(enabled: () => boolean, source: PlaybackSource
   const refresh = () => {
     if (enabled() && !mounted) mount()
     else if (!enabled() && mounted) unmount()
+    else if (mounted) show(mounted, last) // the video option may have changed
   }
   refresh()
 

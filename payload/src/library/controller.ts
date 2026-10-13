@@ -1,4 +1,4 @@
-// Keeps library artwork applied and reports the customisable items (folders, Liked Songs) the library shows.
+// Keeps library artwork applied and reports the customisable items (folders, Liked Songs, Your Episodes) the library shows.
 // The sidebar list is virtualised, so each scan sees only rendered rows; items seen earlier are remembered.
 import type { ArtworkStyle, LibraryItemInfo } from '../types'
 import { compileArtworkCss } from './css'

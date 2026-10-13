@@ -132,6 +132,7 @@ func run() int {
 		OnChange:  updates.set,
 		Log:       log,
 	}
+	status.onActive = updater.CheckSoon // a freshly opened Spotify shows a new version right away
 	handler := &bridge.Handler{Store: st, Audio: music, Updates: updater, Version: version, Platform: runtime.GOOS}
 	injector.Handler = handler
 	loop := app.New(

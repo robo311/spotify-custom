@@ -1,4 +1,4 @@
-// Library artwork: give Liked Songs and your folders their own picture or icon (Spotify can't).
+// Library artwork: give Liked Songs, Your Episodes and your folders their own picture or icon (Spotify can't).
 // Personal settings, not part of themes, so they never travel in share codes.
 import { useEffect, useRef, useState } from 'preact/hooks'
 import { FolderPlus, Paintbrush } from 'lucide-static'
@@ -25,7 +25,8 @@ export function LibraryTab() {
   const [openUri, setOpenUri] = useState<string | null>(requested)
   const rootRef = useRef<HTMLDivElement>(null)
   const liked = items.filter(i => i.kind === 'liked')
-  const folders = items.filter(i => i.kind !== 'liked')
+  const episodes = items.filter(i => i.kind === 'episodes')
+  const folders = items.filter(i => i.kind === 'folder')
 
   // An item picked in pick mode opens here: expand it, bring it into view, then consume the request.
   useEffect(() => {
@@ -55,9 +56,10 @@ export function LibraryTab() {
           )
         }
       >
-        <span class="b-hint">Give Liked Songs and your folders their own picture or icon. These looks are just for you, so they aren’t included when you share a theme.</span>
+        <span class="b-hint">Give Liked Songs, Your Episodes and your folders their own picture or icon. These looks are just for you, so they aren’t included when you share a theme.</span>
       </Section>
       {liked.length > 0 && <Section title="Liked Songs">{rows(liked)}</Section>}
+      {episodes.length > 0 && <Section title="Your Episodes">{rows(episodes)}</Section>}
       <Section title="Folders">
         {folders.length ? rows(folders) : <EmptyState icon={FolderPlus}>Folders you create in your Spotify library show up here.</EmptyState>}
       </Section>

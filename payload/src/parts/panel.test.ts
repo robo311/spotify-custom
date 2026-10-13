@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import type { PanelSectionInfo } from '../types'
-import { compilePanelLayout, markPanelSections, PANEL_KEY_ATTR, watchPanelSections } from './panel'
-import { mountNowPlaying } from './fixtures/now-playing'
+import { compilePanelLayout, markPanelSections, PANEL_GROUP_ATTR, PANEL_HEAD_ATTR, PANEL_KEY_ATTR, watchPanelSections } from './panel'
+import { mountNowPlaying, mountNowPlaying134 } from './fixtures/now-playing'
 import { defaultNowPlaying } from '../theme/model'
 
 afterEach(() => {
@@ -73,7 +73,7 @@ describe('compilePanelLayout', () => {
     const container = mountNowPlaying()
     markPanelSections()
     const css = compilePanelLayout({ ...none, order: ['queue', 'track'], hidden: ['merch'] })
-    expect(css).toContain('[data-testid="NPV_Panel_OpenDiv"] > * { order: 3 !important; }')
+    expect(css).toContain('[data-testid="NPV_Panel_OpenDiv"] > *')
 
     const style = document.createElement('style')
     style.textContent = css
@@ -112,8 +112,77 @@ describe('compilePanelLayout', () => {
     expect(rule(css, 'zoom')).toContain('[data-testid="context-item-info-title"]')
     expect(css).toContain('zoom: 1.3 !important;')
     expect(rule(css, 'button:not([data-encore-id])')).toContain('display: none')
-    expect(rule(css, 'button[aria-checked]')).toContain('display: none')
+    expect(rule(css, ':has([data-testid="track-visual-enhancement"]) button[aria-checked]')).toContain('display: none')
     expect(rule(css, 'gap: 24px')).toContain('[data-testid="NPV_Panel_OpenDiv"]')
     for (const r of rules(css)) expect(r).not.toMatch(/:has\([^)]*:has\(/)
+  })
+})
+
+/** Declarations of every rule in css whose selector matches el (enough of a cascade for these checks). */
+function declsFor(css: string, el: Element): string {
+  return css
+    .split('}')
+    .filter(r => r.includes('{'))
+    .map(r => r.split('{'))
+    .filter(([sel = '']) => sel.trim() !== '' && el.matches(sel.trim()))
+    .map(([, body = '']) => body)
+    .join(' ')
+}
+
+describe('Spotify 1.3.4 panel', () => {
+  const none = defaultNowPlaying()
+  const byId = (id: string) => document.getElementById(id) ?? document.body
+
+  it('keys the cards and the queue by what they contain, in DOM order, and finds the head rows above them', () => {
+    mountNowPlaying134()
+    expect(markPanelSections().map(s => s.key)).toEqual(['lyrics', 'videos', 'artist', 'credits', 'tour', 'queue'])
+    expect(byId('switch-row').hasAttribute(PANEL_HEAD_ATTR)).toBe(true)
+    expect(byId('title-row').hasAttribute(PANEL_HEAD_ATTR)).toBe(true)
+    expect(byId('cards').hasAttribute(PANEL_GROUP_ATTR)).toBe(true)
+    expect(byId('queue-wrap').getAttribute(PANEL_KEY_ATTR)).toBe('queue')
+    expect(byId('unknown-134').hasAttribute(PANEL_KEY_ATTR)).toBe(false)
+  })
+
+  it('orders cards and queue together (the cards column flattened), keeping the head rows on top', () => {
+    mountNowPlaying134()
+    markPanelSections()
+    const css = compilePanelLayout({ ...none, order: ['queue', 'lyrics'], hidden: ['tour'] })
+    const keyed = (key: string) => document.querySelector(`[${PANEL_KEY_ATTR}="${key}"]`) ?? document.body
+    const style = document.createElement('style')
+    style.textContent = css
+    document.head.append(style)
+    // Computed, so the cascade (specificity between the "everything else" and the per-key rules) is part of the check.
+    const computed = (el: Element) => getComputedStyle(el)
+    expect(computed(byId('cards')).display).toBe('contents')
+    expect(computed(keyed('queue')).order).toBe('1')
+    expect(computed(keyed('lyrics')).order).toBe('2')
+    expect(computed(byId('unknown-134')).order).toBe('3')
+    expect(['', '0']).toContain(computed(byId('title-row')).order) // untouched (happy-dom reports the initial 0 as '')
+    expect(computed(keyed('tour')).display).toBe('none')
+    style.remove()
+  })
+
+  it('applies the song header settings to the rebuilt header', () => {
+    mountNowPlaying134()
+    markPanelSections()
+    const css = compilePanelLayout({ ...none, coverHeight: 'short', coverShade: 'none', titleScale: 1.3, hideVideoSwitch: true, hideLikeButton: true, cardGap: 24 })
+    expect(declsFor(css, byId('cover'))).toContain('aspect-ratio: 4 / 3')
+    expect(declsFor(css, document.querySelector('#cover [data-canvas-surface]') ?? document.body)).toContain('height: calc(100% + 254px)')
+    expect(declsFor(css, byId('shade'))).toContain('opacity: 0')
+    expect(declsFor(css, byId('title'))).toContain('zoom: 1.3')
+    expect(declsFor(css, byId('video-switch'))).toContain('display: none')
+    expect(declsFor(css, byId('like'))).toContain('display: none')
+    expect(declsFor(css, byId('hide-switch'))).not.toContain('display: none')
+    expect(declsFor(css, byId('cards'))).toContain('gap: 24px')
+    expect(declsFor(css, byId('details'))).toContain('gap: 24px')
+    expect(declsFor(compilePanelLayout({ ...none, coverShade: 'strong' }), document.querySelector('#cover video') ?? document.body)).toContain('brightness(0.7)')
+  })
+
+  it('drops the cover slot in compact mode and keeps the title clear of the floating header', () => {
+    mountNowPlaying134()
+    markPanelSections()
+    const css = compilePanelLayout({ ...none, compactCover: true })
+    expect(declsFor(css, byId('cover'))).toContain('display: none')
+    expect(declsFor(css, byId('details'))).toContain('padding-top')
   })
 })

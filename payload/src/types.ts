@@ -67,6 +67,8 @@ export interface LayoutConfig {
    * Now playing panel while lyrics are open, so this is drawn by us. Yields to Spotify's Queue/Friends panel when open.
    */
   lyricsNowPlaying: boolean
+  /** In that column, play the song's Canvas video over the cover when it has one (paused with the song). */
+  lyricsNowPlayingVideo: boolean
 }
 
 /** Where the lyrics background comes from. Applies to the lyrics page and the lyrics preview card in the Now playing panel. */
@@ -191,7 +193,7 @@ export interface HomeConfig {
 }
 
 /**
- * Custom artwork for a library item Spotify doesn't let you customise: folders and Liked Songs.
+ * Custom artwork for a library item Spotify doesn't let you customise: folders, Liked Songs and Your Episodes.
  * Personal: lives in Settings (keyed by item URI), not in the Theme, so share codes never carry it.
  */
 export interface ArtworkStyle {
@@ -203,9 +205,9 @@ export interface ArtworkStyle {
 
 /** A customisable item currently listed in the library sidebar. */
 export interface LibraryItemInfo {
-  kind: 'folder' | 'liked'
-  uri: string // folder: spotify:user:<id>:folder:<id> · liked: spotify:collection:tracks (LIKED_SONGS_URI) — stable, language-independent
-  name: string // display name (user-chosen folder name, or Spotify's localised "Liked Songs")
+  kind: 'folder' | 'liked' | 'episodes'
+  uri: string // folder: spotify:user:<id>:folder:<id> · liked: spotify:collection:tracks (LIKED_SONGS_URI) · episodes: spotify:collection:your-episodes (YOUR_EPISODES_URI) — stable, language-independent
+  name: string // display name (user-chosen folder name, or Spotify's localised "Liked Songs" / "Your Episodes")
 }
 
 export interface Settings {
@@ -350,11 +352,13 @@ export interface PlaybackTrack {
   album: { name: string; uri: string }
   image: string | null // https URL of the largest cover
   thumb: string | null // https URL of the smallest cover
+  canvasId: string | null // file id of the track's looping Canvas video, if it has one (spotify/canvas.ts loads it)
 }
 
 export interface PlaybackState {
   track: PlaybackTrack | null
   next: PlaybackTrack[] // up next: queued tracks first, then the context / autoplay
+  paused: boolean // true while paused, or with nothing loaded
 }
 
 // ---------- App state exposed to the builder (owned by src/core/store) ----------

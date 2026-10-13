@@ -32,6 +32,9 @@ export const COLUMN_CSS = /* css */ `
 .hero { position: relative; flex: none; aspect-ratio: 5 / 6; max-height: 72%; overflow: hidden; isolation: isolate; }
 .hero-img { -webkit-mask-image: linear-gradient(to bottom, #000 86%, transparent); mask-image: linear-gradient(to bottom, #000 86%, transparent); }
 .hero-img { position: absolute; inset: 0; z-index: -2; display: block; width: 100%; height: 100%; object-fit: cover; animation: npv-cover 700ms var(--ease) both; }
+.hero-video { position: absolute; inset: 0; z-index: -2; display: block; width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity 600ms var(--ease); }
+.hero-video { -webkit-mask-image: linear-gradient(to bottom, #000 86%, transparent); mask-image: linear-gradient(to bottom, #000 86%, transparent); }
+.hero-video.ready { opacity: 1; }
 .hero-img.empty { display: grid; place-items: center; color: var(--sub); background: color-mix(in oklab, var(--text) 6%, var(--bg)); }
 .hero-shade {
   position: absolute; inset: 0; z-index: -1; pointer-events: none;

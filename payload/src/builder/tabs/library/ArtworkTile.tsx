@@ -1,6 +1,7 @@
 // A library item's tile exactly as it will look in the library: a picture, or an icon on a background, or (with
-// nothing set) Spotify's own look for that kind of item: a plain folder, or the Liked Songs gradient and heart.
-import { Folder, Heart } from 'lucide-static'
+// nothing set) Spotify's own look for that kind of item: a plain folder, the Liked Songs gradient and heart, or Your
+// Episodes' green and bookmark.
+import { Bookmark, Folder, Heart } from 'lucide-static'
 import type { ArtworkStyle, LibraryItemInfo } from '../../../types'
 import { ARTWORK_ICONS } from '../../../library'
 import { useApp } from '../../context'
@@ -22,13 +23,16 @@ const styles = css`
     box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.06);
     overflow: hidden;
   }
-  .b-atile[data-default-liked='true'] svg {
+  .b-atile[data-default-glyph='true'] svg {
     fill: currentColor;
   }
 `
 
-/** Spotify's own Liked Songs artwork: violet-to-mint gradient with a white heart. */
-const LIKED_GRADIENT = 'linear-gradient(135deg, #450af5, #8e8ee5 60%, #c4efd9)'
+/** Spotify's own artwork for its collections: Liked Songs (violet-to-mint gradient, white heart), Your Episodes (green, bookmark). */
+const SPOTIFY_LOOK: Partial<Record<LibraryItemInfo['kind'], { background: string; glyph: string }>> = {
+  liked: { background: 'linear-gradient(135deg, #450af5, #8e8ee5 60%, #c4efd9)', glyph: Heart },
+  episodes: { background: '#056952', glyph: Bookmark },
+}
 
 interface ArtworkTileProps {
   kind: LibraryItemInfo['kind']
@@ -40,16 +44,16 @@ export function ArtworkTile({ kind, style, size = 40 }: ArtworkTileProps) {
   useStyles(styles)
   const palette = useApp(s => s.active.palette)
   const icon = style.icon ? ARTWORK_ICONS.find(i => i.id === style.icon) : undefined
-  const liked = kind === 'liked'
+  const spotify = SPOTIFY_LOOK[kind]
   const defaultLook = !style.image && !icon && !style.background && !style.color
 
-  const background = style.image ? `url("${style.image}")` : (style.background ?? (liked ? LIKED_GRADIENT : palette.elevated))
-  const color = style.color ?? (liked ? '#ffffff' : icon ? palette.text : palette.textSubdued)
-  const glyph = icon?.svg ?? (liked ? Heart : Folder)
+  const background = style.image ? `url("${style.image}")` : (style.background ?? spotify?.background ?? palette.elevated)
+  const color = style.color ?? (spotify ? '#ffffff' : icon ? palette.text : palette.textSubdued)
+  const glyph = icon?.svg ?? spotify?.glyph ?? Folder
 
   return (
-    <span class="b-atile" aria-hidden="true" data-default-liked={liked && !icon} style={{ '--s': `${size}px`, '--bg': background, '--fg': color }}>
-      {!style.image && <Icon svg={glyph} size={Math.round(size * (liked && defaultLook ? 0.42 : 0.48))} />}
+    <span class="b-atile" aria-hidden="true" data-default-glyph={spotify !== undefined && !icon} style={{ '--s': `${size}px`, '--bg': background, '--fg': color }}>
+      {!style.image && <Icon svg={glyph} size={Math.round(size * (spotify && defaultLook ? 0.42 : 0.48))} />}
     </span>
   )
 }

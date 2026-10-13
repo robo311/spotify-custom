@@ -15,15 +15,19 @@ interface Backdrop {
   fade: Declarations
 }
 
-/** A wash of one colour: strong at the top of the header, fading into the page under it. */
+/**
+ * A wash of one colour: strong at the top of the header, fading into the page under it. The fade's box carries
+ * Spotify's cover colour inline as its background colour (its own gradient image fades that out), so a fade replacing
+ * the image clears that colour too: left alone it shows as a solid band ending in a hard edge.
+ */
 const wash = (color: string): Backdrop => ({
   header: { background: `linear-gradient(color-mix(in oklab, ${color} 62%, var(--sc-background)), color-mix(in oklab, ${color} 28%, var(--sc-background)))` },
-  fade: { 'background-image': `linear-gradient(color-mix(in oklab, ${color} 26%, transparent), transparent)` },
+  fade: { 'background-color': 'transparent', 'background-image': `linear-gradient(color-mix(in oklab, ${color} 26%, transparent), transparent)` },
 })
 
 const THEME_BACKDROP: Backdrop = {
   header: { background: 'linear-gradient(var(--sc-elevated), var(--sc-background))' },
-  fade: { 'background-image': 'linear-gradient(color-mix(in oklab, var(--sc-elevated) 55%, transparent), transparent)' },
+  fade: { 'background-color': 'transparent', 'background-image': 'linear-gradient(color-mix(in oklab, var(--sc-elevated) 55%, transparent), transparent)' },
 }
 
 function backdropOf(s: PageStyle): Backdrop | null {
@@ -50,10 +54,12 @@ const COVER_BLUR: CssRule[] = [
       background: `var(${PAGE_COVER_URL_VAR}, none) center / cover no-repeat, var(--sc-background)`,
       filter: 'blur(48px) saturate(1.35) brightness(0.55)',
       transform: 'scale(1.25)',
-      'mask-image': 'linear-gradient(#000 55%, transparent)',
+      // Scaled 1.25 around its centre, the layer's lower tenth hangs below the header's clip: the fade has to end
+      // before that line (~90% of the layer) or the clip cuts it into a hard edge.
+      'mask-image': 'linear-gradient(#000 45%, transparent 86%)',
     },
   },
-  { selector: S.ACTION_BACKDROP, decls: { 'background-image': 'none' } },
+  { selector: S.ACTION_BACKDROP, decls: { background: 'none' } },
 ]
 
 

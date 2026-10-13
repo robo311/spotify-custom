@@ -1,4 +1,4 @@
-// Everything about one library item's look (a folder, or Liked Songs): picture, or icon + icon colour + tile
+// Everything about one library item's look (a folder, Liked Songs or Your Episodes): picture, or icon + icon colour + tile
 // background; a before/after comparison once changed; and Reset.
 import { useState } from 'preact/hooks'
 import { ArrowRight } from 'lucide-static'
@@ -46,7 +46,10 @@ const styles = css`
 `
 
 /** Auto colours match what Spotify shows when nothing is set for this kind of item. */
-const LIKED_AUTO = { color: '#ffffff', background: '#450af5' }
+const SPOTIFY_AUTO: Partial<Record<LibraryItemInfo['kind'], { color: string; background: string }>> = {
+  liked: { color: '#ffffff', background: '#450af5' },
+  episodes: { color: '#ffffff', background: '#056952' },
+}
 
 export function ArtworkEditor({ item }: { item: LibraryItemInfo }) {
   useStyles(styles)
@@ -58,7 +61,7 @@ export function ArtworkEditor({ item }: { item: LibraryItemInfo }) {
   const [colorOpen, setColorOpen] = useState(false)
   const patch = (p: Partial<Record<keyof ArtworkStyle, string | undefined>>) => store.editSettings(patchArtworkStyle(uri, p))
   const hasImage = style.image !== undefined
-  const auto = kind === 'liked' ? LIKED_AUTO : { color: palette.text, background: palette.elevated }
+  const auto = SPOTIFY_AUTO[kind] ?? { color: palette.text, background: palette.elevated }
 
   return (
     <div class="b-fedit">

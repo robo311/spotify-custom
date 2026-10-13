@@ -2,7 +2,7 @@ import { compileArtworkCss } from './css'
 import { cssString, isDataImage, safeColor, safePaint } from './css-values'
 import { ARTWORK_ICONS, artworkIconSvg, normaliseIcon } from './icons'
 import { centerSquare, encodeWithinBudget, type Encode } from './image'
-import { folderIdFromUri, folderUriFromLabelledBy, libraryItemAt, LIKED_SONGS_URI, readLibraryItem } from './keys'
+import { folderIdFromUri, folderUriFromLabelledBy, libraryItemAt, LIKED_SONGS_URI, readLibraryItem, YOUR_EPISODES_URI } from './keys'
 import { startLibrary } from './controller'
 
 const URI = 'spotify:user:user1:folder:8f32592f2ae19c87'
@@ -24,6 +24,12 @@ const LIKED_ROW = `
   <div data-encore-id="listRow" role="group" aria-labelledby="listrow-title-spotify:playlist:likedPerUser1">
     <div><div><img data-testid="entity-image" src="https://misc.scdn.co/liked-songs/liked-songs-300.png" alt=""></div></div>
     <p id="listrow-title-spotify:playlist:likedPerUser1"><span class="pick-target">Liked Songs</span></p>
+  </div>`
+// Your Episodes: Spotify draws its cover as a green box (test id) holding a bookmark glyph.
+const EPISODES_ROW = `
+  <div data-encore-id="listRow" role="group" aria-labelledby="listrow-title-spotify:collection:your-episodes">
+    <div><div data-testid="your-episodes-cover"><div><svg data-encore-id="icon" viewBox="0 0 24 24"></svg></div></div></div>
+    <p id="listrow-title-spotify:collection:your-episodes">Your Episodes</p>
   </div>`
 const PLAYLIST_ROW = `
   <div data-encore-id="listRow" role="group" aria-labelledby="listrow-title-spotify:playlist:other">
@@ -54,6 +60,12 @@ describe('keys', () => {
     const [liked, other] = document.querySelectorAll('[data-encore-id="listRow"]')
     expect(readLibraryItem(liked)).toEqual({ kind: 'liked', uri: LIKED_SONGS_URI, name: 'Liked Songs' })
     expect(readLibraryItem(other)).toBeNull()
+  })
+
+  it('recognises Your Episodes by its cover and keys it with a constant URI', () => {
+    document.body.innerHTML = EPISODES_ROW
+    const row = document.querySelector('[data-encore-id="listRow"]')
+    expect(row && readLibraryItem(row)).toEqual({ kind: 'episodes', uri: YOUR_EPISODES_URI, name: 'Your Episodes' })
   })
 
   it('libraryItemAt resolves any element inside a row (pick mode)', () => {
@@ -97,6 +109,33 @@ describe('Liked Songs artwork', () => {
   it('combines folders and Liked Songs with position-based variable names', () => {
     const css = compileArtworkCss({ [URI]: { image: PNG }, [LIKED_SONGS_URI]: { image: PNG } }, artworkIconSvg)
     expect(css.split('\n')[0]).toBe(`:root { --sc-art-0-image: url("${PNG}"); --sc-art-1-image: url("${PNG}"); }`)
+  })
+})
+
+describe('Your Episodes artwork', () => {
+  const COVER = '[data-testid="your-episodes-cover"]'
+  const rule = (css: string, start: string) => css.split('\n').find(l => l.startsWith(start)) ?? ''
+
+  it('paints a picture over the cover box and hides the bookmark', () => {
+    const css = compileArtworkCss({ [YOUR_EPISODES_URI]: { image: PNG } }, artworkIconSvg)
+    expect(css).toContain(`:root { --sc-art-0-image: url("${PNG}"); }`)
+    expect(rule(css, `${COVER} {`)).toContain('background: center / cover no-repeat var(--sc-art-0-image) !important;')
+    expect(rule(css, `${COVER} > *`)).toContain('visibility: hidden !important;')
+  })
+
+  it('draws a chosen icon in its colour over the background, hiding the bookmark', () => {
+    const css = compileArtworkCss({ [YOUR_EPISODES_URI]: { icon: 'moon', color: '#ffd166', background: '#123456' } }, artworkIconSvg)
+    expect(css).toContain('stroke%3D%22%23ffd166%22')
+    expect(rule(css, `${COVER} {`)).toContain('background: center / 50% no-repeat var(--sc-art-0-icon), #123456 !important;')
+    expect(rule(css, `${COVER} > *`)).toContain('visibility: hidden !important;')
+  })
+
+  it("keeps Spotify's bookmark for colour-only styles: recoloured, on the chosen background", () => {
+    const css = compileArtworkCss({ [YOUR_EPISODES_URI]: { color: '#ffd166', background: '#123456' } }, artworkIconSvg)
+    expect(rule(css, `${COVER} {`)).toContain('background: #123456 !important;')
+    expect(rule(css, `${COVER} svg`)).toContain('fill: #ffd166 !important;')
+    expect(css).not.toContain('visibility')
+    expect(compileArtworkCss({ [YOUR_EPISODES_URI]: {} }, artworkIconSvg)).toBe('')
   })
 })
 

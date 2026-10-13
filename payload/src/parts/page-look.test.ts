@@ -31,6 +31,13 @@ describe('compilePageLook', () => {
     expect(look({ backdrop: 'none' })).toContain('background: none !important;')
   })
 
+  it("clears Spotify's inline cover colour under the header, so the fade never ends in a solid band", () => {
+    for (const backdrop of ['cover-blur', 'accent', 'custom', 'theme'] as const) {
+      const fade = rules(look({ backdrop })).filter(r => r.includes('[data-testid="entity-header"] + div {')).join('}')
+      expect(fade, backdrop).toMatch(/background(-color)?: (none|transparent) !important/)
+    }
+  })
+
   it('blurs the page’s own cover behind the header', () => {
     const css = look({ backdrop: 'cover-blur' })
     expect(rule(css, 'filter')).toContain('[data-testid="entity-header"] > :not(:last-child)')
@@ -40,14 +47,14 @@ describe('compilePageLook', () => {
   it('sizes the header and cover, rounds and lights the cover, and scales the title', () => {
     const css = look({ headerHeight: 'tall', coverSize: 300, coverRadius: 16, coverShadow: 'glow', titleScale: 0.8 })
     expect(rule(css, 'min-height: 420px')).toContain('[data-testid="entity-header"]')
-    expect(rule(css, 'width: 300px')).toContain(':has(img):not(:last-child)')
+    expect(rule(css, 'width: 300px')).toContain(':has(img, [data-testid="your-episodes-cover"]):not(:last-child)')
     expect(css).toContain('border-radius: 16px !important;')
     expect(rule(css, 'box-shadow')).toContain('var(--sc-page-cover-color')
     expect(rule(css, 'zoom')).toContain('[data-testid="entityTitle"] h1')
   })
 
   it('sizes the cover to any pixel size', () => {
-    expect(rule(look({ coverSize: 264 }), 'width: 264px')).toContain(':has(img):not(:last-child)')
+    expect(rule(look({ coverSize: 264 }), 'width: 264px')).toContain(':has(img, [data-testid="your-episodes-cover"]):not(:last-child)')
     expect(look({ coverSize: null })).toBe(look())
   })
 
@@ -55,7 +62,7 @@ describe('compilePageLook', () => {
     const css = look({ headerLayout: 'centred' })
     expect(rule(css, 'flex-direction: column')).toContain('[data-testid="entity-header"] > :last-child')
     expect(css).toContain('text-align: center !important;')
-    expect(rule(css, 'align-self: center')).toContain(':has(img):not(:last-child)')
+    expect(rule(css, 'align-self: center')).toContain(':has(img, [data-testid="your-episodes-cover"]):not(:last-child)')
     expect(rule(css, 'width: 100%')).toContain('> :last-child > :last-child')
   })
 
@@ -105,6 +112,13 @@ describe('compilePageLook', () => {
     const r = rule(look({ rows: 'outlined' }), 'tracklist-row')
     expect(r).toContain('border-block: 3px solid transparent')
     expect(r).toContain('outline: 1px solid')
+  })
+
+  it('widens the number column for cards and outlines, so 100+ and 1000+ stay inside the drawn edge', () => {
+    for (const rows of ['cards', 'outlined'] as const) {
+      expect(rule(look({ rows }), '--index-column-width'), rows).toContain('--index-column-width: 4ch !important')
+    }
+    for (const rows of ['spotify', 'lines', 'striped', 'glow'] as const) expect(look({ rows }), rows).not.toContain('--index-column-width')
   })
 
   it('lights the hovered row with an accent bar and wash', () => {

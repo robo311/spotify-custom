@@ -197,6 +197,16 @@ export function compileLyricsIdle(theme: Pick<Theme, 'lyrics' | 'layout'>): stri
 // the morph ends. Giving the panel's visible content a layer too makes it fade in together with the cover.
 const EASE = 'cubic-bezier(.2, .8, .2, 1)'
 const CASCADE_LINES = 14
+const CASCADE_START_MS = 160
+const CASCADE_STEP_MS = 45
+const LINE_RISE_MS = 640
+/**
+ * On <html> from the moment the view starts opening until the last cascading line has risen (set by lyrics-intro.ts).
+ * Spotify remounts the outgoing and incoming lines on every line change, so a cascade tied to the open view alone
+ * replays on those fresh nodes and hides them again.
+ */
+export const LYRICS_INTRO_ATTR = 'data-sc-lyrics-intro'
+export const LYRICS_INTRO_MS = CASCADE_START_MS + (CASCADE_LINES - 1) * CASCADE_STEP_MS + LINE_RISE_MS
 const COLUMN_LAYER = 'sc-lyrics-npv'
 const PANEL_CONTENT_LAYER = 'sc-npv-content'
 
@@ -204,7 +214,7 @@ export function compileLyricsMotion(theme: Pick<Theme, 'lyrics' | 'layout'>): st
   if (!customisesLyricsView(theme)) return ''
   const vt = 'html[data-transition^="cinema"]'
   const lines = Array.from({ length: CASCADE_LINES }, (_, i) =>
-    `  ${S.LYRICS_VIEW_OPEN} ${VIEW_LINES}:nth-child(${i + 1}) { animation: sc-lyric-in 640ms ${EASE}; animation-delay: ${160 + i * 45}ms; animation-fill-mode: backwards; }`,
+    `  ${S.LYRICS_VIEW_OPEN}[${LYRICS_INTRO_ATTR}] ${VIEW_LINES}:nth-child(${i + 1}) { animation: sc-lyric-in ${LINE_RISE_MS}ms ${EASE}; animation-delay: ${CASCADE_START_MS + i * CASCADE_STEP_MS}ms; animation-fill-mode: backwards; }`,
   )
   const column = theme.layout.lyricsNowPlaying
     ? [

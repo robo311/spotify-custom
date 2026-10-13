@@ -113,7 +113,10 @@ function boot() {
     )
 
     const lyricsLibrary = startLyricsLibrary(() => store.get().active.layout.lyricsKeepLibrary)
-    const lyricsColumn = startLyricsColumn(() => store.get().active.layout.lyricsNowPlaying)
+    const lyricsColumn = startLyricsColumn(
+      () => store.get().active.layout.lyricsNowPlaying,
+      () => store.get().active.layout.lyricsNowPlayingVideo,
+    )
     disposers.push(
       onSliceChange(store, s => s.active.layout, () => {
         lyricsLibrary.refresh()

@@ -62,8 +62,11 @@ func (s *shell) StartWithSpotify() bool { return s.shortcuts.On() }
 
 func (s *shell) SetStartWithSpotify(on bool) error { return s.shortcuts.Set(on) }
 
-// statusSink forwards app status to the tray menu, remembering it until the menu exists.
+// statusSink forwards app status to the tray menu, remembering it until the menu exists, and tells onActive
+// whenever the payload is injected into Spotify (it just started, or was restarted).
 type statusSink struct {
+	onActive func()
+
 	mu   sync.Mutex
 	menu *tray.Menu
 	last *app.Status
@@ -71,10 +74,13 @@ type statusSink struct {
 
 func (s *statusSink) set(st app.Status) {
 	s.mu.Lock()
-	defer s.mu.Unlock()
 	s.last = &st
 	if s.menu != nil {
 		s.menu.SetStatus(st.String())
+	}
+	s.mu.Unlock()
+	if st == app.StatusActive && s.onActive != nil {
+		s.onActive()
 	}
 }
 

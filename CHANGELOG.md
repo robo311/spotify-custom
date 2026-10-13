@@ -3,6 +3,36 @@
 All notable changes to Spotify Custom. Versions follow `X.Y.Z`; installed copies update themselves (see
 [docs/install-guide.md](docs/install-guide.md#updates)).
 
+## 0.2.3 — 2026-10-13
+
+### Added
+
+- **Canvas video in the lyrics Now playing column.** Songs with a Canvas now play it in the column beside the lyrics,
+  like Spotify's own panel does, instead of a still cover. It pauses with the song, loads only while the lyrics view
+  is open, and keeps the cover if the video can't load. Turn it off with **Canvas video** in the Lyrics tab.
+- **Your Episodes artwork.** Your Episodes gets its own picture, icon or colours in the Library tab, like Liked Songs.
+- **Nine more fonts:** Bricolage Grotesque, Syne, Unbounded, Quicksand, Comfortaa, Caveat, Playfair Display,
+  Cormorant Garamond and EB Garamond.
+- **Resize the lyrics Now playing column** with Spotify's own panel resize bar.
+- **New versions show up as soon as Spotify opens.** Opening (or reopening) Spotify now checks for an update straight
+  away, instead of waiting for the hourly check.
+
+### Fixed
+
+- **The theme font applies everywhere**, including the Now playing panel and the stats shelf (Spotify's own font
+  stacks used to win).
+- **Now playing panel settings work again on Spotify 1.3.4.** Spotify rebuilt its Now playing panel, and every panel
+  setting had stopped working. The Layout tab said the panel wasn't open. Sections, hide and reorder, compact cover,
+  cover height, gradient, title size, the video switch and Liked tick, and card styling now work on 1.3.4 and still
+  on 1.3.3.
+- **Lyrics lines no longer vanish for a moment** when the song moves to the next line (the opening animation replayed
+  on every line change).
+- **Breathing background shows in the lyrics view.** It was drawn behind the lyrics view, out of sight.
+- **No solid colour band under album and playlist headers** with the blurred-cover, accent, custom or theme
+  backdrop (most visible on Liked Songs). The blurred cover now fades into the page without a seam.
+- **Track numbers 100 and up stay inside outlined and card rows.**
+- **Centred page headers centre Your Episodes' cover** too.
+
 ## 0.2.2 — 2026-10-12
 
 ### Added

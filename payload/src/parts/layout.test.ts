@@ -14,6 +14,7 @@ const BASE: LayoutConfig = {
   lyricsKeepLibrary: false,
   lyricsImmersive: false,
   lyricsNowPlaying: false,
+  lyricsNowPlayingVideo: true,
 }
 
 describe('LAYOUT_OPTIONS', () => {

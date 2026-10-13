@@ -1,9 +1,11 @@
-// Breathing background: a light (cover, accent or custom colour) rising from the bottom of the main view. A tight core follows
+// Breathing background: a light (cover, accent or custom colour) rising from the bottom of the main view, or of the
+// lyrics view while that covers the window. A tight core follows
 // the bass and a wide halo the overall loudness, so the light seems to swell. Its own layer, under Spotify's content
 // (like Ambient Glow, which it can sit beside). Only opacity changes, through scrubbed animations: a moving or
 // resizing layer under Spotify's content makes Chrome rework the layers above it every frame.
 import type { ReactiveLook } from '../../types'
 import { glowHost } from '../../theme/effects'
+import { LYRICS_VIEW_LINE, SCROLL_HOST } from '../selectors'
 import { amount, type ReactiveEffect } from './effect'
 import { scrub } from './scrub'
 
@@ -33,6 +35,11 @@ export function breath(bass: number, level: number, intensity: number): { core: 
   return { core: Math.min(1, bass * k), halo: Math.min(1, level * level * 1.3 * k) }
 }
 
+/** The lyrics view's background box while it shows lyrics (it hides the main view then), else the main view's. */
+export function backdropHost(): HTMLElement | null {
+  return document.querySelector(LYRICS_VIEW_LINE)?.closest<HTMLElement>(SCROLL_HOST) ?? glowHost()
+}
+
 export function startBackdrop(): ReactiveEffect {
   const layer = Object.assign(document.createElement('div'), { id: LAYER_ID })
   layer.setAttribute('aria-hidden', 'true')
@@ -44,7 +51,7 @@ export function startBackdrop(): ReactiveEffect {
   let color = ''
 
   const heal = () => {
-    const host = glowHost()
+    const host = backdropHost()
     if (host && layer.parentElement !== host) host.prepend(layer) // first child: under Spotify's positioned content
   }
 

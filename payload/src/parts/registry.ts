@@ -179,7 +179,7 @@ export const PART_RECIPES: PartRecipe[] = [
     id: 'npvCards',
     label: 'Now playing cards',
     description: 'Artist, credits and queue cards in the Now playing panel',
-    selectors: [S.NPV_CARDS],
+    selectors: [S.NPV_CARDS, S.NPV_CARDS_134],
     hideable: false,
     pageSpecific: true,
     targets: { background: [ROOT], text: [ROOT], accent: [ROOT], radius: [ROOT_CLIPPED] },

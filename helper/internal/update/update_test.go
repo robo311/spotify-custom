@@ -222,6 +222,7 @@ func (f *fakeInstaller) Install(_ context.Context, pkg string) error {
 
 type harness struct {
 	version  atomic.Value // string: the version latest.json currently offers
+	checks   atomic.Int32 // requests for latest.json
 	svc      *Service
 	inst     *fakeInstaller
 	opened   chan string
@@ -238,6 +239,7 @@ func newHarness(t *testing.T, version string, inst *fakeInstaller) *harness {
 	srv = httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case "/latest.json":
+			h.checks.Add(1)
 			_, _ = io.WriteString(w, `{"version":"`+h.version.Load().(string)+`","page":"https://example.com/release","assets":{"`+platformKey+`":{"url":"`+
 				srv.URL+`/pkg.zip","sha256":"`+sum(pkg)+`"}}}`)
 		case "/pkg.zip":
@@ -410,5 +412,30 @@ func TestServiceDevBuildNeverChecks(t *testing.T) {
 	}
 	if hits != 0 {
 		t.Errorf("dev build fetched the manifest %d times", hits)
+	}
+}
+
+func TestCheckSoonChecksWithoutWaitingForTheTimer(t *testing.T) {
+	h := newHarness(t, "0.2.0", &fakeInstaller{})
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	go h.svc.Run(ctx)
+	h.svc.CheckSoon() // Spotify started: well before the first scheduled check
+	if s := h.waitState(t, StateAvailable); s.Latest != "0.2.0" {
+		t.Errorf("status = %+v", s)
+	}
+}
+
+func TestCheckSoonSkipsWhenJustChecked(t *testing.T) {
+	h := newHarness(t, "0.2.0", &fakeInstaller{})
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	go h.svc.Run(ctx)
+	h.svc.CheckSoon()
+	h.waitState(t, StateAvailable)
+	h.svc.CheckSoon() // a re-inject right after: no second request
+	time.Sleep(200 * time.Millisecond)
+	if n := h.checks.Load(); n != 1 {
+		t.Errorf("latest.json fetched %d times, want 1", n)
 	}
 }

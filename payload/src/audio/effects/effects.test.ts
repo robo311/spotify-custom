@@ -1,8 +1,9 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
+import { glowHost } from '../../theme/effects'
 import { defaultReactiveLook } from '../../theme/model'
 import { AUDIO_BANDS } from '../frame'
 import type { AudioLevels } from '../envelope'
-import { backdropColor, breath } from './backdrop'
+import { backdropColor, backdropHost, breath } from './backdrop'
 import { wantedEffects } from './controller'
 import type { EffectContext } from './effect'
 import { findActiveLineSelector, lyricKeyframes, lyricPosition, lyricsCss } from './lyrics'
@@ -148,6 +149,27 @@ describe('breathing background', () => {
     expect(backdropColor({ ...bg, color: 'accent' }, '#112233', '#00ff00')).toBe('#00ff00')
     expect(backdropColor({ ...bg, color: 'custom', customColor: '#ff8800' }, '#112233', '#00ff00')).toBe('#ff8800')
     expect(backdropColor({ ...bg, color: 'custom', customColor: null }, '#112233', '#00ff00')).toBe('#00ff00')
+  })
+})
+
+describe('breathing background host', () => {
+  afterEach(() => document.body.replaceChildren())
+
+  it("sits in the main view's painted box, and in the lyrics view's scroll host (over its background) while lyrics show", () => {
+    document.body.innerHTML =
+      '<div id="main-view" style="background-color: rgb(1, 2, 3)"><main></main></div>' +
+      '<div style="--cinema-mode-bg-color-from: red"><div id="lyrics-host" data-overlayscrollbars>' +
+      '<div data-overlayscrollbars-viewport><div data-testid="lyrics-line">la</div></div></div></div>'
+    expect(backdropHost()?.id).toBe('lyrics-host')
+    document.getElementById('lyrics-host')?.remove()
+    expect(backdropHost()).toBe(glowHost())
+  })
+
+  it("ignores the lyrics preview card in the Now playing panel (not the lyrics view)", () => {
+    document.body.innerHTML =
+      '<div id="main-view" style="background-color: rgb(1, 2, 3)"><main></main></div>' +
+      '<div data-overlayscrollbars id="panel"><div data-testid="lyrics-npv-section"><div data-testid="lyrics-line">la</div></div></div>'
+    expect(backdropHost()).toBe(glowHost())
   })
 })
 

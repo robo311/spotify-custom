@@ -23,3 +23,6 @@ export const FOLDER_VIEWS = [
 
 /** Spotify's Liked Songs cover, wherever it is drawn (liked-songs-300.png, liked-songs-640.jpg, …). */
 export const LIKED_COVER = 'img[src*="//misc.scdn.co/liked-songs/"]'
+
+/** Spotify's Your Episodes cover (a coloured box holding a bookmark glyph), wherever it is drawn. */
+export const EPISODES_COVER = '[data-testid="your-episodes-cover"]'

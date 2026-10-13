@@ -29,6 +29,7 @@ export function LyricsTab() {
   const keepLibrary = useApp(s => s.active.layout.lyricsKeepLibrary)
   const immersive = useApp(s => s.active.layout.lyricsImmersive)
   const nowPlaying = useApp(s => s.active.layout.lyricsNowPlaying)
+  const nowPlayingVideo = useApp(s => s.active.layout.lyricsNowPlayingVideo)
   const [openLine, setOpenLine] = useState<keyof LyricLineColors | null>(null)
   const auto = autoLyricLines(lyrics.background, palette)
 
@@ -137,6 +138,18 @@ export function LyricsTab() {
             })
           }
         />
+        {nowPlaying && (
+          <Toggle
+            label="Canvas video"
+            description="Play the song's looping video in the column when it has one"
+            checked={nowPlayingVideo}
+            onChange={v =>
+              store.edit(t => {
+                t.layout.lyricsNowPlayingVideo = v
+              })
+            }
+          />
+        )}
         <Toggle
           label="Immersive lyrics"
           description="Top bar and player fade away until you move the mouse over them"

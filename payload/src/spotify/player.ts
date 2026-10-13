@@ -2,6 +2,7 @@
 // the `playerAPI` prop of a provider near the top of the React tree (verified on Spotify 1.3.3), with getState()
 // and an event emitter ('update' on every playback change, 'queue_update' when the queue changes).
 import type { PlaybackState, PlaybackTrack } from '../types'
+import { canvasIdOf } from './canvas'
 import { findInFiber, isRecord, rootFiber, type FiberLike } from './fiber'
 
 export interface SpotifyPlayer {
@@ -64,6 +65,7 @@ function toTrack(item: unknown): PlaybackTrack | null {
       .filter(a => a.name !== ''),
     album: { name: text(field(album, 'name')), uri: text(field(album, 'uri')) },
     ...covers(album),
+    canvasId: canvasIdOf(field(item, 'metadata')),
   }
 }
 
@@ -79,7 +81,7 @@ export function mapPlayerState(state: unknown): PlaybackState {
     .map(toTrack)
     .filter((t): t is PlaybackTrack => t !== null)
     .slice(0, NEXT_LIMIT)
-  return { track, next: track ? next : [] }
+  return { track, next: track ? next : [], paused: field(state, 'isPaused') !== false || track === null }
 }
 
 // ---- subscription ----

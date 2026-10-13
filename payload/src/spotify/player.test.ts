@@ -35,7 +35,18 @@ describe('mapPlayerState', () => {
       album: { name: 'Album', uri: 'spotify:album:a1' },
       image: 'https://i.scdn.co/image/xl',
       thumb: 'https://i.scdn.co/image/small',
+      canvasId: null,
     })
+  })
+
+  it('says whether the song is paused', () => {
+    expect(mapPlayerState({ item: track('now'), isPaused: false }).paused).toBe(false)
+    expect(mapPlayerState({ item: track('now'), isPaused: true }).paused).toBe(true)
+  })
+
+  it("carries the track's looping Canvas video id from its metadata", () => {
+    const metadata = { 'canvas.type': 'VIDEO_LOOPING_RANDOM', 'canvas.fileId': '780e3d4553633463b21ee4cea8eff783' }
+    expect(mapPlayerState({ item: track('now', { metadata }), nextItems: [] }).track?.canvasId).toBe('780e3d4553633463b21ee4cea8eff783')
   })
 
   it('lists up to ten upcoming tracks and skips non-track items', () => {
@@ -45,8 +56,8 @@ describe('mapPlayerState', () => {
   })
 
   it('survives a state Spotify changed under us', () => {
-    expect(mapPlayerState(null)).toEqual({ track: null, next: [] })
-    expect(mapPlayerState({ item: { type: 'track' }, nextItems: 'nope' })).toEqual({ track: null, next: [] })
+    expect(mapPlayerState(null)).toEqual({ track: null, next: [], paused: true })
+    expect(mapPlayerState({ item: { type: 'track' }, nextItems: 'nope' })).toEqual({ track: null, next: [], paused: true })
   })
 })
 

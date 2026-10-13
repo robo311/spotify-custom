@@ -145,7 +145,8 @@ describe('compileRecipe', () => {
 
   it('styles the Now playing cards but leaves the header and the lyrics preview alone', () => {
     const css = compileRecipe(recipe('npvCards'), { background: '#203040', radius: 16 })
-    expect(css).toContain(':not([data-sc-panel-key="track"], [data-sc-panel-key="lyrics"]) {')
+    expect(css).toContain('[data-testid="NPV_Panel_OpenDiv"] > [data-sc-panel-key]:not([data-sc-panel-key="track"], [data-sc-panel-key="lyrics"])')
+    expect(css).toContain('[data-npv-root] [data-sc-panel-key]:not([data-sc-panel-key="lyrics"])') // Spotify 1.3.4
     expect(css).toContain('background: #203040 !important;')
     expect(css).toContain('border-radius: 16px !important;')
   })

@@ -1,9 +1,11 @@
-// Reads library item identity (folders, Liked Songs) from Spotify's markup.
+// Reads library item identity (folders, Liked Songs, Your Episodes) from Spotify's markup.
 import type { LibraryItemInfo } from '../types'
-import { LIBRARY_ENTRY, LIKED_COVER } from './selectors'
+import { EPISODES_COVER, LIBRARY_ENTRY, LIKED_COVER } from './selectors'
 
 /** Settings key for Liked Songs: the URI Spotify itself uses for it on Home (one per user, so a constant). */
 export const LIKED_SONGS_URI = 'spotify:collection:tracks'
+/** Settings key for Your Episodes (Spotify's own URI for it, likewise one per user). */
+export const YOUR_EPISODES_URI = 'spotify:collection:your-episodes'
 
 const FOLDER_URI = /^(?:listrow|card)-title-(spotify:user:[^:\s]+:folder:[^:\s]+)$/
 
@@ -31,6 +33,7 @@ export function readLibraryItem(entry: Element): LibraryItemInfo | null {
   const folderUri = folderUriFromLabelledBy(labelledBy)
   if (folderUri) return { kind: 'folder', uri: folderUri, name: name() }
   if (entry.querySelector(LIKED_COVER)) return { kind: 'liked', uri: LIKED_SONGS_URI, name: name() }
+  if (entry.querySelector(EPISODES_COVER)) return { kind: 'episodes', uri: YOUR_EPISODES_URI, name: name() }
   return null
 }
 

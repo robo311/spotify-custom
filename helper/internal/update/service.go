@@ -50,6 +50,7 @@ const platformKey = runtime.GOOS
 const (
 	firstCheck    = 20 * time.Second // let Spotify start first
 	checkInterval = time.Hour        // a new release shows up within the hour, without a restart
+	soonGap       = 5 * time.Minute  // CheckSoon skips a check this close after the last one
 	installBudget = 10 * time.Minute
 )
 
@@ -65,9 +66,27 @@ type Service struct {
 	OnChange  func(Status)
 	Log       *slog.Logger
 
-	mu       sync.Mutex
-	status   Status
-	manifest *Manifest
+	mu        sync.Mutex
+	status    Status
+	manifest  *Manifest
+	lastCheck time.Time
+
+	soonOnce sync.Once
+	soonCh   chan struct{}
+}
+
+func (s *Service) soon() chan struct{} {
+	s.soonOnce.Do(func() { s.soonCh = make(chan struct{}, 1) })
+	return s.soonCh
+}
+
+// CheckSoon asks Run to check now rather than at its next scheduled check (Spotify just started, so the user is
+// about to look), unless it checked within the last few minutes.
+func (s *Service) CheckSoon() {
+	select {
+	case s.soon() <- struct{}{}:
+	default: // one is already pending
+	}
 }
 
 // Run checks shortly after start and then periodically until ctx ends.
@@ -75,21 +94,34 @@ func (s *Service) Run(ctx context.Context) {
 	if _, ok := parseVersion(s.Current); !ok {
 		return
 	}
-	wait := firstCheck
+	timer := time.NewTimer(firstCheck)
+	defer timer.Stop()
+	first := true
 	for {
 		select {
 		case <-ctx.Done():
 			return
-		case <-time.After(wait):
+		case <-timer.C:
+		case <-s.soon():
+			s.mu.Lock()
+			recent := !s.lastCheck.IsZero() && time.Since(s.lastCheck) < soonGap
+			s.mu.Unlock()
+			if recent {
+				continue
+			}
 		}
-		if wait == firstCheck {
+		if first {
 			// The previous update's package (Windows setup may still have been running when we started).
 			_ = os.RemoveAll(s.Dir)
+			first = false
 		}
+		s.mu.Lock()
+		s.lastCheck = time.Now()
+		s.mu.Unlock()
 		if err := s.Check(ctx); err != nil {
 			s.Log.Info("update check failed", "err", err) // offline is normal
 		}
-		wait = checkInterval
+		timer.Reset(checkInterval)
 	}
 }
 

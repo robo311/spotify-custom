@@ -67,8 +67,11 @@ export const ENTITY_HEADER = '#main-view :not([data-testid="artist-page"] *) > [
 /** Painted layers behind the header (one or two, cover-coloured, set inline); the content is its last child. */
 export const HEADER_BACKDROP = `${ENTITY_HEADER} > :not(:last-child)`
 export const HEADER_CONTENT = `${ENTITY_HEADER} > :last-child`
-/** The cover: the content's child holding an image that isn't the text block (which holds the creator avatar). */
-export const HEADER_COVER = `${HEADER_CONTENT} > :has(img):not(:last-child)`
+/**
+ * The cover: the content's child holding an image that isn't the text block (which holds the creator avatar). Your
+ * Episodes has no image: its cover is a coloured box with a glyph.
+ */
+export const HEADER_COVER = `${HEADER_CONTENT} > :has(img, [data-testid="your-episodes-cover"]):not(:last-child)`
 export const HEADER_TEXT = `${HEADER_CONTENT} > :last-child`
 export const HEADER_TITLE = `${ENTITY_HEADER} [data-testid="entityTitle"] h1`
 /** The cover-coloured fade right under the header, behind the play button row. */
@@ -129,11 +132,26 @@ export const QUALITY_BADGE = '[data-testid="context-item-info-quality"]'
 export const APP_ROOT = '[data-testid="root"]'
 
 // ---------- Now playing panel ----------
+// Two generations: Spotify 1.3.3 (test ids on each part) and 1.3.4 (rebuilt, see the 1.3.4 block below). Every
+// setting carries a rule for both, so a client on either keeps working.
 
-/** Flex column holding the panel's sections (track, lyrics preview, videos, artist, credits, tour, merch, queue). */
+/** 1.3.3: flex column holding the panel's sections (track, lyrics preview, videos, artist, credits, tour, merch, queue). */
 export const NPV_SECTIONS = '[data-testid="NPV_Panel_OpenDiv"]'
-/** The panel's scroll viewport: its box is the visible part of the sections. */
-export const NPV_SCROLL_VIEWPORT = `[data-overlayscrollbars-viewport]:has(${NPV_SECTIONS})`
+/** 1.3.4: the panel's root. A readable data attribute: the rebuilt panel has no test ids on its structure. */
+export const NPV_ROOT = '[data-npv-root]'
+/** The panel's scroll viewport (both generations): its box is the visible part of the sections. */
+export const NPV_SCROLL_VIEWPORT = `:is([data-overlayscrollbars-viewport]:has(${NPV_SECTIONS}), ${NPV_ROOT} [data-overlayscrollbars-viewport])`
+/** 1.3.4: the scroll content, a column of two: the cover slot, then the details column. */
+const NPV_BODY = `${NPV_ROOT} [data-overlayscrollbars-viewport] > div`
+/** 1.3.4: the square slot reserving the cover's place; the Canvas, when there is one, bleeds out of it full width. */
+export const NPV_COVER_SLOT = `${NPV_BODY} > :first-child`
+/** 1.3.4: Spotify's gradient layers over the Canvas. */
+export const NPV_COVER_SHADE = `${NPV_COVER_SLOT} [data-canvas-surface] > * > [aria-hidden="true"]`
+/**
+ * 1.3.4: the details column: the "switch to video" row and the title row (marked as the head by parts/panel.ts),
+ * a column of cards, then the queue in a wrapper of its own.
+ */
+export const NPV_DETAILS = `${NPV_BODY} > :last-child`
 export const NPV_BIG_VISUAL = `${NPV_SECTIONS} div:has(> [data-testid="track-visual-enhancement"])`
 export const NPV_TRACK_SECTION = `${NPV_SECTIONS} > :has([data-testid="track-visual-enhancement"])`
 /** Height of the panel's floating header (title + buttons), which overlays the top of the sections. */
@@ -152,6 +170,7 @@ export const NPV_TITLE = `${NPV_TRACK_SECTION} [data-testid="context-item-info-t
  * The lyrics preview is left out: its look comes from the Lyrics settings.
  */
 export const NPV_CARDS = `${NPV_SECTIONS} > [data-sc-panel-key]:not([data-sc-panel-key="track"], [data-sc-panel-key="lyrics"])`
+export const NPV_CARDS_134 = `${NPV_ROOT} [data-sc-panel-key]:not([data-sc-panel-key="lyrics"])`
 
 // ---------- Lyrics (Spotify 1.3.3 opens lyrics as a full-window "cinema" view of the Now playing panel) ----------
 

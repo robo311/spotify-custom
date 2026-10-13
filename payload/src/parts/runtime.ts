@@ -6,7 +6,9 @@
 //    as the display mode (the window's size can't tell: on notched Macs it stays below the notch, like a zoomed one).
 //  • Past lyric lines: Spotify marks them only with a hashed class. We find it by its meaning (the lyrics-line
 //    rule that draws the inactive colour at 50% opacity) in Spotify's own stylesheets, so it survives rebuilds.
+//  • The lyrics view's opening, which its line cascade plays in (lyrics-intro.ts).
 import { COVER_URL_VAR, PAST_LINE_OPACITY_VAR, PAST_LINE_VAR } from './lyrics'
+import { startLyricsIntro } from './lyrics-intro'
 import { PAGE_COVER_COLOR_VAR, PAGE_COVER_URL_VAR } from './page-look'
 import { APP_ROOT, HEADER_BACKDROP, HEADER_COVER, LYRICS_LINE, MAC_ATTR, NOW_PLAYING_COVER_IMAGE, WINDOW_BUTTONS_SPACER } from './selectors'
 
@@ -120,8 +122,10 @@ export function startPartsRuntime(): () => void {
     attributeFilter: ['src', 'srcset'],
   })
   update()
+  const stopIntro = startLyricsIntro()
 
   return () => {
+    stopIntro()
     observer.disconnect()
     if (frame !== 0) cancelAnimationFrame(frame)
     style.remove()

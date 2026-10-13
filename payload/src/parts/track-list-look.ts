@@ -12,6 +12,11 @@ const EVEN_ROWS = `${S.TRACK_LIST} [role="row"]:is(${['0', '2', '4', '6', '8'].m
 const ROW_HOVER = `${S.TRACK_ROW}:is(:hover, :focus-within)`
 /** Transparent borders inset a painted card without changing the row height the virtual list relies on. */
 const CARD_INSET: Declarations = { 'background-clip': 'padding-box', 'border-block': '3px solid transparent', 'border-radius': 'calc(var(--sc-radius, 8px) + 4px)' }
+/**
+ * Spotify's number column is 16px and the number, right-aligned, spills left into the row's padding: from 100 on it
+ * crosses the row's edge, which only shows once the row draws one (cards, outlines). 4ch holds 1000+ inside it.
+ */
+const WIDE_INDEX: CssRule = { selector: S.TRACK_LIST, decls: { '--index-column-width': '4ch' } }
 const THUMB_RADIUS: Record<Exclude<PageStyle['thumbnails'], 'spotify' | 'hidden' | 'cd'>, string> = { square: '0', round: '8px', circle: '50%' }
 /** A CD: round, with the centre punched out (a real CD's hole is about a quarter of its radius). */
 const CD: Declarations = { 'border-radius': '50%', 'mask-image': 'radial-gradient(circle closest-side, transparent 0 25%, #000 calc(25% + 0.5px))' }
@@ -60,6 +65,7 @@ export function trackListRules(s: PageStyle): CssRule[] {
     rules.push(
       { selector: S.TRACK_ROW, decls: { ...CARD_INSET, 'background-color': 'color-mix(in oklab, var(--sc-elevated) 70%, transparent)' } },
       { selector: ROW_HOVER, decls: { 'background-color': 'var(--sc-elevated)' } },
+      WIDE_INDEX,
     )
   }
   if (s.rows === 'lines') {
@@ -73,6 +79,7 @@ export function trackListRules(s: PageStyle): CssRule[] {
     rules.push(
       { selector: S.TRACK_ROW, decls: { ...CARD_INSET, outline: '1px solid color-mix(in oklab, var(--sc-text) 14%, transparent)', 'outline-offset': '-3px' } },
       { selector: ROW_HOVER, decls: { 'background-color': 'color-mix(in oklab, var(--sc-accent) 8%, transparent)', 'outline-color': 'color-mix(in oklab, var(--sc-accent) 55%, transparent)' } },
+      WIDE_INDEX,
     )
   }
   if (s.rows === 'glow') {

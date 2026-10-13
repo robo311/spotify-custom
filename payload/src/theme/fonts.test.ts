@@ -8,7 +8,23 @@ describe('font registry', () => {
   it('bundles every font a choice names with an "SC " family', () => {
     const faces = fontFaces()
     const bundled = FONT_CHOICES.flatMap(f => [...f.stack.matchAll(/"(SC [^"]+)"/g)].map(m => m[1]))
-    expect(bundled).toEqual(['SC Inter', 'SC Outfit', 'SC Space Grotesk', 'SC Nunito', 'SC Fraunces', 'SC Mono'])
+    expect(bundled).toEqual([
+      'SC Inter',
+      'SC Outfit',
+      'SC Space Grotesk',
+      'SC Nunito',
+      'SC Bricolage Grotesque',
+      'SC Syne',
+      'SC Unbounded',
+      'SC Quicksand',
+      'SC Comfortaa',
+      'SC Caveat',
+      'SC Fraunces',
+      'SC Playfair Display',
+      'SC Cormorant Garamond',
+      'SC EB Garamond',
+      'SC Mono',
+    ])
     for (const family of bundled) {
       // One face for latin, one for latin-ext.
       expect(faces.split(`font-family: "${family}";`)).toHaveLength(3)
@@ -25,5 +41,11 @@ describe('font registry', () => {
     const t = validateTheme({ ...base, font: 'nunito', lyrics: { ...base.lyrics, font: 'space-grotesk' } })
     expect([t.font, t.lyrics.font]).toEqual(['nunito', 'space-grotesk'])
     expect(compileLyrics(t.lyrics)).toContain('font-family: "SC Space Grotesk", var(--fallback-fonts, sans-serif) !important;')
+  })
+
+  it('keeps the aesthetic fonts through validation', () => {
+    const base = PRESETS[0]
+    const t = validateTheme({ ...base, font: 'cormorant-garamond', lyrics: { ...base.lyrics, font: 'caveat' } })
+    expect([t.font, t.lyrics.font]).toEqual(['cormorant-garamond', 'caveat'])
   })
 })

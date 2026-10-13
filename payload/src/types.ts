@@ -15,7 +15,24 @@ export interface Palette {
   border: Color
 }
 
-export type FontId = 'inter' | 'outfit' | 'space-grotesk' | 'nunito' | 'fraunces' | 'jetbrains-mono' | 'spotify' | 'system'
+export type FontId =
+  | 'inter'
+  | 'outfit'
+  | 'space-grotesk'
+  | 'nunito'
+  | 'bricolage-grotesque'
+  | 'syne'
+  | 'unbounded'
+  | 'quicksand'
+  | 'comfortaa'
+  | 'caveat'
+  | 'fraunces'
+  | 'playfair-display'
+  | 'cormorant-garamond'
+  | 'eb-garamond'
+  | 'jetbrains-mono'
+  | 'spotify'
+  | 'system'
 
 export interface PartStyle {
   background?: Paint

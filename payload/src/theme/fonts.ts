@@ -13,6 +13,24 @@ import nunitoLatin from '@fontsource-variable/nunito/files/nunito-latin-wght-nor
 import nunitoLatinExt from '@fontsource-variable/nunito/files/nunito-latin-ext-wght-normal.woff2?inline'
 import outfitLatin from '@fontsource-variable/outfit/files/outfit-latin-wght-normal.woff2?inline'
 import outfitLatinExt from '@fontsource-variable/outfit/files/outfit-latin-ext-wght-normal.woff2?inline'
+import bricolageLatin from '@fontsource-variable/bricolage-grotesque/files/bricolage-grotesque-latin-wght-normal.woff2?inline'
+import bricolageLatinExt from '@fontsource-variable/bricolage-grotesque/files/bricolage-grotesque-latin-ext-wght-normal.woff2?inline'
+import syneLatin from '@fontsource-variable/syne/files/syne-latin-wght-normal.woff2?inline'
+import syneLatinExt from '@fontsource-variable/syne/files/syne-latin-ext-wght-normal.woff2?inline'
+import unboundedLatin from '@fontsource-variable/unbounded/files/unbounded-latin-wght-normal.woff2?inline'
+import unboundedLatinExt from '@fontsource-variable/unbounded/files/unbounded-latin-ext-wght-normal.woff2?inline'
+import quicksandLatin from '@fontsource-variable/quicksand/files/quicksand-latin-wght-normal.woff2?inline'
+import quicksandLatinExt from '@fontsource-variable/quicksand/files/quicksand-latin-ext-wght-normal.woff2?inline'
+import comfortaaLatin from '@fontsource-variable/comfortaa/files/comfortaa-latin-wght-normal.woff2?inline'
+import comfortaaLatinExt from '@fontsource-variable/comfortaa/files/comfortaa-latin-ext-wght-normal.woff2?inline'
+import caveatLatin from '@fontsource-variable/caveat/files/caveat-latin-wght-normal.woff2?inline'
+import caveatLatinExt from '@fontsource-variable/caveat/files/caveat-latin-ext-wght-normal.woff2?inline'
+import playfairLatin from '@fontsource-variable/playfair-display/files/playfair-display-latin-wght-normal.woff2?inline'
+import playfairLatinExt from '@fontsource-variable/playfair-display/files/playfair-display-latin-ext-wght-normal.woff2?inline'
+import cormorantLatin from '@fontsource-variable/cormorant-garamond/files/cormorant-garamond-latin-wght-normal.woff2?inline'
+import cormorantLatinExt from '@fontsource-variable/cormorant-garamond/files/cormorant-garamond-latin-ext-wght-normal.woff2?inline'
+import garamondLatin from '@fontsource-variable/eb-garamond/files/eb-garamond-latin-wght-normal.woff2?inline'
+import garamondLatinExt from '@fontsource-variable/eb-garamond/files/eb-garamond-latin-ext-wght-normal.woff2?inline'
 import type { FontId } from '../types'
 
 export const UI_FONT = '"SC Inter"'
@@ -37,6 +55,15 @@ const BUNDLED: BundledFont[] = [
   { family: '"SC Space Grotesk"', latin: groteskLatin, latinExt: groteskLatinExt },
   { family: '"SC Nunito"', latin: nunitoLatin, latinExt: nunitoLatinExt },
   { family: '"SC Outfit"', latin: outfitLatin, latinExt: outfitLatinExt },
+  { family: '"SC Bricolage Grotesque"', latin: bricolageLatin, latinExt: bricolageLatinExt },
+  { family: '"SC Syne"', latin: syneLatin, latinExt: syneLatinExt },
+  { family: '"SC Unbounded"', latin: unboundedLatin, latinExt: unboundedLatinExt },
+  { family: '"SC Quicksand"', latin: quicksandLatin, latinExt: quicksandLatinExt },
+  { family: '"SC Comfortaa"', latin: comfortaaLatin, latinExt: comfortaaLatinExt },
+  { family: '"SC Caveat"', latin: caveatLatin, latinExt: caveatLatinExt },
+  { family: '"SC Playfair Display"', latin: playfairLatin, latinExt: playfairLatinExt },
+  { family: '"SC Cormorant Garamond"', latin: cormorantLatin, latinExt: cormorantLatinExt },
+  { family: '"SC EB Garamond"', latin: garamondLatin, latinExt: garamondLatinExt },
 ]
 
 function face(family: string, url: string, range: string): string {
@@ -56,7 +83,16 @@ const STACKS: Record<FontId, string> = {
   outfit: `"SC Outfit", ${fallback('sans-serif')}`,
   'space-grotesk': `"SC Space Grotesk", ${fallback('sans-serif')}`,
   nunito: `"SC Nunito", ${fallback('sans-serif')}`,
+  'bricolage-grotesque': `"SC Bricolage Grotesque", ${fallback('sans-serif')}`,
+  syne: `"SC Syne", ${fallback('sans-serif')}`,
+  unbounded: `"SC Unbounded", ${fallback('sans-serif')}`,
+  quicksand: `"SC Quicksand", ${fallback('sans-serif')}`,
+  comfortaa: `"SC Comfortaa", ${fallback('sans-serif')}`,
+  caveat: `"SC Caveat", ${fallback('cursive')}`,
   fraunces: `"SC Fraunces", ${fallback('serif')}`,
+  'playfair-display': `"SC Playfair Display", ${fallback('serif')}`,
+  'cormorant-garamond': `"SC Cormorant Garamond", ${fallback('serif')}`,
+  'eb-garamond': `"SC EB Garamond", ${fallback('serif')}`,
   'jetbrains-mono': `${MONO_FONT}, ${fallback('monospace')}`,
   system: 'system-ui, -apple-system, "Segoe UI", Roboto, sans-serif',
   spotify: `SpotifyMixUITitle, SpotifyMixUI, ${fallback('sans-serif')}`,
@@ -73,7 +109,16 @@ const LABELS: [FontId, string][] = [
   ['outfit', 'Outfit'],
   ['space-grotesk', 'Grotesk'],
   ['nunito', 'Nunito'],
+  ['bricolage-grotesque', 'Bricolage'],
+  ['syne', 'Syne'],
+  ['unbounded', 'Unbounded'],
+  ['quicksand', 'Quicksand'],
+  ['comfortaa', 'Comfortaa'],
+  ['caveat', 'Caveat'],
   ['fraunces', 'Fraunces'],
+  ['playfair-display', 'Playfair'],
+  ['cormorant-garamond', 'Cormorant'],
+  ['eb-garamond', 'Garamond'],
   ['jetbrains-mono', 'Mono'],
   ['system', 'System'],
   ['spotify', 'Spotify'],

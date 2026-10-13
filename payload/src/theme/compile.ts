@@ -4,7 +4,7 @@ import type { IconPack, Palette, Theme } from '../types'
 import { compileIcons } from '../icons'
 import { compileLayout, compileParts } from '../parts'
 import { compileEncoreVars } from './encore-map'
-import { MONO_FONT, UI_FONT, spotifyFontVars } from './fonts'
+import { MONO_FONT, fontStack, spotifyFontVars } from './fonts'
 import { SPOTIFY_PALETTE } from './presets'
 import { PALETTE_VAR } from './vars'
 
@@ -35,16 +35,24 @@ function rootVars(theme: Theme): Record<string, string> {
   return {
     ...palette,
     '--sc-radius': `${theme.radius}px`,
-    '--sc-font-ui': UI_FONT,
+    '--sc-font-ui': fontStack(theme.font),
     '--sc-font-mono': MONO_FONT,
     ...(theme.radius !== SPOTIFY_RADIUS ? { '--section-border-radius': `${theme.radius}px` } : {}),
-    ...spotifyFontVars(theme.font),
   }
+}
+
+/**
+ * On body, not :root: Spotify's `.spotify-mix-non-latin` (a class on <html>) sets these !important inside
+ * `@layer fonts`, which no unlayered declaration on <html> can beat. Everything visible inherits from body.
+ */
+function fontRule(theme: Theme): string {
+  const vars = spotifyFontVars(theme.font)
+  return vars ? `\nbody {\n${declarations(vars)}\n}` : ''
 }
 
 export function compileTheme(theme: Theme, ctx: CompileContext): string {
   const sections: [string, string][] = [
-    ['variables', `:root {\n${declarations(rootVars(theme))}\n}`],
+    ['variables', `:root {\n${declarations(rootVars(theme))}\n}${fontRule(theme)}`],
     ['encore', isNativePalette(theme.palette) ? '' : compileEncoreVars()],
     ['parts', compileParts(theme)],
     ['layout', compileLayout(theme.layout)],

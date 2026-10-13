@@ -12,9 +12,11 @@ exports[`compileTheme > compiles catppuccin-mocha deterministically 1`] = `
   --sc-on-accent: #11111b;
   --sc-border: #45475a;
   --sc-radius: 12px;
-  --sc-font-ui: "SC Inter";
+  --sc-font-ui: "SC Inter", var(--fallback-fonts, sans-serif);
   --sc-font-mono: "SC Mono";
   --section-border-radius: 12px;
+}
+body {
   --encore-body-font-stack: "SC Inter", var(--fallback-fonts, sans-serif);
   --encore-title-font-stack: "SC Inter", var(--fallback-fonts, sans-serif);
   --encore-variable-font-stack: "SC Inter", var(--fallback-fonts, sans-serif);
@@ -130,9 +132,11 @@ exports[`compileTheme > compiles darcula deterministically 1`] = `
   --sc-on-accent: #0b1220;
   --sc-border: #43454a;
   --sc-radius: 6px;
-  --sc-font-ui: "SC Inter";
+  --sc-font-ui: "SC Inter", var(--fallback-fonts, sans-serif);
   --sc-font-mono: "SC Mono";
   --section-border-radius: 6px;
+}
+body {
   --encore-body-font-stack: "SC Inter", var(--fallback-fonts, sans-serif);
   --encore-title-font-stack: "SC Inter", var(--fallback-fonts, sans-serif);
   --encore-variable-font-stack: "SC Inter", var(--fallback-fonts, sans-serif);
@@ -248,9 +252,11 @@ exports[`compileTheme > compiles forest deterministically 1`] = `
   --sc-on-accent: #0c2412;
   --sc-border: #2c5640;
   --sc-radius: 12px;
-  --sc-font-ui: "SC Inter";
+  --sc-font-ui: "SC Inter", var(--fallback-fonts, sans-serif);
   --sc-font-mono: "SC Mono";
   --section-border-radius: 12px;
+}
+body {
   --encore-body-font-stack: "SC Inter", var(--fallback-fonts, sans-serif);
   --encore-title-font-stack: "SC Inter", var(--fallback-fonts, sans-serif);
   --encore-variable-font-stack: "SC Inter", var(--fallback-fonts, sans-serif);
@@ -366,9 +372,11 @@ exports[`compileTheme > compiles gruvbox-dark deterministically 1`] = `
   --sc-on-accent: #282828;
   --sc-border: #504945;
   --sc-radius: 4px;
-  --sc-font-ui: "SC Inter";
+  --sc-font-ui: "SC Inter", var(--fallback-fonts, sans-serif);
   --sc-font-mono: "SC Mono";
   --section-border-radius: 4px;
+}
+body {
   --encore-body-font-stack: "SC Inter", var(--fallback-fonts, sans-serif);
   --encore-title-font-stack: "SC Inter", var(--fallback-fonts, sans-serif);
   --encore-variable-font-stack: "SC Inter", var(--fallback-fonts, sans-serif);
@@ -484,9 +492,11 @@ exports[`compileTheme > compiles midnight-blue deterministically 1`] = `
   --sc-on-accent: #04122b;
   --sc-border: #26407a;
   --sc-radius: 14px;
-  --sc-font-ui: "SC Inter";
+  --sc-font-ui: "SC Inter", var(--fallback-fonts, sans-serif);
   --sc-font-mono: "SC Mono";
   --section-border-radius: 14px;
+}
+body {
   --encore-body-font-stack: "SC Inter", var(--fallback-fonts, sans-serif);
   --encore-title-font-stack: "SC Inter", var(--fallback-fonts, sans-serif);
   --encore-variable-font-stack: "SC Inter", var(--fallback-fonts, sans-serif);
@@ -602,9 +612,11 @@ exports[`compileTheme > compiles mono deterministically 1`] = `
   --sc-on-accent: #000000;
   --sc-border: #333333;
   --sc-radius: 0px;
-  --sc-font-ui: "SC Inter";
+  --sc-font-ui: "SC Mono", var(--fallback-fonts, monospace);
   --sc-font-mono: "SC Mono";
   --section-border-radius: 0px;
+}
+body {
   --encore-body-font-stack: "SC Mono", var(--fallback-fonts, monospace);
   --encore-title-font-stack: "SC Mono", var(--fallback-fonts, monospace);
   --encore-variable-font-stack: "SC Mono", var(--fallback-fonts, monospace);
@@ -720,8 +732,10 @@ exports[`compileTheme > compiles nord deterministically 1`] = `
   --sc-on-accent: #242933;
   --sc-border: #4c566a;
   --sc-radius: 8px;
-  --sc-font-ui: "SC Inter";
+  --sc-font-ui: "SC Inter", var(--fallback-fonts, sans-serif);
   --sc-font-mono: "SC Mono";
+}
+body {
   --encore-body-font-stack: "SC Inter", var(--fallback-fonts, sans-serif);
   --encore-title-font-stack: "SC Inter", var(--fallback-fonts, sans-serif);
   --encore-variable-font-stack: "SC Inter", var(--fallback-fonts, sans-serif);
@@ -837,7 +851,7 @@ exports[`compileTheme > compiles spotify-original deterministically 1`] = `
   --sc-on-accent: #000000;
   --sc-border: #292929;
   --sc-radius: 8px;
-  --sc-font-ui: "SC Inter";
+  --sc-font-ui: SpotifyMixUITitle, SpotifyMixUI, var(--fallback-fonts, sans-serif);
   --sc-font-mono: "SC Mono";
 }
 
@@ -863,9 +877,11 @@ exports[`compileTheme > compiles sunset deterministically 1`] = `
   --sc-on-accent: #2a0a10;
   --sc-border: #5e2a4a;
   --sc-radius: 16px;
-  --sc-font-ui: "SC Inter";
+  --sc-font-ui: "SC Inter", var(--fallback-fonts, sans-serif);
   --sc-font-mono: "SC Mono";
   --section-border-radius: 16px;
+}
+body {
   --encore-body-font-stack: "SC Inter", var(--fallback-fonts, sans-serif);
   --encore-title-font-stack: "SC Inter", var(--fallback-fonts, sans-serif);
   --encore-variable-font-stack: "SC Inter", var(--fallback-fonts, sans-serif);
@@ -981,9 +997,11 @@ exports[`compileTheme > compiles tokyo-night deterministically 1`] = `
   --sc-on-accent: #16161e;
   --sc-border: #3b4261;
   --sc-radius: 10px;
-  --sc-font-ui: "SC Inter";
+  --sc-font-ui: "SC Inter", var(--fallback-fonts, sans-serif);
   --sc-font-mono: "SC Mono";
   --section-border-radius: 10px;
+}
+body {
   --encore-body-font-stack: "SC Inter", var(--fallback-fonts, sans-serif);
   --encore-title-font-stack: "SC Inter", var(--fallback-fonts, sans-serif);
   --encore-variable-font-stack: "SC Inter", var(--fallback-fonts, sans-serif);

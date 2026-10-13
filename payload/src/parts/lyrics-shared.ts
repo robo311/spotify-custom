@@ -11,11 +11,15 @@ export const PAST_LINE_OPACITY_VAR = '--sc-lyrics-past-opacity'
 /**
  * Slot for our own "Now playing" column beside the lyrics (layout.lyricsNowPlaying; drawn by src/nowplaying).
  * The column is a host element appended to the layout grid; readyAttr on <html> says it has something to show,
- * so the lyrics view only makes room for it then.
+ * so the lyrics view only makes room for it then. collapsedAttr says it is folded to a strip (collapsedWidth px wide);
+ * slidingAttr says it is sliding between the two, its animated width sizing its grid track.
  */
 export const LYRICS_COLUMN_SLOT = {
   hostId: 'sc-lyrics-npv',
   readyAttr: 'data-sc-lyrics-npv',
+  collapsedAttr: 'data-sc-lyrics-npv-collapsed',
+  collapsedWidth: 48,
+  slidingAttr: 'data-sc-lyrics-npv-sliding',
   grid: S.LAYOUT_GRID,
 } as const
 export const COLUMN_HOST = `#${LYRICS_COLUMN_SLOT.hostId}`

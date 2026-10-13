@@ -3,13 +3,29 @@
 All notable changes to Spotify Custom. Versions follow `X.Y.Z`; installed copies update themselves (see
 [docs/install-guide.md](docs/install-guide.md#updates)).
 
-## Unreleased
+## 0.2.5 — 2026-10-13
+
+### Added
+
+- **Collapse the lyrics Now playing column.** A button in its top corner, like the one on Spotify's own panel, folds
+  the column to a narrow strip so the lyrics (or music video) get the room. It slides closed and open, the lyrics
+  widening with it. Hover the strip to see the column drift in faintly underneath; click it to bring the column
+  back. It stays the way you left it, across songs and restarts.
 
 ### Fixed
 
 - **Theme studio at the top of the window.** With the panel (or one of its popovers) moved up over Spotify's top bar,
   you can drag it and use its header buttons again. Before, the window's own drag strip took the mouse there and
   dragged the whole Spotify window instead.
+- **Now playing Canvas fade matches your theme.** The dark fades over the Canvas video in the right panel (Spotify
+  1.3.4) now blend into your theme's background instead of Spotify's own grey. Before, a grey box with rounded corners
+  showed behind the title and through the top of the lyrics card.
+- **Music videos.** With "Switch to video" on, the video now fits the space between the top bar and the player bar,
+  centred on black. Before, it was cut off and sat too low, with a band of the lyrics gradient above it. The Now playing
+  column beside it shows the album cover instead of a still frame of the video. Switching back to audio no longer
+  leaves the related music videos showing under the lyrics for a second or two.
+- **Closing the lyrics view.** The right panel's song title and buttons stay in view while the panel slides back,
+  instead of disappearing under the cover or Canvas and popping back in at the end.
 
 ## 0.2.4 — 2026-10-13
 

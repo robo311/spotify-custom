@@ -36,6 +36,7 @@ describe('mapPlayerState', () => {
       image: 'https://i.scdn.co/image/xl',
       thumb: 'https://i.scdn.co/image/small',
       canvasId: null,
+      video: false,
     })
   })
 
@@ -47,6 +48,21 @@ describe('mapPlayerState', () => {
   it("carries the track's looping Canvas video id from its metadata", () => {
     const metadata = { 'canvas.type': 'VIDEO_LOOPING_RANDOM', 'canvas.fileId': '780e3d4553633463b21ee4cea8eff783' }
     expect(mapPlayerState({ item: track('now', { metadata }), nextItems: [] }).track?.canvasId).toBe('780e3d4553633463b21ee4cea8eff783')
+  })
+
+  it('says when the track plays as its music video', () => {
+    expect(mapPlayerState({ item: track('now', { mediaType: 'video' }) }).track?.video).toBe(true)
+    expect(mapPlayerState({ item: track('now', { mediaType: 'audio' }) }).track?.video).toBe(false)
+  })
+
+  // As a music video, the album's images are a frame of the video; the album cover moves to the metadata.
+  it("keeps the album cover while the music video plays, not the video's thumbnail", () => {
+    const metadata = { audio_association_image_large: 'ab67616d0000b273cover', audio_association_image_small: 'ab67616d00004851cover' }
+    const t = mapPlayerState({ item: track('now', { mediaType: 'video', metadata }) }).track
+    expect(t?.image).toBe('https://i.scdn.co/image/ab67616d0000b273cover')
+    expect(t?.thumb).toBe('https://i.scdn.co/image/ab67616d00004851cover')
+    expect(mapPlayerState({ item: track('now', { mediaType: 'video' }) }).track?.image).toBe('https://i.scdn.co/image/xl') // no cover in the metadata
+    expect(mapPlayerState({ item: track('now', { mediaType: 'video', metadata: { audio_association_image_large: '../x' } }) }).track?.image).toBe('https://i.scdn.co/image/xl')
   })
 
   it('lists up to ten upcoming tracks and skips non-track items', () => {

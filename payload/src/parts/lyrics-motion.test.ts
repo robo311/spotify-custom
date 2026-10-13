@@ -53,4 +53,16 @@ describe('lyrics view motion', () => {
       '[data-cinema-npv-duringexit], [data-cinema-library-npv-duringexit]) :is([data-overlayscrollbars-viewport]:has([data-testid="NPV_Panel_OpenDiv"]), [data-npv-root] [data-overlayscrollbars-viewport]) { view-transition-name: sc-npv-content; }',
     )
   })
+
+  // Transition layers stack in page order, which puts the Canvas (and its opaque fade) over the panel's content layer
+  // and Spotify's title, actions and video-switch layers: the title, artist and switch vanish under it for the length
+  // of the morph and pop back at its end.
+  it("keeps the panel's content, title, actions and video switch above the Canvas while the view opens or closes", () => {
+    const css = compileLyricsMotion(theme({}, { background: 'theme' }))
+    for (const layer of ['cinema-npv-title', 'cinema-npv-actions', 'cinema-switch-button', 'sc-npv-content']) {
+      expect(css).toContain(`html[data-transition^="cinema"]::view-transition-group(${layer})`)
+    }
+    expect(css).toMatch(/::view-transition-group\(sc-npv-content\) \{ z-index: 1; \}/)
+    expect(css).not.toContain('::view-transition-group(cinema-npv-canvas)')
+  })
 })

@@ -201,6 +201,10 @@ export const LYRICS_CINEMA_BG = '[style*="--cinema-mode-bg-color-from"]'
  */
 export const LYRICS_CINEMA_HOST = `${LAYOUT_GRID} > :has(> [data-overlayscrollbars])`
 /** The view's own header row (title + action buttons), floating over the top of the lyrics. */
+/** Spotify's music video player ("Switch to video"), shown in the same cinema view as the lyrics. */
+export const VIDEO_PLAYER_CINEMA = '[data-testid="video-player-cinema"]'
+/** A music video's card (the music video's related videos; the Now playing panel's videos section). */
+export const VIDEO_CARD = '[data-testid="video-card-image"]'
 export const LYRICS_VIEW_HEADER = `${LYRICS_CINEMA_HOST} > :has(button):not(:has([data-overlayscrollbars]))`
 /** Spotify's "Sync" button (back to the sung line after scrolling away), the view's only primary button. */
 export const LYRICS_SYNC_BUTTON = `${LYRICS_CINEMA_HOST} > :has(> * > [data-encore-id="buttonPrimary"])`

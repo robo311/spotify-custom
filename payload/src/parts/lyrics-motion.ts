@@ -9,6 +9,9 @@ import * as S from './selectors'
 // On close, Spotify's Now playing panel returns: its background morphs into place as a layer above the page snapshot
 // and its cover fades in as another, but its text is in the page snapshot, hidden under the morphing background until
 // the morph ends. Giving the panel's visible content a layer too makes it fade in together with the cover.
+// Layers stack in page order, which puts the Canvas (with its opaque fade at the bottom) over that content layer and
+// Spotify's own title, actions and video-switch layers: they are lifted above it, or the title, artist and switch
+// vanish under the fade for the length of the morph and pop back at its end.
 const EASE = 'cubic-bezier(.2, .8, .2, 1)'
 const CASCADE_LINES = 14
 const CASCADE_START_MS = 160
@@ -23,6 +26,8 @@ export const LYRICS_INTRO_ATTR = 'data-sc-lyrics-intro'
 export const LYRICS_INTRO_MS = CASCADE_START_MS + (CASCADE_LINES - 1) * CASCADE_STEP_MS + LINE_RISE_MS
 const COLUMN_LAYER = 'sc-lyrics-npv'
 const PANEL_CONTENT_LAYER = 'sc-npv-content'
+/** Spotify's layers for the panel's foreground (its own names, see its view-transition-name rules). */
+const PANEL_FOREGROUND_LAYERS = ['cinema-npv-title', 'cinema-npv-actions', 'cinema-switch-button']
 
 export function compileLyricsMotion(theme: Pick<Theme, 'lyrics' | 'layout'>): string {
   if (!customisesLyricsView(theme)) return ''
@@ -44,6 +49,7 @@ export function compileLyricsMotion(theme: Pick<Theme, 'lyrics' | 'layout'>): st
     `  ${vt}::view-transition-group(*) { animation-duration: 520ms !important; animation-timing-function: ${EASE} !important; }`,
     `  ${vt}::view-transition-old(root), ${vt}::view-transition-new(root) { animation-duration: 360ms !important; }`,
     `  ${S.LYRICS_VIEW_CLOSING} ${S.NPV_SCROLL_VIEWPORT} { view-transition-name: ${PANEL_CONTENT_LAYER}; }`,
+    `  ${[...PANEL_FOREGROUND_LAYERS, PANEL_CONTENT_LAYER].map(layer => `${vt}::view-transition-group(${layer})`).join(', ')} { z-index: 1; }`,
     ...lines,
     '  @keyframes sc-lyric-in { from { opacity: 0; transform: translateY(14px); } }',
     ...column,

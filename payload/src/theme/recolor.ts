@@ -56,10 +56,15 @@ const RULES: { properties: 'colors' | 'background'; literals: string[]; replacem
 /** Hex spellings of Spotify green, for places that keep authored text (custom properties, SVG attributes). */
 const GREEN_HEX = ['#1ed760', '#1db954', '#1fdf64', '#3be477', '#1abc54', '#169f47', '#127e38']
 
-/** Gradient fades towards Spotify's base background, e.g. `linear-gradient(#12121200, #121212)`. */
+/**
+ * Gradient fades towards Spotify's base background, e.g. `linear-gradient(#12121200, #121212)`. 1.3.4 also spells it
+ * `oklch(0.18 0 0 / a)` (as authored: `oklch(18% 0 0/.8)`), e.g. the Now playing Canvas scrims.
+ */
 const GRADIENT_TOKENS: [RegExp, string][] = [
   [/#12121200|rgba\(18, 18, 18, 0\)/g, `rgb(from ${v('background')} r g b / 0)`],
   [/#121212(?![0-9a-f])|rgb\(18, 18, 18\)/gi, v('background')],
+  [/oklch\((?:0\.18|18%) 0 0 ?\/ ?([\d.]+)\)/g, `rgb(from ${v('background')} r g b / $1)`],
+  [/oklch\((?:0\.18|18%) 0 0\)/g, v('background')],
 ]
 
 /** SVG presentation attributes (`fill="#1ED760"`) aren't in any stylesheet; match them by value. */
@@ -117,7 +122,7 @@ function replacementsFor(property: string, value: string): [string, string][] {
     return single(GREEN_HEX.includes(literal) || ACCENT_GREENS.includes(literal) ? v('accent') : null)
   }
   if (property === 'background-image' && value.includes(WASH_SIGNATURE)) return washReplacement(value)
-  if (property === 'background-image') {
+  if (property === 'background-image' || property === 'background') {
     let out = value
     for (const [re, rep] of GRADIENT_TOKENS) out = out.replace(re, rep)
     return single(out === value ? null : out)
@@ -161,6 +166,12 @@ export function* readDeclarations(rules: CSSRuleList, conditions: string[] = [])
       for (let i = 0; i < style.length; i++) {
         const property = style.item(i)
         yield { selector: rule.selectorText, property, value: style.getPropertyValue(property).trim(), conditions }
+      }
+      // `background: <value with var()>` leaves every longhand reading '' (pending substitution): only the shorthand
+      // has the value.
+      const background = style.getPropertyValue('background')
+      if (style.getPropertyValue('background-image') === '' && background !== '') {
+        yield { selector: rule.selectorText, property: 'background', value: background.trim(), conditions }
       }
     }
   }

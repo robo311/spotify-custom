@@ -561,6 +561,7 @@ export function defaultSettings(activeTheme: string): Settings {
     extensionData: {},
     artworkStyles: {},
     reactive: defaultReactiveSettings(),
+    lyricsColumnCollapsed: false,
   }
 }
 
@@ -585,6 +586,7 @@ export function normalizeSettings(input: unknown, fallbackTheme: string): Settin
     // `folderStyles` was the key's name during the first day of live testing.
     artworkStyles: validateArtworkStyles(isRecord(input.artworkStyles) ? input.artworkStyles : input.folderStyles),
     reactive: normalizeReactiveSettings(input.reactive),
+    lyricsColumnCollapsed: input.lyricsColumnCollapsed === true,
   }
 }
 

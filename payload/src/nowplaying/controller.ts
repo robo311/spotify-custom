@@ -28,6 +28,12 @@ interface Mounted {
   stopPlayback: (() => void) | null
 }
 
+const SLIDE_MS = 420
+const SLIDE_EASING = 'cubic-bezier(.32, .72, 0, 1)'
+const REDUCED_MOTION = '(prefers-reduced-motion: reduce)'
+/** The content's width while the column slides (read by the column's styles). */
+const CONTENT_WIDTH_VAR = '--sc-npv-content-width'
+
 const hasTrack = (s: PlaybackState | null): s is PlaybackState & { track: PlaybackTrack } => s?.track != null
 
 function open(uri: string) {
@@ -41,15 +47,62 @@ export interface ColumnOptions {
   video: boolean
   /** What's up next. */
   queue: boolean
+  /** Folded to a strip (the user's choice, kept in settings). */
+  collapsed: boolean
 }
 
-export function startLyricsColumn(enabled: () => boolean, options: () => ColumnOptions, source: PlaybackSource = spotify): LyricsColumnController {
+export function startLyricsColumn(
+  enabled: () => boolean,
+  options: () => ColumnOptions,
+  source: PlaybackSource = spotify,
+  setCollapsed: (collapsed: boolean) => void = () => undefined,
+): LyricsColumnController {
   let mounted: Mounted | null = null
   let last: PlaybackState | null = null
+  let slide: Animation | null = null
+  /** Folding: the full column stays until the slide ends, then the strip takes over. */
+  let folding = false
   const html = document.documentElement
+
+  const stopSlide = (m: Mounted) => {
+    if (slide) {
+      slide.onfinish = null
+      slide.cancel()
+    }
+    slide = null
+    folding = false
+    html.removeAttribute(SLOT.slidingAttr)
+    m.host.removeAttribute('data-sliding')
+    m.host.style.removeProperty(CONTENT_WIDTH_VAR)
+  }
+
+  /**
+   * Slides the column's width between the strip and its full width; the lyrics view follows it through the grid
+   * track. The content keeps the wider of the two widths meanwhile, so it slides instead of reflowing.
+   */
+  const toggle = (m: Mounted, collapse: boolean) => {
+    const from = m.host.getBoundingClientRect().width
+    stopSlide(m)
+    setCollapsed(collapse)
+    const animate = typeof m.host.animate === 'function' && !window.matchMedia(REDUCED_MOTION).matches
+    folding = collapse && animate
+    show(m, last)
+    if (!animate) return
+    const to = collapse ? SLOT.collapsedWidth : m.host.getBoundingClientRect().width
+    html.setAttribute(SLOT.slidingAttr, '')
+    m.host.setAttribute('data-sliding', collapse ? 'out' : 'in')
+    m.host.style.setProperty(CONTENT_WIDTH_VAR, `${Math.max(from, to)}px`)
+    slide = m.host.animate([{ width: `${from}px` }, { width: `${to}px` }], { duration: SLIDE_MS, easing: SLIDE_EASING })
+    slide.onfinish = () => {
+      stopSlide(m)
+      if (collapse) show(m, last)
+    }
+  }
 
   const show = (m: Mounted, state: PlaybackState | null) => {
     last = state
+    const collapsed = options().collapsed && !folding
+    html.toggleAttribute(SLOT.collapsedAttr, collapsed)
     if (!hasTrack(state)) {
       render(null, m.body)
       html.removeAttribute(SLOT.readyAttr)
@@ -62,6 +115,8 @@ export function startLyricsColumn(enabled: () => boolean, options: () => ColumnO
         onQueue: () => document.querySelector<HTMLElement>(QUEUE_BUTTON)?.click(),
         loadCanvas: options().video ? source.loadCanvas : null,
         showQueue: options().queue,
+        collapsed,
+        onCollapse: (on: boolean) => toggle(m, on),
       }),
       m.body,
     )
@@ -102,11 +157,13 @@ export function startLyricsColumn(enabled: () => boolean, options: () => ColumnO
     const m = mounted
     if (!m) return
     mounted = null
+    stopSlide(m)
     m.observer.disconnect()
     m.stopPlayback?.()
     render(null, m.body)
     m.host.remove()
     html.removeAttribute(SLOT.readyAttr)
+    html.removeAttribute(SLOT.collapsedAttr)
   }
 
   const refresh = () => {

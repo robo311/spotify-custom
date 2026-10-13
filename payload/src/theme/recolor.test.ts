@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { SVG_ATTRIBUTE_CSS, compileRecolor, startRecolor, type Declaration } from './recolor'
+import { SVG_ATTRIBUTE_CSS, compileRecolor, readDeclarations, startRecolor, type Declaration } from './recolor'
 
 const decl = (property: string, value: string, selector = '.x', conditions: string[] = []): Declaration => ({ selector, property, value, conditions })
 
@@ -18,6 +18,15 @@ describe('compileRecolor', () => {
   it('rewrites fades towards Spotify base background inside gradients', () => {
     expect(compileRecolor([decl('background-image', 'linear-gradient(180deg, #12121200 0%, #121212 79%)')])).toBe(
       '.x { background-image: linear-gradient(180deg, rgb(from var(--sc-background) r g b / 0) 0%, var(--sc-background) 79%) !important; }',
+    )
+  })
+
+  it('rewrites the oklch spellings of Spotify base background (1.3.4 Canvas scrims)', () => {
+    expect(compileRecolor([decl('background-image', 'linear-gradient(oklch(0.18 0 0 / 0.63) 0%, oklch(0.18 0 0) 95%)')])).toBe(
+      '.x { background-image: linear-gradient(rgb(from var(--sc-background) r g b / 0.63) 0%, var(--sc-background) 95%) !important; }',
+    )
+    expect(compileRecolor([decl('background', 'linear-gradient(to bottom, transparent 0% var(--a), oklch(18% 0 0/.8) var(--b), oklch(18% 0 0) var(--c))')])).toBe(
+      '.x { background: linear-gradient(to bottom, transparent 0% var(--a), rgb(from var(--sc-background) r g b / .8) var(--b), var(--sc-background) var(--c)) !important; }',
     )
   })
 
@@ -54,6 +63,22 @@ describe('compileRecolor', () => {
     expect(css).toContain('r g b / 0)')
     expect(css).toContain('r g b / 0.502)')
     expect(css).toContain('r g b / 0.6)')
+  })
+})
+
+describe('readDeclarations', () => {
+  it('reads a background shorthand whose longhands are pending var() substitution', () => {
+    // Chromium's CSSOM for `background: <value with var()>`: every longhand reads as '', only the shorthand has the
+    // value (happy-dom fills the longhands in, so the rule is stubbed the way Chromium serialises it).
+    const shorthand = 'linear-gradient(transparent var(--a), #121212 var(--b))'
+    const longhands = ['background-image', 'background-color']
+    const style = { length: longhands.length, item: (i: number) => longhands[i], getPropertyValue: (p: string) => (p === 'background' ? shorthand : '') }
+    const rule = Object.defineProperties(Object.create(CSSStyleRule.prototype) as CSSStyleRule, {
+      selectorText: { value: '.s' },
+      style: { value: style },
+    })
+    const found = [...readDeclarations([rule] as unknown as CSSRuleList)].filter(d => d.value !== '')
+    expect(found).toEqual([decl('background', shorthand, '.s')])
   })
 })
 

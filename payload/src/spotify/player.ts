@@ -53,12 +53,19 @@ function covers(album: unknown): { image: string | null; thumb: string | null } 
   return { image: images.at(-1)?.url ?? null, thumb: images.at(0)?.url ?? null }
 }
 
+/** As a music video, the album's images are a frame of the video; the album cover is kept in the metadata (bare ids). */
+function audioCovers(metadata: unknown): { image: string | null; thumb: string | null } | null {
+  const image = coverUrl(`spotify:image:${text(field(metadata, 'audio_association_image_large'))}`)
+  return image ? { image, thumb: coverUrl(`spotify:image:${text(field(metadata, 'audio_association_image_small'))}`) ?? image } : null
+}
+
 function toTrack(item: unknown): PlaybackTrack | null {
   if (field(item, 'type') !== 'track') return null
   const uri = text(field(item, 'uri'))
   const name = text(field(item, 'name'))
   if (!uri || !name) return null
   const album = field(item, 'album')
+  const video = field(item, 'mediaType') === 'video'
   return {
     uri,
     name,
@@ -66,8 +73,9 @@ function toTrack(item: unknown): PlaybackTrack | null {
       .map(a => ({ name: text(field(a, 'name')), uri: text(field(a, 'uri')) }))
       .filter(a => a.name !== ''),
     album: { name: text(field(album, 'name')), uri: text(field(album, 'uri')) },
-    ...covers(album),
+    ...((video ? audioCovers(field(item, 'metadata')) : null) ?? covers(album)),
     canvasId: canvasIdOf(field(item, 'metadata')),
+    video,
   }
 }
 

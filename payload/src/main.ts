@@ -12,7 +12,7 @@ import { startCanvasCover } from './canvas'
 import { startLibrary } from './library'
 import { mountBuilder } from './builder'
 import { startExtensions, type ExtensionHost } from './ext'
-import { installSpotifyHooks } from './spotify'
+import { installSpotifyHooks, spotify } from './spotify'
 import { idleAudioChannel, startReactive } from './audio'
 
 const BUILD_ID = __BUILD_ID__
@@ -116,7 +116,16 @@ function boot() {
     const lyricsLibrary = startLyricsLibrary(() => store.get().active.layout.lyricsKeepLibrary)
     const lyricsColumn = startLyricsColumn(
       () => store.get().active.layout.lyricsNowPlaying,
-      () => ({ video: store.get().active.layout.lyricsNowPlayingVideo, queue: store.get().active.layout.lyricsNowPlayingQueue }),
+      () => ({
+        video: store.get().active.layout.lyricsNowPlayingVideo,
+        queue: store.get().active.layout.lyricsNowPlayingQueue,
+        collapsed: store.get().settings.lyricsColumnCollapsed,
+      }),
+      spotify,
+      collapsed =>
+        store.editSettings(s => {
+          s.lyricsColumnCollapsed = collapsed
+        }),
     )
     disposers.push(
       onSliceChange(store, s => s.active.layout, () => {

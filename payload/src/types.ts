@@ -235,6 +235,7 @@ export interface Settings {
   extensionData: Record<string, Record<string, unknown>> // extension id -> its saved settings
   artworkStyles: Record<string, ArtworkStyle> // library item URI -> custom artwork
   reactive: ReactiveSettings
+  lyricsColumnCollapsed: boolean // the lyrics page's Now playing column folded to a strip
 }
 
 /** Personal (never in share codes): turning capture on is a permission decision, and sync depends on the speakers. */
@@ -370,6 +371,7 @@ export interface PlaybackTrack {
   image: string | null // https URL of the largest cover
   thumb: string | null // https URL of the smallest cover
   canvasId: string | null // file id of the track's looping Canvas video, if it has one (spotify/canvas.ts loads it)
+  video: boolean // playing as its music video (Spotify's "Switch to video")
 }
 
 export interface PlaybackState {

@@ -122,8 +122,12 @@ describe('normalizeSettings', () => {
       extensionData: {},
       artworkStyles: {},
       reactive: { enabled: false, syncMs: 0 },
+      lyricsColumnCollapsed: false,
     })
     expect(normalizeSettings(null, 'darcula').activeTheme).toBe('darcula')
+    expect(normalizeSettings(null, 'darcula').lyricsColumnCollapsed).toBe(false)
+    expect(normalizeSettings({ lyricsColumnCollapsed: true }, 'darcula').lyricsColumnCollapsed).toBe(true)
+    expect(normalizeSettings({ lyricsColumnCollapsed: 'yes' }, 'darcula').lyricsColumnCollapsed).toBe(false)
   })
 
   it('keeps music-reactive off unless explicitly on, and clamps the sync offset', () => {

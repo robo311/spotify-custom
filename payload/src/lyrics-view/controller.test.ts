@@ -4,7 +4,7 @@ import type { LyricsAnimation, PlaybackState } from '../types'
 import type { TrackLyrics } from '../spotify'
 import { startLyricsView, withIntro, type LyricsSource } from './controller'
 
-const TRACK = { uri: 'spotify:track:2nopDUxom21JoMzFXj9wS0', name: 'Hands Up', artists: [], album: { name: '', uri: '' }, image: null, thumb: null, canvasId: null }
+const TRACK = { uri: 'spotify:track:2nopDUxom21JoMzFXj9wS0', name: 'Hands Up', artists: [], album: { name: '', uri: '' }, image: null, thumb: null, canvasId: null, video: false }
 const SYNCED: TrackLyrics = {
   synced: true,
   provider: 'Musixmatch',

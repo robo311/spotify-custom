@@ -31,12 +31,26 @@ function keepLibraryRules(side: LayoutConfig['librarySide']): CssRule[] {
 // Spotify's behaviour.
 export function compileLyricsIdle(theme: Pick<Theme, 'lyrics' | 'layout'>): string {
   if (!customisesLyricsView(theme)) return ''
-  const rules: CssRule[] = [{ selector: `${S.LYRICS_VIEW_OPEN} ${S.LYRICS_CINEMA_HOST}`, decls: { 'margin-top': '0', 'margin-bottom': '0' } }]
+  const rules: CssRule[] = [{ selector: `${S.LYRICS_VIEW_OPEN} ${S.LYRICS_CINEMA_HOST}`, decls: { 'margin-top': '0', 'margin-bottom': '0' } }, ...musicVideoRules()]
   if (!theme.layout.lyricsImmersive) {
     rules.push({ selector: `${S.LYRICS_VIEW_OPEN} ${TOP_BAR_ITEM}`, decls: { opacity: '1' } })
     rules.push({ selector: `${S.LYRICS_VIEW_OPEN} ${S.PLAYER_BAR}`, decls: { opacity: '1' } })
   }
   return renderRules(rules)
+}
+
+// The music video plays in the same view. Spotify sizes it to the window height (100vh) and pulls it up under the top
+// bar, which assumes the view grows over both bars; kept between them, the video is cropped and centred too low, over
+// the lyrics gradient. It fits the view instead, letterboxed on black. Switching back to audio, Spotify drops the
+// player at once but keeps the related videos below it mounted for a second or two, under the lyrics: they go with it.
+function musicVideoRules(): CssRule[] {
+  const player = S.VIDEO_PLAYER_CINEMA
+  return [
+    { selector: `${S.LYRICS_CINEMA_HOST} :has(> * > ${player})`, decls: { height: '100%', 'margin-top': '0' } },
+    { selector: `${S.LYRICS_CINEMA_HOST} :is(:has(> ${player}), ${player}, ${player} > *, ${player} video)`, decls: { height: '100%' } },
+    { selector: `${S.LYRICS_CINEMA_HOST} ${S.LYRICS_CINEMA_BG}:has(${player})`, decls: { background: '#000' } },
+    { selector: `${S.LYRICS_CINEMA_HOST}:not(:has(${player})) [data-overlayscrollbars-viewport] > :has(${S.VIDEO_CARD})`, decls: { display: 'none' } },
+  ]
 }
 
 const TOP_BAR_ITEM = S.TOP_BAR
@@ -85,8 +99,12 @@ function immersiveRules(layout: LayoutConfig): CssRule[] {
 // Our column takes the right panel's slot while Spotify's own panel (Queue/Friends) is closed; the lyrics view
 // gives up that column, and the panel slot (empty, or Spotify's last panel kept hidden) stays out of sight behind it.
 // When Spotify's panel opens, the column steps aside and Spotify's own 3-column layout applies.
+const COLLAPSED_WIDTH = `${LYRICS_COLUMN_SLOT.collapsedWidth}px`
+
 function nowPlayingColumnRules(layout: LayoutConfig): CssRule[] {
   const on = `${S.LYRICS_VIEW_OPEN}[${LYRICS_COLUMN_SLOT.readyAttr}]:not(${S.RIGHT_PANEL_OPEN})`
+  const collapsed = `${on}[${LYRICS_COLUMN_SLOT.collapsedAttr}]`
+  const sliding = `${on}[${LYRICS_COLUMN_SLOT.slidingAttr}]`
   const left = layout.librarySide === 'left'
   const viewColumns = layout.lyricsKeepLibrary ? 'main-view' : left ? 'left-sidebar / main-view' : 'main-view / left-sidebar'
   // Flush with the window edge (over the grid's padding) instead of leaving a strip of dead space beside the lyrics;
@@ -107,6 +125,15 @@ function nowPlayingColumnRules(layout: LayoutConfig): CssRule[] {
       // panel slot's width, or 320px when Spotify's panel was never opened.
       decls: { display: 'flex', 'grid-area': 'right-sidebar', contain: 'inline-size', 'min-width': '320px', 'min-height': '0', 'z-index': '5', ...flush },
     },
+    // Collapsed to a strip: the hidden panel slot leaves the track (it would hold it at the panel's width), and so
+    // does its resize bar.
+    { selector: `${collapsed} ${COLUMN_HOST}`, decls: { width: COLLAPSED_WIDTH, 'min-width': COLLAPSED_WIDTH } },
+    { selector: `${collapsed} ${PANEL_SLOT}`, decls: { position: 'absolute' } },
+    { selector: `${collapsed} ${PANEL_SLOT} ${S.RESIZE_BAR}`, decls: { visibility: 'hidden' } },
+    // Sliding between the two, its animated width alone sizes the track.
+    { selector: `${sliding} ${COLUMN_HOST}`, decls: { 'min-width': '0' } },
+    { selector: `${sliding} ${PANEL_SLOT}`, decls: { position: 'absolute' } },
+    { selector: `${sliding} ${PANEL_SLOT} ${S.RESIZE_BAR}`, decls: { visibility: 'hidden' } },
   ]
 }
 

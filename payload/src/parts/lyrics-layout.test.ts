@@ -131,6 +131,24 @@ describe('our Now playing column beside the lyrics', () => {
     expect(bar).toContain('visibility: visible !important;')
   })
 
+  // Collapsed, the column is a narrow strip; Spotify's hidden panel slot stops sizing the track (it would hold it at
+  // the panel's width) and its resize bar goes with it.
+  it('narrows to a strip when collapsed', () => {
+    const css = compileLyricsLayout({ ...LAYOUT, lyricsNowPlaying: true })
+    const collapsed = rules(css).filter(r => r.includes('[data-sc-lyrics-npv-collapsed]'))
+    expect(collapsed.find(r => r.includes('#sc-lyrics-npv {'))).toMatch(/width: 48px !important;\n {2}min-width: 48px !important;/)
+    expect(collapsed.find(r => r.includes('position: absolute'))).toContain('#Desktop_PanelContainer_Id')
+    expect(collapsed.find(r => r.includes('LayoutResizer__resize-bar'))).toContain('visibility: hidden !important;')
+    for (const rule of collapsed) expect(rule).toContain(`:not(${RIGHT_OPEN})`)
+  })
+
+  // While it slides, the column's own (animated) width sizes the track: no minimum, no panel slot holding it open.
+  it('lets the column width drive the track while it slides', () => {
+    const sliding = rules(compileLyricsLayout({ ...LAYOUT, lyricsNowPlaying: true })).filter(r => r.includes('[data-sc-lyrics-npv-sliding]'))
+    expect(sliding.find(r => r.includes('#sc-lyrics-npv {'))).toContain('min-width: 0 !important;')
+    expect(sliding.find(r => r.includes('position: absolute'))).toContain('#Desktop_PanelContainer_Id')
+  })
+
   it('turns translucent over the blurred cover like the other columns', () => {
     const css = compileLyrics({ ...SPOTIFY, background: 'cover-blur' })
     expect(rules(css).find(r => r.includes('#sc-lyrics-npv'))).toContain('--background-base: color-mix(in oklab, var(--sc-surface) 55%, transparent)')
@@ -192,6 +210,28 @@ describe("Spotify's native idle auto-hide in the lyrics view", () => {
 
   it.each([{ fontScale: 1.2 }, { align: 'center' as const }, { activeLine: '#fff' }, { animated: { ...defaultLyrics().animated, on: true } }])('counts %o as customising', l => {
     expect(compileLyricsIdle(theme(l))).not.toBe('')
+  })
+
+  // Spotify sizes the music video to the window height (100vh) and pulls it up under the top bar; between the bars
+  // that crops it and centres it too low, over the lyrics gradient.
+  it('fits a music video to the view between the bars, on black', () => {
+    const css = compileLyricsIdle(theme({ background: 'theme' }))
+    const rule = (part: string) => css.split('}').find(r => r.includes(part)) ?? ''
+    expect(rule(':has(> * > [data-testid="video-player-cinema"])')).toMatch(/height: 100% !important;\n {2}margin-top: 0 !important;/)
+    expect(rule('[data-testid="video-player-cinema"] video')).toContain('height: 100% !important;')
+    expect(rule(':has([data-testid="video-player-cinema"])')).toContain('background: #000 !important;')
+    expect(compileLyricsIdle(theme())).not.toContain('video-player-cinema')
+  })
+
+  // Switching from the music video back to audio, Spotify keeps the related-videos section mounted for a second or two
+  // after the player is gone, under the lyrics.
+  it('hides the music video\'s related videos once the video has gone', () => {
+    const css = compileLyricsIdle(theme({ background: 'theme' }))
+    const rule = css.split('}').find(r => r.includes('[data-testid="video-card-image"]')) ?? ''
+    expect(rule).toContain(':not(:has([data-testid="video-player-cinema"]))')
+    expect(rule).toContain('[data-overlayscrollbars-viewport] > :has([data-testid="video-card-image"])')
+    expect(rule).toContain('display: none !important;')
+    for (const r of css.split('}')) expect(r).not.toMatch(/:has\([^)]*:has\(/)
   })
 
   it('leaves the bars to the hover reveal when immersive is on', () => {

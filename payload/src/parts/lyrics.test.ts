@@ -169,6 +169,16 @@ describe('our Now playing column beside the lyrics', () => {
     for (const rule of rules(css)) expect(rule).not.toMatch(/:has\([^)]*:has\(/)
   })
 
+  // The column sits in the panel's grid track, so Spotify's own resize bar (inside the hidden slot) resizes it.
+  it("keeps Spotify's panel resize bar usable while the slot is hidden", () => {
+    const css = compileLyricsLayout({ ...LAYOUT, lyricsNowPlaying: true })
+    const bar = rules(css).find(r => r.includes('LayoutResizer__resize-bar')) ?? ''
+    expect(bar).toContain('[data-sc-lyrics-npv]')
+    expect(bar).toContain(`:not(${RIGHT_OPEN})`)
+    expect(bar).toContain('#Desktop_PanelContainer_Id')
+    expect(bar).toContain('visibility: visible !important;')
+  })
+
   it('turns translucent over the blurred cover like the other columns', () => {
     const css = compileLyrics({ ...SPOTIFY, background: 'cover-blur' })
     expect(rules(css).find(r => r.includes('#sc-lyrics-npv'))).toContain('--background-base: color-mix(in oklab, var(--sc-surface) 55%, transparent)')

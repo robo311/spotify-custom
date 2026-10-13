@@ -271,6 +271,8 @@ function nowPlayingColumnRules(layout: LayoutConfig): CssRule[] {
     { selector: COLUMN_HOST, decls: { display: 'none' } },
     { selector: `${on} ${S.LYRICS_CINEMA_HOST}`, decls: { 'grid-column': viewColumns } },
     { selector: `${on} ${PANEL_SLOT}`, decls: { visibility: 'hidden' } },
+    // The column fills the slot's grid track, so Spotify's own resize bar (on the slot's edge) resizes it too.
+    { selector: `${on} ${PANEL_SLOT} ${S.RESIZE_BAR}`, decls: { visibility: 'visible' } },
     {
       selector: `${on} ${COLUMN_HOST}`,
       // contain: its content mustn't size the auto track (that would squeeze the library); the track keeps the

@@ -1,7 +1,9 @@
 // Public API of the parts module: curated customisable parts of Spotify's UI and layout tweaks.
 import type { Theme } from '../types'
-import { compileLyrics, compileLyricsIdle, compileLyricsMotion } from './lyrics'
-export { LYRICS_COLUMN_SLOT } from './lyrics'
+import { compileLyrics } from './lyrics'
+import { compileLyricsIdle } from './lyrics-layout'
+import { compileLyricsMotion } from './lyrics-motion'
+export { LYRICS_COLUMN_SLOT, LYRICS_VIEW_SLOT } from './lyrics-shared'
 import { compileHomeLook } from './home-look'
 import { compilePageLook } from './page-look'
 import { compileProgress } from './progress'

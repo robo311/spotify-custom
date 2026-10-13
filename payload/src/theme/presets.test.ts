@@ -50,6 +50,10 @@ describe('presets', () => {
     }
   })
 
+  it('animates lyrics in every preset but Spotify Original', () => {
+    for (const p of PRESETS) expect(p.lyrics.animated.on).toBe(p.id !== 'spotify-original')
+  })
+
   it.each(PRESETS.flatMap(p => (p.lyrics.activeLine ? [[p.name, p] as const] : [])))('%s keeps the sung lyric line readable', (_n, p) => {
     expect(contrastRatio(p.lyrics.activeLine ?? '', p.palette.background)).toBeGreaterThanOrEqual(MIN_TEXT_CONTRAST)
   })

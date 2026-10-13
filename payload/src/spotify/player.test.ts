@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import { coverUrl, findPlayerInFiber, isPlaying, mapPlayerState, subscribePlayback } from './player'
+import { coverUrl, findPlayerInFiber, isPlaying, mapPlayerState, positionOf, subscribePlayback } from './player'
 
 const track = (name: string, extra: Record<string, unknown> = {}) => ({
   type: 'track',
@@ -76,6 +76,7 @@ const fakePlayer = () => {
     getState: () => state,
     getQueue: vi.fn(),
     skipToNext: vi.fn(),
+    seekTo: vi.fn(),
     _events: {
       addListener(name: string, fn: () => void) {
         const set = listeners.get(name) ?? new Set()
@@ -126,5 +127,21 @@ describe('isPlaying', () => {
     expect(isPlaying({ item: track('now'), isPaused: true })).toBe(false)
     expect(isPlaying({ item: null, isPaused: false })).toBe(false)
     expect(isPlaying(undefined)).toBe(false)
+  })
+})
+
+describe('positionOf', () => {
+  const state = { item: { type: 'track' }, positionAsOfTimestamp: 10_000, timestamp: 1_000_000, speed: 1, isPaused: false, duration: 200_000 }
+  it('runs the reported position on from its timestamp while playing', () => {
+    expect(positionOf(state, 1_002_500)).toBe(12_500)
+    expect(positionOf({ ...state, speed: 2 }, 1_001_000)).toBe(12_000)
+  })
+  it('holds still while paused and never passes the end', () => {
+    expect(positionOf({ ...state, isPaused: true }, 1_009_000)).toBe(10_000)
+    expect(positionOf(state, 9_000_000)).toBe(200_000)
+  })
+  it('is null without a track or a position', () => {
+    expect(positionOf({ ...state, item: null }, 1_000_000)).toBeNull()
+    expect(positionOf({ item: { type: 'track' } }, 1_000_000)).toBeNull()
   })
 })

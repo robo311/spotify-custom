@@ -202,6 +202,8 @@ export const LYRICS_CINEMA_BG = '[style*="--cinema-mode-bg-color-from"]'
 export const LYRICS_CINEMA_HOST = `${LAYOUT_GRID} > :has(> [data-overlayscrollbars])`
 /** The view's own header row (title + action buttons), floating over the top of the lyrics. */
 export const LYRICS_VIEW_HEADER = `${LYRICS_CINEMA_HOST} > :has(button):not(:has([data-overlayscrollbars]))`
+/** Spotify's "Sync" button (back to the sung line after scrolling away), the view's only primary button. */
+export const LYRICS_SYNC_BUTTON = `${LYRICS_CINEMA_HOST} > :has(> * > [data-encore-id="buttonPrimary"])`
 /** Scroll viewport of the lyrics (OverlayScrollbars library attribute); its box stays put while lyrics scroll. */
 export const LYRICS_SCROLL_VIEWPORT = `${LYRICS_CINEMA_HOST} [data-overlayscrollbars-viewport]`
 

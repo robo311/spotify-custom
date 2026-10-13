@@ -35,6 +35,8 @@ export const COLUMN_CSS = /* css */ `
 .hero-video { position: absolute; inset: 0; z-index: -2; display: block; width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity 600ms var(--ease); }
 .hero-video { -webkit-mask-image: linear-gradient(to bottom, #000 86%, transparent); mask-image: linear-gradient(to bottom, #000 86%, transparent); }
 .hero-video.ready { opacity: 1; }
+/* Once the video has faded in, the cover under it goes: both fade out at the bottom, where the cover would show through. */
+.hero:has(.hero-video.ready) .hero-img { opacity: 0; transition: opacity 0s 600ms; }
 .hero-img.empty { display: grid; place-items: center; color: var(--sub); background: color-mix(in oklab, var(--text) 6%, var(--bg)); }
 .hero-shade {
   position: absolute; inset: 0; z-index: -1; pointer-events: none;
@@ -48,6 +50,18 @@ export const COLUMN_CSS = /* css */ `
 .title { margin: 0; font-size: 26px; font-weight: 800; letter-spacing: -0.025em; line-height: 1.15; overflow-wrap: anywhere; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .artists { overflow: hidden; color: rgb(255 255 255 / .78); font-size: 15px; font-weight: 500; white-space: nowrap; text-overflow: ellipsis; }
 .artists .link:hover { color: #fff; }
+
+/* Without Up next the cover (or Canvas, usually portrait) fills the whole column, cropped to fit, and fades out over
+   a longer stretch at the bottom. */
+.solo .hero { flex: 1; aspect-ratio: auto; max-height: none; }
+.solo :is(.hero-img, .hero-video) {
+  -webkit-mask-image: linear-gradient(to bottom, #000 55%, transparent 97%); mask-image: linear-gradient(to bottom, #000 55%, transparent 97%);
+}
+.solo .hero-shade {
+  background:
+    linear-gradient(to bottom, rgb(0 0 0 / .6) 0, rgb(0 0 0 / .22) 15%, transparent 30%),
+    linear-gradient(to top, rgb(0 0 0 / .35) 0, rgb(0 0 0 / .7) 16%, rgb(0 0 0 / .55) 30%, rgb(0 0 0 / .25) 46%, transparent 64%);
+}
 
 /* ---------- up next ---------- */
 .next { display: grid; gap: 8px; margin: 4px 12px 12px; padding: 14px 4px 6px; border-radius: 8px; background: color-mix(in oklab, var(--text) 5%, transparent); }

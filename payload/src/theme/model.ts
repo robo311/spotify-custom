@@ -7,6 +7,7 @@ import type {
   HomeStyle,
   IconChoice,
   LayoutConfig,
+  LyricsAnimation,
   LyricsBackground,
   LyricsStyle,
   NowPlayingLayout,
@@ -76,6 +77,7 @@ export function defaultLayout(): LayoutConfig {
     lyricsImmersive: false,
     lyricsNowPlaying: false,
     lyricsNowPlayingVideo: true,
+    lyricsNowPlayingQueue: true,
   }
 }
 
@@ -98,9 +100,14 @@ export function defaultNowPlaying(): NowPlayingLayout {
   }
 }
 
-/** Themes made before lyrics styling existed keep Spotify's own lyrics look. */
+/** Themes made before lyrics styling existed keep Spotify's own lyrics colours and text (and get animated lyrics). */
 export function defaultLyrics(): LyricsStyle {
-  return { background: 'spotify', fontScale: 1, font: 'theme', align: 'left' }
+  return { background: 'spotify', fontScale: 1, font: 'theme', align: 'left', animated: defaultLyricsAnimation() }
+}
+
+/** On (Spotify Original turns it off): word by word, with glow and lift. */
+export function defaultLyricsAnimation(): LyricsAnimation {
+  return { on: true, words: true, glow: true, lift: true, blurRest: false, gradient: false, layout: 'lyrics' }
 }
 
 export function defaultHomeStyle(): HomeStyle {
@@ -258,6 +265,7 @@ function validateLayout(input: unknown): LayoutConfig {
     lyricsImmersive: raw.lyricsImmersive === true,
     lyricsNowPlaying: raw.lyricsNowPlaying === true,
     lyricsNowPlayingVideo: raw.lyricsNowPlayingVideo !== false,
+    lyricsNowPlayingQueue: raw.lyricsNowPlayingQueue !== false,
   }
 }
 
@@ -274,6 +282,7 @@ function validateLyrics(input: unknown): LyricsStyle {
         : d.fontScale,
     font: input.font === 'theme' || FONT_IDS.includes(input.font as FontId) ? (input.font as FontId | 'theme') : d.font,
     align: input.align === 'center' ? 'center' : 'left',
+    animated: validateLyricsAnimation(input.animated),
   }
   // Optional colours: omitted (not undefined-valued) when absent, so themes round-trip through JSON unchanged.
   for (const key of ['activeLine', 'inactiveLine', 'pastLine'] as const) {
@@ -281,6 +290,21 @@ function validateLyrics(input: unknown): LyricsStyle {
     if (isColor(value)) lyrics[key] = normalizeHex(value)
   }
   return lyrics
+}
+
+function validateLyricsAnimation(input: unknown): LyricsAnimation {
+  const d = defaultLyricsAnimation()
+  const raw = isRecord(input) ? input : {}
+  const flag = (key: Exclude<keyof LyricsAnimation, 'layout'>) => (typeof raw[key] === 'boolean' ? raw[key] : d[key])
+  return {
+    on: flag('on'),
+    words: flag('words'),
+    glow: flag('glow'),
+    lift: flag('lift'),
+    blurRest: flag('blurRest'),
+    gradient: flag('gradient'),
+    layout: oneOf(['lyrics', 'cover-left'] as const, raw.layout, d.layout),
+  }
 }
 
 const oneOf = <T>(options: readonly T[], value: unknown, fallback: T): T => (options.includes(value as T) ? (value as T) : fallback)

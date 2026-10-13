@@ -3,6 +3,36 @@
 All notable changes to Spotify Custom. Versions follow `X.Y.Z`; installed copies update themselves (see
 [docs/install-guide.md](docs/install-guide.md#updates)).
 
+## 0.2.4 — 2026-10-13
+
+### Added
+
+- **Animated lyrics** (🎨 → Lyrics → Animated lyrics). Lyrics on the lyrics page are drawn word by word: each word
+  fills in as it's sung, with optional glow, lift, blur on the other lines and an accent gradient fill. A "Cover left"
+  layout puts the cover, title and progress beside the lyrics. Most songs only have line timing from Spotify, so the
+  word timing is estimated from it (real syllable timing is used when Spotify has it). Click a line to jump to it;
+  after you scroll, the lyrics follow the song again by themselves (Spotify's own "Sync" button is hidden meanwhile).
+  Songs without synced lyrics keep Spotify's own view. Uses your theme's lyrics font, size, alignment and colours.
+  On by default in every theme except Spotify Original. Skipping songs keeps the view in place: the cover panel
+  updates at once and only the lines fade over to the new song.
+- **Hide Up next in the lyrics Now playing column** (🎨 → Lyrics → Up next). With it off the column shows only the
+  cover (or Canvas video), song and artist, and the cover or video fills the whole column, fading out over a longer
+  stretch at the bottom.
+
+### Fixed
+
+- **Lyrics page edges.** With the library kept beside the lyrics, it now sits flush with the window edge instead of
+  leaving a dark strip there, and in immersive lyrics the side columns run to the top and bottom edges as well.
+- **Lyrics under the header.** Lyric lines fade out before they reach the lyrics view's header row (and, in immersive
+  lyrics, the player bar) instead of showing through behind its buttons.
+- **Blurred cover background:** the lyrics view now reaches the columns beside it, so its dark header fade no longer
+  stops short over a strip of bare cover. The library and the right panel stay resizable over it.
+- **No more black flash when skipping songs on the lyrics page** with the blurred cover background. The background
+  keeps the previous cover until the next one has loaded, instead of going empty for a moment.
+- **Sharper Canvas video in the lyrics Now playing column.** It loads at the size it's shown at (a portrait video
+  covering a tall column needs more width than the column), instead of being stretched and soft, most visibly while
+  paused. The cover no longer shows through faintly where the video fades out at the bottom.
+
 ## 0.2.3 — 2026-10-13
 
 ### Added

@@ -4,6 +4,7 @@
 // stays if anything fails. Skipped with reduced motion.
 import { useEffect, useRef, useState } from 'preact/hooks'
 import type { CanvasMedia } from '../spotify'
+import { canvasWidthFor } from './canvas-size'
 import { playSegments } from './play-segments'
 
 export type CanvasLoader = (fileId: string, minWidth: number, signal: AbortSignal) => Promise<CanvasMedia | null>
@@ -30,7 +31,7 @@ export function CanvasVideo({ fileId, load, paused }: CanvasVideoProps) {
     let started = false
     const start = () => {
       started = true
-      const width = Math.round(video.clientWidth * window.devicePixelRatio)
+      const width = canvasWidthFor(video.clientWidth, video.clientHeight, window.devicePixelRatio)
       load(fileId, width, abort.signal).then(
         media => {
           if (media && !abort.signal.aborted) detach = playSegments(video, media)

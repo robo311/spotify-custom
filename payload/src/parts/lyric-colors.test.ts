@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { defaultLyrics } from '../theme/model'
 import type { Palette } from '../types'
 import { autoLyricLines, cssMix, resolveLyricLines } from './lyric-colors'
 
@@ -28,7 +29,7 @@ describe('autoLyricLines', () => {
 
 describe('resolveLyricLines', () => {
   it('prefers chosen colours', () => {
-    const lines = resolveLyricLines({ background: 'cover-blur', fontScale: 1, font: 'theme', align: 'left', pastLine: '#123' }, P)
+    const lines = resolveLyricLines({ ...defaultLyrics(), background: 'cover-blur', pastLine: '#123' }, P)
     expect(lines).toEqual({ activeLine: '#ffffff', inactiveLine: '#8c8c8c', pastLine: '#123' })
   })
 })

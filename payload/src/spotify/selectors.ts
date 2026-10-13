@@ -4,6 +4,9 @@
 export const PATHFINDER_QUERY_URL = 'https://api-partner.spotify.com/pathfinder/v2/query'
 export const PATHFINDER_URL_PREFIX = 'https://api-partner.spotify.com/pathfinder/'
 
+/** Spotify's service host for lyrics, metadata, Canvas manifests, …; its requests carry the same session headers. */
+export const SPCLIENT_URL_PREFIX = 'https://spclient.wg.spotify.com/'
+
 /** Origin the xpui web app (and its lazily loaded JS chunks) is served from inside the desktop client. */
 export const XPUI_ORIGIN = 'https://xpui.app.spotify.com'
 

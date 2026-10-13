@@ -36,6 +36,7 @@ function fakeSource() {
   return source
 }
 
+const ALL = { video: true, queue: true }
 const host = () => document.getElementById('sc-lyrics-npv')
 const shadowText = () => host()?.shadowRoot?.textContent ?? ''
 const ready = () => document.documentElement.hasAttribute('data-sc-lyrics-npv')
@@ -49,7 +50,7 @@ describe('startLyricsColumn', () => {
   it('puts a host in the layout grid only while enabled', () => {
     document.body.innerHTML = GRID
     let on = false
-    const ctl = startLyricsColumn(() => on, () => true, fakeSource())
+    const ctl = startLyricsColumn(() => on, () => ALL, fakeSource())
     expect(host()).toBeNull()
     on = true
     ctl.refresh()
@@ -63,7 +64,7 @@ describe('startLyricsColumn', () => {
   it("layers the track's Canvas over the cover when it has one", () => {
     document.body.innerHTML = GRID
     const source = fakeSource()
-    const ctl = startLyricsColumn(() => true, () => true, source)
+    const ctl = startLyricsColumn(() => true, () => ALL, source)
     const video = () => host()?.shadowRoot?.querySelector('video.hero-video')
     expect(video()).toBeFalsy()
     const first = state('first')
@@ -77,7 +78,7 @@ describe('startLyricsColumn', () => {
     document.body.innerHTML = GRID
     const source = fakeSource()
     let video = false
-    const ctl = startLyricsColumn(() => true, () => video, source)
+    const ctl = startLyricsColumn(() => true, () => ({ ...ALL, video }), source)
     const first = state('first')
     if (first.track) source.emit({ ...first, track: { ...first.track, canvasId: '780e3d4553633463b21ee4cea8eff783' } })
     const layer = () => host()?.shadowRoot?.querySelector('video.hero-video')
@@ -88,12 +89,28 @@ describe('startLyricsColumn', () => {
     ctl.dispose()
   })
 
+  it('drops Up next and lets the cover fill the column when the queue is off, and brings it back on refresh', () => {
+    document.body.innerHTML = GRID
+    let queue = false
+    const ctl = startLyricsColumn(() => true, () => ({ ...ALL, queue }), fakeSource())
+    const npv = () => host()?.shadowRoot?.querySelector('.npv')
+    expect(host()?.shadowRoot?.querySelector('.next')).toBeNull()
+    expect(npv()?.classList.contains('solo')).toBe(true)
+    expect(shadowText()).toContain('first') // title and artist stay
+    expect(shadowText()).toContain('Artist')
+    queue = true
+    ctl.refresh()
+    expect(host()?.shadowRoot?.querySelector('.next')).not.toBeNull()
+    expect(npv()?.classList.contains('solo')).toBe(false)
+    ctl.dispose()
+  })
+
   // Rendered ahead of time (CSS keeps it hidden outside the lyrics view), so Spotify's open transition already
   // captures the final layout instead of the column landing as a jump afterwards.
   it('follows playback while enabled and is ready before the lyrics view opens', () => {
     document.body.innerHTML = GRID
     const source = fakeSource()
-    const ctl = startLyricsColumn(() => true, () => true, source)
+    const ctl = startLyricsColumn(() => true, () => ALL, source)
     expect(source.active()).toBe(true)
     expect(ready()).toBe(true)
     expect(shadowText()).toContain('first')
@@ -111,7 +128,7 @@ describe('startLyricsColumn', () => {
 
   it('re-attaches to the layout grid when Spotify rebuilds it', async () => {
     document.body.innerHTML = GRID
-    const ctl = startLyricsColumn(() => true, () => true, fakeSource())
+    const ctl = startLyricsColumn(() => true, () => ALL, fakeSource())
     const root = document.querySelector('[data-testid="root"]')
     const grid = document.getElementById('grid')
     const fresh = grid?.cloneNode(false) as HTMLElement
@@ -128,7 +145,7 @@ describe('startLyricsColumn', () => {
   it('stays out of the way when the player is unavailable', () => {
     document.body.innerHTML = GRID
     document.documentElement.setAttribute(LYRICS_ATTR, '')
-    const ctl = startLyricsColumn(() => true, () => true, { onPlayback: fn => (fn(null), () => undefined), loadCanvas: () => Promise.resolve(null) })
+    const ctl = startLyricsColumn(() => true, () => ALL, { onPlayback: fn => (fn(null), () => undefined), loadCanvas: () => Promise.resolve(null) })
     expect(ready()).toBe(false)
     expect(shadowText()).toBe('')
     ctl.dispose()
@@ -138,7 +155,7 @@ describe('startLyricsColumn', () => {
     document.body.innerHTML = GRID
     document.documentElement.setAttribute(LYRICS_ATTR, '')
     const source = fakeSource()
-    const ctl = startLyricsColumn(() => true, () => true, source)
+    const ctl = startLyricsColumn(() => true, () => ALL, source)
     expect(ready()).toBe(true)
     ctl.dispose()
     expect(host()).toBeNull()

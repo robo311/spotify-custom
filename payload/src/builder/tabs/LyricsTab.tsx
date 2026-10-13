@@ -1,7 +1,7 @@
-// Lyrics: background, line colours, text, and how the lyrics page behaves. Edits go to theme.lyrics / theme.layout.
+// Lyrics: background, line colours, text, animated lyrics, and how the lyrics page behaves. Edits go to theme.lyrics / theme.layout.
 import { useState } from 'preact/hooks'
 import { MicVocal } from 'lucide-static'
-import type { FontId, LyricsStyle } from '../../types'
+import type { FontId, LyricsAnimation, LyricsStyle } from '../../types'
 import { LYRICS_SCALE_MAX, LYRICS_SCALE_MIN } from '../../theme/model'
 import { useApp, useEnv } from '../context'
 import { autoLyricLines, type LyricLineColors } from '../lib/lyrics'
@@ -22,6 +22,14 @@ const LINES: readonly { key: keyof LyricLineColors; label: string; hint: string 
   { key: 'pastLine', label: 'Sung lines', hint: 'Lines already sung' },
 ]
 
+const EFFECTS: readonly { key: Exclude<keyof LyricsAnimation, 'on' | 'layout'>; label: string; hint: string }[] = [
+  { key: 'words', label: 'Word by word', hint: 'Fill each word as it is sung (timing is estimated when Spotify only times lines)' },
+  { key: 'glow', label: 'Glow', hint: 'A soft glow on the part being sung' },
+  { key: 'lift', label: 'Lift', hint: 'Words rise slightly as they are sung' },
+  { key: 'blurRest', label: 'Blur the rest', hint: 'Lines further from the sung one go out of focus' },
+  { key: 'gradient', label: 'Gradient fill', hint: 'Sung text fills from the accent colour' },
+]
+
 export function LyricsTab() {
   const { store } = useEnv()
   const lyrics = useApp(s => s.active.lyrics)
@@ -30,6 +38,8 @@ export function LyricsTab() {
   const immersive = useApp(s => s.active.layout.lyricsImmersive)
   const nowPlaying = useApp(s => s.active.layout.lyricsNowPlaying)
   const nowPlayingVideo = useApp(s => s.active.layout.lyricsNowPlayingVideo)
+  const nowPlayingQueue = useApp(s => s.active.layout.lyricsNowPlayingQueue)
+  const animated = lyrics.animated
   const [openLine, setOpenLine] = useState<keyof LyricLineColors | null>(null)
   const auto = autoLyricLines(lyrics.background, palette)
 
@@ -117,6 +127,51 @@ export function LyricsTab() {
         </Field>
       </Section>
 
+      <Section title="Animated lyrics">
+        <Toggle
+          label="Animated lyrics"
+          description="Lyrics drawn word by word, when the song has synced lyrics"
+          checked={animated.on}
+          onChange={v =>
+            editLyrics(l => {
+              l.animated.on = v
+            })
+          }
+        />
+        {animated.on && (
+          <>
+            <Field label="Layout">
+              <Segmented<LyricsAnimation['layout']>
+                label="Layout"
+                value={animated.layout}
+                options={[
+                  { value: 'lyrics', label: 'Lyrics' },
+                  { value: 'cover-left', label: 'Cover left' },
+                ]}
+                onChange={v =>
+                  editLyrics(l => {
+                    l.animated.layout = v
+                  })
+                }
+              />
+            </Field>
+            {EFFECTS.map(effect => (
+              <Toggle
+                key={effect.key}
+                label={effect.label}
+                description={effect.hint}
+                checked={animated[effect.key]}
+                onChange={v =>
+                  editLyrics(l => {
+                    l.animated[effect.key] = v
+                  })
+                }
+              />
+            ))}
+          </>
+        )}
+      </Section>
+
       <Section title="Lyrics page">
         <Toggle
           label="Keep library visible"
@@ -139,16 +194,28 @@ export function LyricsTab() {
           }
         />
         {nowPlaying && (
-          <Toggle
-            label="Canvas video"
-            description="Play the song's looping video in the column when it has one"
-            checked={nowPlayingVideo}
-            onChange={v =>
-              store.edit(t => {
-                t.layout.lyricsNowPlayingVideo = v
-              })
-            }
-          />
+          <>
+            <Toggle
+              label="Canvas video"
+              description="Play the song's looping video in the column when it has one"
+              checked={nowPlayingVideo}
+              onChange={v =>
+                store.edit(t => {
+                  t.layout.lyricsNowPlayingVideo = v
+                })
+              }
+            />
+            <Toggle
+              label="Up next"
+              description="Off: just the cover or video, song and artist, filling the column"
+              checked={nowPlayingQueue}
+              onChange={v =>
+                store.edit(t => {
+                  t.layout.lyricsNowPlayingQueue = v
+                })
+              }
+            />
+          </>
         )}
         <Toggle
           label="Immersive lyrics"

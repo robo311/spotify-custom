@@ -2,7 +2,7 @@
 // Palette semantics (see types.ts): background = content panels, surface = app frame around them,
 // elevated = cards/menus/hover. Every preset must pass presets.test.ts (readability + distinctness rules).
 import type { Effects, LayoutConfig, LyricsStyle, Palette, Theme } from '../types'
-import { defaultEffects, defaultHomeStyle, defaultLayout, defaultLyrics, defaultPageStyle, defaultReactiveLook, THEME_SCHEMA } from './model'
+import { defaultEffects, defaultHomeStyle, defaultLayout, defaultLyrics, defaultLyricsAnimation, defaultPageStyle, defaultReactiveLook, THEME_SCHEMA } from './model'
 
 export const DEFAULT_PRESET_ID = 'tokyo-night'
 export const SPOTIFY_ORIGINAL_ID = 'spotify-original'
@@ -94,7 +94,7 @@ export const PRESETS: Theme[] = [
     palette: SPOTIFY_PALETTE,
     font: 'spotify',
     icons: 'spotify',
-    lyrics: defaultLyrics(),
+    lyrics: { ...defaultLyrics(), animated: { ...defaultLyricsAnimation(), on: false } },
     effects: { progressBar: 'spotify', reactive: defaultReactiveLook() },
   }),
   preset({

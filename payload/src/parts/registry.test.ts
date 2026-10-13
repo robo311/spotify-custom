@@ -4,7 +4,7 @@ import { compileParts, PARTS } from '.'
 import { compileRecipe, PART_RECIPES, type PartRecipe } from './registry'
 import { readableOn } from './style-props'
 import { mountSpotifyLayout } from './fixtures/spotify-layout'
-import { defaultPageStyle } from '../theme/model'
+import { defaultLyrics, defaultPageStyle } from '../theme/model'
 
 function recipe(id: string): PartRecipe {
   const found = PART_RECIPES.find(r => r.id === id)
@@ -162,7 +162,7 @@ describe('compileParts', () => {
   it('compiles known parts and skips unknown ids', () => {
     const theme = {
       parts: { cards: { radius: 12 }, nope: { radius: 3 } },
-      lyrics: { background: 'spotify', fontScale: 1, font: 'theme', align: 'left' },
+      lyrics: defaultLyrics(),
       effects: { albumMode: false, ambientGlow: false, progressBar: 'spotify' },
       layout: { lyricsKeepLibrary: false, lyricsImmersive: false },
       homeStyle: { shortcutSize: 'spotify', shortcutColumns: 0 },

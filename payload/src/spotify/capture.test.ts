@@ -1,4 +1,4 @@
-import { installFetchHook, parsePathfinderRequest, recordCapture, waitForHeaders } from './capture'
+import { installFetchHook, parsePathfinderRequest, parseSpclientRequest, recordCapture, waitForHeaders } from './capture'
 import { PATHFINDER_QUERY_URL } from './selectors'
 import { hooksState, resetHooksState } from './state'
 
@@ -30,6 +30,18 @@ describe('parsePathfinderRequest', () => {
   it('ignores other hosts and tolerates non-JSON bodies', () => {
     expect(parsePathfinderRequest('https://i.scdn.co/image/x')).toBeNull()
     expect(parsePathfinderRequest(PATHFINDER_QUERY_URL, { body: 'not json' })).toEqual({ headers: {} })
+  })
+})
+
+// Spotify's lyrics view fetches from spclient as it opens, with a fresh token, even when no GraphQL request has run
+// for a while (an idle window whose token expired).
+describe('parseSpclientRequest', () => {
+  it("learns the session headers from Spotify's own spclient requests", () => {
+    const url = 'https://spclient.wg.spotify.com/color-lyrics/v2/track/x?format=json'
+    expect(parseSpclientRequest(url, { headers: { authorization: 'Bearer t', 'app-platform': 'OSX_ARM64', 'client-token': 'c' } })).toEqual({
+      headers: { authorization: 'Bearer t', 'app-platform': 'OSX_ARM64' },
+    })
+    expect(parseSpclientRequest('https://example.com/x', { headers: { authorization: 'Bearer t' } })).toBeNull()
   })
 })
 

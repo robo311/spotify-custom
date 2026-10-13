@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { LYRICS_INTRO_ATTR, LYRICS_INTRO_MS } from './lyrics'
+import { LYRICS_INTRO_ATTR, LYRICS_INTRO_MS } from './lyrics-motion'
 import { startLyricsIntro } from './lyrics-intro'
 
 const root = document.documentElement

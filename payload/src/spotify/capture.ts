@@ -1,6 +1,7 @@
-// Observes Spotify's own GraphQL (pathfinder) requests to learn auth headers and persisted-query hashes.
+// Observes Spotify's own GraphQL (pathfinder) requests to learn auth headers and persisted-query hashes, and its
+// spclient requests for the headers alone.
 // The hook only reads requests; it never changes or delays them.
-import { FORWARDED_HEADERS, PATHFINDER_URL_PREFIX } from './selectors'
+import { FORWARDED_HEADERS, PATHFINDER_URL_PREFIX, SPCLIENT_URL_PREFIX } from './selectors'
 import { hooksState, type HooksState } from './state'
 
 export interface CapturedRequest {
@@ -56,6 +57,11 @@ export function parsePathfinderRequest(input: RequestInfo | URL, init?: RequestI
   return captured
 }
 
+/** Pure: the session headers of one of Spotify's spclient requests (lyrics, metadata, …), or null for any other. */
+export function parseSpclientRequest(input: RequestInfo | URL, init?: RequestInit): CapturedRequest | null {
+  return requestUrl(input).startsWith(SPCLIENT_URL_PREFIX) ? { headers: pickHeaders(input, init) } : null
+}
+
 export function recordCapture(state: HooksState, captured: CapturedRequest): void {
   if (captured.operationName && captured.hash) state.hashes.set(captured.operationName, captured.hash)
   if (!captured.headers.authorization) return
@@ -73,7 +79,7 @@ export function installFetchHook(): void {
 
   window.fetch = function scObservedFetch(input: RequestInfo | URL, init?: RequestInit): Promise<Response> {
     try {
-      const captured = parsePathfinderRequest(input, init)
+      const captured = parsePathfinderRequest(input, init) ?? parseSpclientRequest(input, init)
       if (captured) recordCapture(state, captured)
     } catch (error) {
       // Observation must never break Spotify's request.

@@ -2,7 +2,7 @@
 // Pure CSS generation.
 import type { LayoutConfig, LayoutOption } from '../types'
 import { hideRule, renderRules, type CssRule } from './css'
-import { compileLyricsLayout } from './lyrics'
+import { compileLyricsLayout } from './lyrics-layout'
 import { compilePanelLayout } from './panel'
 import { PART_RECIPES } from './registry'
 import * as S from './selectors'

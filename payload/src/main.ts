@@ -7,6 +7,7 @@ import { startEffects } from './theme/effects'
 import { startLyricsLibrary, startPartsRuntime, startPlayingRow, watchPanelSections, watchPartStatus } from './parts'
 import { startHome } from './home'
 import { startLyricsColumn } from './nowplaying'
+import { startLyricsView } from './lyrics-view'
 import { startCanvasCover } from './canvas'
 import { startLibrary } from './library'
 import { mountBuilder } from './builder'
@@ -115,7 +116,7 @@ function boot() {
     const lyricsLibrary = startLyricsLibrary(() => store.get().active.layout.lyricsKeepLibrary)
     const lyricsColumn = startLyricsColumn(
       () => store.get().active.layout.lyricsNowPlaying,
-      () => store.get().active.layout.lyricsNowPlayingVideo,
+      () => ({ video: store.get().active.layout.lyricsNowPlayingVideo, queue: store.get().active.layout.lyricsNowPlayingQueue }),
     )
     disposers.push(
       onSliceChange(store, s => s.active.layout, () => {
@@ -125,6 +126,9 @@ function boot() {
       () => lyricsLibrary.dispose(),
       () => lyricsColumn.dispose(),
     )
+
+    const lyricsView = startLyricsView(() => store.get().active.lyrics.animated)
+    disposers.push(onSliceChange(store, s => s.active.lyrics, () => lyricsView.refresh()), () => lyricsView.dispose())
 
     const canvasCover = startCanvasCover(() => store.get().active)
     disposers.push(onSliceChange(store, s => s.active, () => canvasCover.refresh()), () => canvasCover.dispose())

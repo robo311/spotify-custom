@@ -1,6 +1,6 @@
 // Marks the lyrics view's opening on <html> (LYRICS_INTRO_ATTR) for as long as its first lines cascade in, so the
 // cascade plays once per opening. CSS can't tell an opening from Spotify remounting lines on every line change.
-import { LYRICS_INTRO_ATTR, LYRICS_INTRO_MS } from './lyrics'
+import { LYRICS_INTRO_ATTR, LYRICS_INTRO_MS } from './lyrics-motion'
 
 const OPENING_ATTRS = ['data-cinema-npv-duringenter', 'data-cinema-library-npv-duringenter']
 

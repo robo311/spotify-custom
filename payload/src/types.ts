@@ -69,6 +69,8 @@ export interface LayoutConfig {
   lyricsNowPlaying: boolean
   /** In that column, play the song's Canvas video over the cover when it has one (paused with the song). */
   lyricsNowPlayingVideo: boolean
+  /** In that column, show what's up next; off = only the cover (or video), title and artists, filling the column. */
+  lyricsNowPlayingQueue: boolean
 }
 
 /** Where the lyrics background comes from. Applies to the lyrics page and the lyrics preview card in the Now playing panel. */
@@ -82,6 +84,21 @@ export interface LyricsStyle {
   fontScale: number // 0.75–1.5, 1 = Spotify's size
   font: FontId | 'theme' // 'theme' = the theme's font
   align: 'left' | 'center'
+  animated: LyricsAnimation
+}
+
+/**
+ * Our own animated lyrics on the lyrics page, drawn over Spotify's lines while the song has synced lyrics (Spotify's
+ * own view shows otherwise). Colours, font, size and alignment follow the rest of LyricsStyle.
+ */
+export interface LyricsAnimation {
+  on: boolean
+  words: boolean // highlight word by word (timing estimated when Spotify only times lines); off = whole line
+  glow: boolean // soft glow on the part being sung
+  lift: boolean // words rise slightly as they are sung
+  blurRest: boolean // lines further from the sung one are blurred
+  gradient: boolean // sung text fills with an accent → sung-colour gradient
+  layout: 'lyrics' | 'cover-left' // cover-left: cover, title and progress beside the lyrics
 }
 
 /**

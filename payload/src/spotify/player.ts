@@ -7,6 +7,7 @@ import { findInFiber, isRecord, rootFiber, type FiberLike } from './fiber'
 
 export interface SpotifyPlayer {
   getState(): unknown
+  seekTo(ms: number): unknown
   /** Returns an unsubscribe function on 1.3.3; typed loosely because it's Spotify's internals. */
   _events: { addListener(name: string, fn: () => void): unknown }
 }
@@ -19,6 +20,7 @@ export function isSpotifyPlayer(value: unknown): value is SpotifyPlayer {
     isRecord(value) &&
     typeof value.getState === 'function' &&
     typeof value.skipToNext === 'function' &&
+    typeof value.seekTo === 'function' &&
     isRecord(value._events) &&
     typeof value._events.addListener === 'function'
   )
@@ -84,6 +86,22 @@ export function mapPlayerState(state: unknown): PlaybackState {
   return { track, next: track ? next : [], paused: field(state, 'isPaused') !== false || track === null }
 }
 
+const num = (value: unknown): number | null => (typeof value === 'number' && Number.isFinite(value) ? value : null)
+
+/**
+ * Pure: the playback position (ms) at wall-clock time `now`. Spotify reports a position as of a timestamp (Date.now()
+ * clock) and only updates it on changes, so it is run on by the playback speed while playing.
+ */
+export function positionOf(state: unknown, now: number): number | null {
+  const at = num(field(state, 'positionAsOfTimestamp'))
+  const timestamp = num(field(state, 'timestamp'))
+  if (!isRecord(field(state, 'item')) || at === null || timestamp === null) return null
+  const playing = field(state, 'isPaused') === false
+  const position = playing ? at + (now - timestamp) * (num(field(state, 'speed')) ?? 1) : at
+  const duration = num(field(state, 'duration'))
+  return Math.max(0, duration ? Math.min(duration, position) : position)
+}
+
 // ---- subscription ----
 
 /** Calls fn now and whenever the mapped state changes (player events batched per frame). Returns unsubscribe. */
@@ -132,6 +150,20 @@ export function onPlayback(fn: (s: PlaybackState | null) => void): () => void {
     return () => undefined
   }
   return subscribePlayback(cached, fn)
+}
+
+/** Where playback is now, in ms (null without a track, or if Spotify's player can't be found). */
+export function playbackTime(): { positionMs: number; durationMs: number | null } | null {
+  cached ??= findPlayerInFiber(rootFiber())
+  const state: unknown = cached?.getState()
+  const positionMs = positionOf(state, Date.now())
+  return positionMs === null ? null : { positionMs, durationMs: num(field(state, 'duration')) }
+}
+
+/** Jumps playback to ms. */
+export function seekTo(ms: number): void {
+  cached ??= findPlayerInFiber(rootFiber())
+  cached?.seekTo(Math.max(0, Math.round(ms)))
 }
 
 let warnedPlaying = false

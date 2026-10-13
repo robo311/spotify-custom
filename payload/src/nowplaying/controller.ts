@@ -35,7 +35,15 @@ function open(uri: string) {
   if (path) spotify.navigate(path)
 }
 
-export function startLyricsColumn(enabled: () => boolean, showVideo: () => boolean, source: PlaybackSource = spotify): LyricsColumnController {
+/** What the column shows besides the cover, title and artists. */
+export interface ColumnOptions {
+  /** The track's Canvas video over the cover. */
+  video: boolean
+  /** What's up next. */
+  queue: boolean
+}
+
+export function startLyricsColumn(enabled: () => boolean, options: () => ColumnOptions, source: PlaybackSource = spotify): LyricsColumnController {
   let mounted: Mounted | null = null
   let last: PlaybackState | null = null
   const html = document.documentElement
@@ -52,7 +60,8 @@ export function startLyricsColumn(enabled: () => boolean, showVideo: () => boole
         state,
         onOpen: open,
         onQueue: () => document.querySelector<HTMLElement>(QUEUE_BUTTON)?.click(),
-        loadCanvas: showVideo() ? source.loadCanvas : null,
+        loadCanvas: options().video ? source.loadCanvas : null,
+        showQueue: options().queue,
       }),
       m.body,
     )
@@ -103,7 +112,7 @@ export function startLyricsColumn(enabled: () => boolean, showVideo: () => boole
   const refresh = () => {
     if (enabled() && !mounted) mount()
     else if (!enabled() && mounted) unmount()
-    else if (mounted) show(mounted, last) // the video option may have changed
+    else if (mounted) show(mounted, last) // the video or queue option may have changed
   }
   refresh()
 

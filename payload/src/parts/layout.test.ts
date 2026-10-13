@@ -15,6 +15,7 @@ const BASE: LayoutConfig = {
   lyricsImmersive: false,
   lyricsNowPlaying: false,
   lyricsNowPlayingVideo: true,
+  lyricsNowPlayingQueue: true,
 }
 
 describe('LAYOUT_OPTIONS', () => {

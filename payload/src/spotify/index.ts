@@ -3,7 +3,8 @@
 import { loadCanvas } from './canvas'
 import { installFetchHook } from './capture'
 import { query } from './graphql'
-import { onPlayback, onPlaying } from './player'
+import { loadLyrics } from './lyrics'
+import { onPlayback, onPlaying, playbackTime, seekTo } from './player'
 import { currentPath, navigate, onNavigate, uriToPath } from './router'
 import { trackUriOfRow } from './tracklist'
 
@@ -15,4 +16,5 @@ export function installSpotifyHooks(): void {
 }
 
 export type { CanvasMedia } from './canvas'
-export const spotify = { query, navigate, onNavigate, currentPath, uriToPath, onPlayback, onPlaying, trackUriOfRow, loadCanvas }
+export type { LyricLine, LyricSyllable, TrackLyrics } from './lyrics'
+export const spotify = { query, navigate, onNavigate, currentPath, uriToPath, onPlayback, onPlaying, trackUriOfRow, loadCanvas, loadLyrics, playbackTime, seekTo }

@@ -80,7 +80,10 @@ describe('startPartsRuntime', () => {
     </div></div>`
     const stop = startPartsRuntime()
     const style = () => document.getElementById('sc-parts-runtime')?.textContent ?? ''
-    expect(style()).toContain('https://x/1')
+    // The cover takes over once loaded (cover-hold.ts).
+    await vi.waitFor(() => {
+      expect(style()).toContain('https://x/1')
+    })
 
     document.querySelector('img')?.setAttribute('src', 'https://x/2')
     await vi.waitFor(() => {

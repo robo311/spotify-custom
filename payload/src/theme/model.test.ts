@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { FOLDER_IMAGE_MAX_CHARS, PART_SIZE_MAX, ThemeValidationError, defaultHomeStyle, defaultLayout, defaultNowPlaying, defaultPageStyle, defaultLyrics, defaultReactiveLook, forkTheme, isSlug, normalizeSettings, slugify, uniqueId, validateTheme } from './model'
+import { FOLDER_IMAGE_MAX_CHARS, PART_SIZE_MAX, ThemeValidationError, defaultHomeStyle, defaultLayout, defaultNowPlaying, defaultPageStyle, defaultLyrics, defaultLyricsAnimation, defaultReactiveLook, forkTheme, isSlug, normalizeSettings, slugify, uniqueId, validateTheme } from './model'
 import { PRESETS } from './presets'
 
 const [darcula] = PRESETS.filter(p => p.id === 'darcula')
@@ -207,8 +207,10 @@ describe('themes saved before lyrics and Now playing layout existed', () => {
       lyricsImmersive: false,
       lyricsNowPlaying: false,
       lyricsNowPlayingVideo: true,
+      lyricsNowPlayingQueue: true,
     })
-    expect(t.lyrics).toEqual({ background: 'spotify', fontScale: 1, font: 'theme', align: 'left' })
+    expect(t.lyrics).toEqual({ background: 'spotify', fontScale: 1, font: 'theme', align: 'left', animated: defaultLyricsAnimation() })
+    expect(t.lyrics.animated.on).toBe(true)
     expect(validateTheme(t)).toEqual(t)
   })
 })
@@ -220,7 +222,14 @@ describe('lyrics and Now playing validation', () => {
       lyrics: { background: 'cover-blur', fontScale: 9, font: 'jetbrains-mono', align: 'center', activeLine: '#FFF', pastLine: 'nope' },
       layout: { nowPlaying: { hidden: ['credits', 'credits', 3], order: ['lyrics'], compactCover: true }, lyricsImmersive: true },
     })
-    expect(t.lyrics).toEqual({ background: 'cover-blur', fontScale: 1.5, font: 'jetbrains-mono', align: 'center', activeLine: '#ffffff' })
+    expect(t.lyrics).toEqual({
+      background: 'cover-blur',
+      fontScale: 1.5,
+      font: 'jetbrains-mono',
+      align: 'center',
+      activeLine: '#ffffff',
+      animated: defaultLyricsAnimation(),
+    })
     expect(t.layout.nowPlaying).toEqual({ ...defaultNowPlaying(), order: ['lyrics'], compactCover: true })
     expect(t.layout.lyricsImmersive).toBe(true)
   })
@@ -228,6 +237,12 @@ describe('lyrics and Now playing validation', () => {
   it('falls back to defaults for unknown lyrics backgrounds and fonts', () => {
     const t = validateTheme({ ...darcula, lyrics: { background: 'rainbow', font: 'comic-sans', fontScale: 0.1 } })
     expect(t.lyrics).toMatchObject({ background: 'spotify', font: 'theme', fontScale: 0.75 })
+  })
+
+  it('keeps animated lyrics options and fills the rest with defaults', () => {
+    const t = validateTheme({ ...darcula, lyrics: { animated: { on: true, glow: false, gradient: true, layout: 'cover-left', words: 'yes' } } })
+    expect(t.lyrics.animated).toEqual({ ...defaultLyricsAnimation(), on: true, glow: false, gradient: true, layout: 'cover-left' })
+    expect(validateTheme({ ...darcula, lyrics: { animated: { layout: 'sideways' } } }).lyrics.animated.layout).toBe('lyrics')
   })
 })
 
@@ -309,6 +324,8 @@ describe('lyrics page Now playing column', () => {
     expect(validateTheme({ ...darcula, layout: {} }).layout.lyricsNowPlayingVideo).toBe(true)
     expect(validateTheme({ ...darcula, layout: { lyricsNowPlayingVideo: false } }).layout.lyricsNowPlayingVideo).toBe(false)
     expect(validateTheme({ ...darcula, layout: { lyricsNowPlayingVideo: 'no' } }).layout.lyricsNowPlayingVideo).toBe(true)
+    expect(validateTheme({ ...darcula, layout: {} }).layout.lyricsNowPlayingQueue).toBe(true)
+    expect(validateTheme({ ...darcula, layout: { lyricsNowPlayingQueue: false } }).layout.lyricsNowPlayingQueue).toBe(false)
   })
 
   it('keeps a valid top bar search position, else centre', () => {

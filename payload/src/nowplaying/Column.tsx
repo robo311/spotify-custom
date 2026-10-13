@@ -1,5 +1,6 @@
 // The column itself, laid out like Spotify's own song detail: the cover full-bleed at the top, darkened towards its
-// edges, with the album over its top and the title and artists over its bottom; then what's up next. Links open
+// edges, with the album over its top and the title and artists over its bottom; then what's up next (unless the theme
+// turns it off: the cover, or the Canvas, then fills the whole column). Links open
 // pages through Spotify's router; "Open queue" opens Spotify's queue panel, which the column then makes room for.
 // The track's Canvas, when it has one, plays over the cover (CanvasVideo).
 import { Music } from 'lucide-static'
@@ -15,6 +16,8 @@ interface ColumnProps {
   onQueue: () => void
   /** Null when the theme turns the Canvas video off. */
   loadCanvas: CanvasLoader | null
+  /** Off: no Up next; the cover (or video) fills the column. */
+  showQueue: boolean
 }
 
 const artistNames = (track: PlaybackTrack) => track.artists.map(a => a.name).join(', ')
@@ -68,10 +71,10 @@ function Hero({ track, paused, onOpen, loadCanvas }: HeroProps) {
   )
 }
 
-export function Column({ state, onOpen, onQueue, loadCanvas }: ColumnProps) {
-  const next = state.next.slice(0, UP_NEXT_COUNT)
+export function Column({ state, onOpen, onQueue, loadCanvas, showQueue }: ColumnProps) {
+  const next = showQueue ? state.next.slice(0, UP_NEXT_COUNT) : []
   return (
-    <aside class="npv" aria-label="Now playing">
+    <aside class={showQueue ? 'npv' : 'npv solo'} aria-label="Now playing">
       <style>{COLUMN_CSS}</style>
       <Hero key={state.track.uri} track={state.track} paused={state.paused} onOpen={onOpen} loadCanvas={loadCanvas} />
       {next.length > 0 && (

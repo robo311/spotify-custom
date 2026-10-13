@@ -3,6 +3,24 @@
 All notable changes to Spotify Custom. Versions follow `X.Y.Z`; installed copies update themselves (see
 [docs/install-guide.md](docs/install-guide.md#updates)).
 
+## 0.2.6 — 2026-10-13
+
+### Added
+
+- **Floating side columns on the lyrics page.** Two new switches under Lyrics page in the Lyrics tab. "Floating
+  library" gives the kept library rounded corners and a gap at the window edge. "Floating Now playing and queue" does
+  the same for the Now playing column and Spotify's own queue panel. Off, they run to the window edge, as before. The
+  queue panel now runs to the edge too, like the column it replaces.
+
+### Fixed
+
+- **Gradient fill without word by word.** With Lift on, the words of the sung line no longer pile up on top of each
+  other at the start of the line. The line now lifts as a whole.
+- **Blurred cover at the window edges.** The cover now reaches the window edges, so the gaps beside floating columns
+  show the cover instead of a dark strip.
+- **Music-reactive on Windows 10.** Works from Windows 10 version 2004 (build 19041) on. Before, it needed build
+  20348 or newer, which turned away Windows 10 22H2 (build 19045).
+
 ## 0.2.5 — 2026-10-13
 
 ### Added

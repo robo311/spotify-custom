@@ -39,6 +39,8 @@ export function LyricsTab() {
   const nowPlaying = useApp(s => s.active.layout.lyricsNowPlaying)
   const nowPlayingVideo = useApp(s => s.active.layout.lyricsNowPlayingVideo)
   const nowPlayingQueue = useApp(s => s.active.layout.lyricsNowPlayingQueue)
+  const libraryFloating = useApp(s => s.active.layout.lyricsLibraryFloating)
+  const panelFloating = useApp(s => s.active.layout.lyricsPanelFloating)
   const animated = lyrics.animated
   const [openLine, setOpenLine] = useState<keyof LyricLineColors | null>(null)
   const auto = autoLyricLines(lyrics.background, palette)
@@ -183,6 +185,18 @@ export function LyricsTab() {
             })
           }
         />
+        {keepLibrary && (
+          <Toggle
+            label="Floating library"
+            description="Rounded, with a gap at the window edge. Off: it runs to the edge"
+            checked={libraryFloating}
+            onChange={v =>
+              store.edit(t => {
+                t.layout.lyricsLibraryFloating = v
+              })
+            }
+          />
+        )}
         <Toggle
           label="Now playing column"
           description="Cover, song and what's up next beside the lyrics"
@@ -217,6 +231,16 @@ export function LyricsTab() {
             />
           </>
         )}
+        <Toggle
+          label="Floating Now playing and queue"
+          description="The column beside the lyrics and Spotify's queue: rounded, with a gap at the window edge. Off: they run to the edge"
+          checked={panelFloating}
+          onChange={v =>
+            store.edit(t => {
+              t.layout.lyricsPanelFloating = v
+            })
+          }
+        />
         <Toggle
           label="Immersive lyrics"
           description="Top bar and player fade away until you move the mouse over them"

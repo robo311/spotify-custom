@@ -78,6 +78,8 @@ export function defaultLayout(): LayoutConfig {
     lyricsNowPlaying: false,
     lyricsNowPlayingVideo: true,
     lyricsNowPlayingQueue: true,
+    lyricsLibraryFloating: false,
+    lyricsPanelFloating: false,
   }
 }
 
@@ -266,6 +268,8 @@ function validateLayout(input: unknown): LayoutConfig {
     lyricsNowPlaying: raw.lyricsNowPlaying === true,
     lyricsNowPlayingVideo: raw.lyricsNowPlayingVideo !== false,
     lyricsNowPlayingQueue: raw.lyricsNowPlayingQueue !== false,
+    lyricsLibraryFloating: raw.lyricsLibraryFloating === true,
+    lyricsPanelFloating: raw.lyricsPanelFloating === true,
   }
 }
 

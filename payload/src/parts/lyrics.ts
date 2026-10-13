@@ -43,8 +43,14 @@ const BACKDROPS: Record<Exclude<LyricsStyle['background'], 'spotify'>, Backdrop>
   'cover-blur': { base: 'transparent', from: 'transparent', to: 'transparent' },
 }
 
-/** The cover, heavily blurred and darkened, painted behind an element's content. */
-function coverBlurRules(selector: string): CssRule[] {
+/** The blur's radius; it fades out over about three times that towards the edges of its box. */
+const COVER_BLUR = 72
+
+/**
+ * The cover, heavily blurred and darkened, painted behind an element's content. bleed runs it past the element's
+ * edges, so the blur's fade-out falls outside them (and the edges show the cover, not the background).
+ */
+function coverBlurRules(selector: string, bleed = 0): CssRule[] {
   return [
     { selector, decls: { position: 'relative', isolation: 'isolate', overflow: 'clip' } },
     {
@@ -52,14 +58,14 @@ function coverBlurRules(selector: string): CssRule[] {
       decls: {
         content: '""',
         position: 'absolute',
-        inset: '0',
+        inset: bleed ? `-${bleed}px` : '0',
         'z-index': '-1',
         'pointer-events': 'none',
         'background-color': 'var(--sc-background)',
         'background-image': `var(${COVER_URL_VAR}, none)`,
         'background-size': 'cover',
         'background-position': 'center',
-        filter: 'blur(72px) saturate(1.4) brightness(0.42)',
+        filter: `blur(${COVER_BLUR}px) saturate(1.4) brightness(0.42)`,
         transform: 'scale(1.25)',
       },
     },
@@ -101,7 +107,7 @@ const EDGE_FADE: CssRule = {
 // transparent then, so the empty right-panel slot it normally covers is hidden while no panel is open.
 const TRANSLUCENT_COLUMN = { background: 'transparent', '--background-base': 'color-mix(in oklab, var(--sc-surface) 55%, transparent)' }
 const WINDOW_COVER_BLUR: CssRule[] = [
-  ...coverBlurRules(`${S.LYRICS_VIEW_OPEN} ${S.LAYOUT_GRID}`),
+  ...coverBlurRules(`${S.LYRICS_VIEW_OPEN} ${S.LAYOUT_GRID}`, 3 * COVER_BLUR),
   { selector: `${S.LYRICS_VIEW_OPEN}:not(${S.RIGHT_PANEL_OPEN}) ${PANEL_SLOT}`, decls: { visibility: 'hidden' } },
   { selector: `${S.LYRICS_VIEW_OPEN} :is(${S.LEFT_SIDEBAR}, ${PANEL_SLOT}, ${COLUMN_HOST})`, decls: TRANSLUCENT_COLUMN },
   // The see-through view runs over the gaps beside it, so its header fade reaches the columns on either side

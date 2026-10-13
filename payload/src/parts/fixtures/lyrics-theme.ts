@@ -14,4 +14,6 @@ export const SPOTIFY_LYRICS_LAYOUT: LayoutConfig = {
   lyricsNowPlaying: false,
   lyricsNowPlayingVideo: true,
   lyricsNowPlayingQueue: true,
+  lyricsLibraryFloating: false,
+  lyricsPanelFloating: false,
 }

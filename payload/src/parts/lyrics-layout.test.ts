@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { defaultLyrics } from '../theme/model'
 import type { LayoutConfig, LyricsStyle } from '../types'
 import { compileLyrics } from './lyrics'
-import { compileLyricsIdle, compileLyricsLayout } from './lyrics-layout'
+import { compileLyricsIdle, compileLyricsLayout, compileLyricsPanel } from './lyrics-layout'
 import { SPOTIFY_LYRICS, SPOTIFY_LYRICS_LAYOUT } from './fixtures/lyrics-theme'
 
 const SPOTIFY = SPOTIFY_LYRICS
@@ -41,6 +41,16 @@ describe('compileLyricsLayout', () => {
     expect(right).toContain('margin-right: calc(-1 * var(--panel-gap, 8px)) !important;')
     expect(right).toContain('border-top-right-radius: 0 !important;')
     expect(compileLyricsLayout(LAYOUT)).not.toContain('margin-left')
+  })
+
+  it('leaves a floating library rounded, with the gap at the window edge, in immersive mode too', () => {
+    for (const lyricsImmersive of [false, true]) {
+      const css = compileLyricsLayout({ ...LAYOUT, lyricsKeepLibrary: true, lyricsLibraryFloating: true, lyricsImmersive })
+      const library = css.split('}').filter(r => r.includes('#Desktop_LeftSidebar_Id'))
+      expect(library.join('')).not.toContain('margin')
+      expect(library.join('')).not.toContain('radius')
+      expect(css).toContain('transform: none !important;')
+    }
   })
 
   it('runs the side columns to the top and bottom window edges in immersive mode, square', () => {
@@ -103,6 +113,14 @@ describe('our Now playing column beside the lyrics', () => {
     expect(column({})).toContain('margin-right: calc(-1 * var(--panel-gap, 8px)) !important;')
     expect(column({})).toContain('--sc-lyrics-npv-radius: 8px 0 0 8px !important;')
     expect(column({ librarySide: 'right' })).toContain('margin-left: calc(-1 * var(--panel-gap, 8px)) !important;')
+  })
+
+  it('floats rounded, with the gaps around it, when the right column floats (in immersive mode too)', () => {
+    for (const lyricsImmersive of [false, true]) {
+      const column = rules(compileLyricsLayout({ ...LAYOUT, lyricsNowPlaying: true, lyricsPanelFloating: true, lyricsImmersive })).find(r => r.includes('grid-area')) ?? ''
+      expect(column).not.toContain('margin')
+      expect(column).toContain('--sc-lyrics-npv-radius: 8px !important;')
+    }
   })
 
   it('shrinks the lyrics view to make room, with or without the library, on either side', () => {
@@ -171,6 +189,24 @@ describe('lyrics view with Spotify\'s right panel (queue, friends) open', () => 
   it('mirrors with the library on the right (named areas swap)', () => {
     const css = compileLyricsLayout({ ...LAYOUT, lyricsKeepLibrary: true, librarySide: 'right' })
     expect(css.split('}').find(r => r.includes(RIGHT_OPEN) && r.includes('grid-column'))).toContain('grid-column: main-view !important;')
+  })
+
+  // Same as our Now playing column, which it replaces while open: flush with the window edge, square on that side.
+  it('puts the panel flush with the window edge, square on that side, mirrored with the library on the right', () => {
+    const panel = (layout: Partial<LayoutConfig>) => compileLyricsPanel({ lyrics: { ...SPOTIFY, background: 'theme' }, layout: { ...LAYOUT, ...layout } })
+    const css = panel({})
+    for (const rule of css.split('}').filter(r => r.trim())) expect(rule).toContain(RIGHT_OPEN)
+    expect(css).toContain('margin-right: calc(-1 * var(--panel-gap, 8px)) !important;')
+    expect(css).toContain(':has(#Desktop_PanelContainer_Id)')
+    expect(css).toContain('border-top-right-radius: 0 !important;')
+    expect(panel({ librarySide: 'right' })).toContain('margin-left: calc(-1 * var(--panel-gap, 8px)) !important;')
+    expect(panel({ librarySide: 'right' })).toContain('border-bottom-left-radius: 0 !important;')
+    expect(panel({ lyricsPanelFloating: true })).toBe('')
+    for (const rule of css.split('}')) expect(rule).not.toMatch(/:has\([^)]*:has\(/)
+  })
+
+  it("leaves Spotify's panel alone when the lyrics view is native (Spotify Original)", () => {
+    expect(compileLyricsPanel({ lyrics: SPOTIFY, layout: LAYOUT })).toBe('')
   })
 
   it('only hides the panel behind a transparent (cover-blur) view while no panel is open', () => {

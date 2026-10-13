@@ -77,6 +77,16 @@ describe('compileLyrics', () => {
     for (const rule of css.split('}')) expect(rule).not.toMatch(/:has\([^)]*:has\(/)
   })
 
+  // A blur fades out towards its box's edges, so a cover blurred within the window was darkest in the gaps at the
+  // window edge (beside a floating library or right column). Behind the window it runs past the edges; the preview
+  // card keeps its cover within the card.
+  it('runs the window\'s blurred cover past the window edges', () => {
+    const css = compileLyrics({ ...SPOTIFY, background: 'cover-blur' })
+    const before = (part: string) => css.split('}').find(r => r.includes(`${part}::before {`)) ?? ''
+    expect(before('div:has(> #Desktop_LeftSidebar_Id)')).toContain('inset: -216px !important;')
+    expect(before('[data-testid="lyrics-npv-section"]')).toContain('inset: 0 !important;')
+  })
+
   // On the blurred cover the view is see-through, so the 8px gaps beside it showed the bare cover without the
   // header's dark fade; the view runs over them instead, up to the library and the column beside it.
   it('runs the see-through lyrics view over the gaps beside it on the blurred cover', () => {

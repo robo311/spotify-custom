@@ -10,12 +10,13 @@ import * as S from './selectors'
 // right panel opens (its own Queue/Friends buttons), the view also yields the panel's column:
 // library | lyrics | panel (mirrored by the named grid areas when the library is on the right).
 // Like our Now playing column, the library sits flush with the window edge (square on that side) instead of leaving
-// the grid's 8px gap there, which reads as a dark border beside it (on the blurred cover, the cover at its darkest).
-function keepLibraryRules(side: LayoutConfig['librarySide']): CssRule[] {
+// the grid's 8px gap there, unless it floats (layout.lyricsLibraryFloating): rounded, with Spotify's gap.
+function keepLibraryRules(side: LayoutConfig['librarySide'], floating: boolean): CssRule[] {
   const square = { [`border-top-${side}-radius`]: '0', [`border-bottom-${side}-radius`]: '0' }
+  const flush = floating ? {} : { [`margin-${side}`]: 'calc(-1 * var(--panel-gap, 8px))' }
   return [
-    { selector: `${S.LYRICS_VIEW_OPEN} ${S.LEFT_SIDEBAR}`, decls: { transform: 'none', [`margin-${side}`]: 'calc(-1 * var(--panel-gap, 8px))' } },
-    { selector: `${S.LYRICS_VIEW_OPEN} :is(${S.LEFT_SIDEBAR}, ${S.LEFT_SIDEBAR} > nav > div)`, decls: square },
+    { selector: `${S.LYRICS_VIEW_OPEN} ${S.LEFT_SIDEBAR}`, decls: { transform: 'none', ...flush } },
+    ...(floating ? [] : [{ selector: `${S.LYRICS_VIEW_OPEN} :is(${S.LEFT_SIDEBAR}, ${S.LEFT_SIDEBAR} > nav > div)`, decls: square }]),
     {
       selector: `${S.LYRICS_VIEW_OPEN} ${S.LYRICS_CINEMA_HOST}`,
       decls: { 'grid-column': side === 'left' ? 'main-view / right-sidebar' : 'right-sidebar / main-view' },
@@ -37,6 +38,19 @@ export function compileLyricsIdle(theme: Pick<Theme, 'lyrics' | 'layout'>): stri
     rules.push({ selector: `${S.LYRICS_VIEW_OPEN} ${S.PLAYER_BAR}`, decls: { opacity: '1' } })
   }
   return renderRules(rules)
+}
+
+// Spotify's own right panel (Queue/Friends) takes our Now playing column's place while open, so it sits the same way:
+// flush with the window edge, square on that side, unless the column floats (layout.lyricsPanelFloating). Its rounded
+// corners are on the wrappers around its container. Native lyrics views (Spotify Original) keep Spotify's panel.
+export function compileLyricsPanel(theme: Pick<Theme, 'lyrics' | 'layout'>): string {
+  if (!customisesLyricsView(theme) || theme.layout.lyricsPanelFloating) return ''
+  const open = `${S.LYRICS_VIEW_OPEN}${S.RIGHT_PANEL_OPEN}`
+  const edge = theme.layout.librarySide === 'left' ? 'right' : 'left'
+  return renderRules([
+    { selector: `${open} ${PANEL_SLOT}`, decls: { [`margin-${edge}`]: 'calc(-1 * var(--panel-gap, 8px))' } },
+    { selector: `${open} ${PANEL_SLOT} :has(#Desktop_PanelContainer_Id)`, decls: { [`border-top-${edge}-radius`]: '0', [`border-bottom-${edge}-radius`]: '0' } },
+  ])
 }
 
 // The music video plays in the same view. Spotify sizes it to the window height (100vh) and pulls it up under the top
@@ -87,7 +101,7 @@ function immersiveRules(layout: LayoutConfig): CssRule[] {
     { selector: revealed(bars), decls: { opacity: '1' } },
     { selector: revealed(header), decls: { opacity: '1' } },
     // Full height, the kept library also runs to the top and bottom window edges (our column does in its own rules).
-    ...(layout.lyricsKeepLibrary
+    ...(layout.lyricsKeepLibrary && !layout.lyricsLibraryFloating
       ? [
           { selector: `${open} ${S.LEFT_SIDEBAR}`, decls: FLUSH_VERTICAL },
           { selector: `${open} :is(${S.LEFT_SIDEBAR}, ${S.LEFT_SIDEBAR} > nav > div)`, decls: { 'border-radius': '0' } },
@@ -109,10 +123,13 @@ function nowPlayingColumnRules(layout: LayoutConfig): CssRule[] {
   const viewColumns = layout.lyricsKeepLibrary ? 'main-view' : left ? 'left-sidebar / main-view' : 'main-view / left-sidebar'
   // Flush with the window edge (over the grid's padding) instead of leaving a strip of dead space beside the lyrics;
   // the corners on that edge go square. Immersive (full height) puts it flush with the top and bottom too, all square.
+  // Floating, it keeps the grid's gaps and all its corners round.
   const edge = left ? 'right' : 'left'
-  const flush = layout.lyricsImmersive
-    ? { [`margin-${edge}`]: 'calc(-1 * var(--panel-gap, 8px))', ...FLUSH_VERTICAL, '--sc-lyrics-npv-radius': '0' }
-    : { [`margin-${edge}`]: 'calc(-1 * var(--panel-gap, 8px))', '--sc-lyrics-npv-radius': left ? '8px 0 0 8px' : '0 8px 8px 0' }
+  const flush = layout.lyricsPanelFloating
+    ? { '--sc-lyrics-npv-radius': '8px' }
+    : layout.lyricsImmersive
+      ? { [`margin-${edge}`]: 'calc(-1 * var(--panel-gap, 8px))', ...FLUSH_VERTICAL, '--sc-lyrics-npv-radius': '0' }
+      : { [`margin-${edge}`]: 'calc(-1 * var(--panel-gap, 8px))', '--sc-lyrics-npv-radius': left ? '8px 0 0 8px' : '0 8px 8px 0' }
   return [
     { selector: COLUMN_HOST, decls: { display: 'none' } },
     { selector: `${on} ${S.LYRICS_CINEMA_HOST}`, decls: { 'grid-column': viewColumns } },
@@ -139,7 +156,7 @@ function nowPlayingColumnRules(layout: LayoutConfig): CssRule[] {
 
 export function compileLyricsLayout(layout: LayoutConfig): string {
   const rules: CssRule[] = []
-  if (layout.lyricsKeepLibrary) rules.push(...keepLibraryRules(layout.librarySide))
+  if (layout.lyricsKeepLibrary) rules.push(...keepLibraryRules(layout.librarySide, layout.lyricsLibraryFloating))
   if (layout.lyricsNowPlaying) rules.push(...nowPlayingColumnRules(layout))
   if (layout.lyricsImmersive) rules.push(...immersiveRules(layout))
   return renderRules(rules)

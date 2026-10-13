@@ -25,7 +25,7 @@ describe('reactiveStatusLine', () => {
 
   it("shows the helper's own message when it has one", () => {
     expect(reactiveStatusLine(status('unsupported', "The helper isn't connected"), on).detail).toBe("The helper isn't connected")
-    expect(reactiveStatusLine(status('unsupported'), on).detail).toContain('Windows 11')
+    expect(reactiveStatusLine(status('unsupported'), on).detail).toContain('Windows 10 version 2004')
     expect(reactiveStatusLine(status('listening'), on).tone).toBe('live')
   })
 })

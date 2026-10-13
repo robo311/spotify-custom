@@ -71,6 +71,10 @@ export interface LayoutConfig {
   lyricsNowPlayingVideo: boolean
   /** In that column, show what's up next; off = only the cover (or video), title and artists, filling the column. */
   lyricsNowPlayingQueue: boolean
+  /** On the lyrics page, the kept library floats rounded with a gap at the window edge; off = flush with the edge. */
+  lyricsLibraryFloating: boolean
+  /** The same for the column on the other side: our Now playing column, or Spotify's Queue/Friends panel when open. */
+  lyricsPanelFloating: boolean
 }
 
 /** Where the lyrics background comes from. Applies to the lyrics page and the lyrics preview card in the Now playing panel. */

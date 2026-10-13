@@ -78,7 +78,7 @@ func TestWasapiDownmix(t *testing.T) {
 }
 
 func TestWasapiSupported(t *testing.T) {
-	for build, want := range map[uint32]bool{19045: false, 20347: false, 20348: true, 22631: true, 26100: true} {
+	for build, want := range map[uint32]bool{18363: false, 19040: false, 19041: true, 19045: true, 20348: true, 22631: true, 26100: true} {
 		if got := wasapiSupported(build); got != want {
 			t.Errorf("build %d: got %v, want %v", build, got, want)
 		}

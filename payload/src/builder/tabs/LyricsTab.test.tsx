@@ -9,9 +9,9 @@ import { LyricsTab } from './LyricsTab'
 
 const sync = (fn: () => void) => void act(fn)
 
-function mount(on: boolean) {
+function mount(on: boolean, layout: Partial<Theme['layout']> = {}) {
   const base = PRESETS[0]
-  const theme: Theme = { ...structuredClone(base), layout: defaultLayout(), lyrics: { ...defaultLyrics(), animated: { ...defaultLyricsAnimation(), on } } }
+  const theme: Theme = { ...structuredClone(base), layout: { ...defaultLayout(), ...layout }, lyrics: { ...defaultLyrics(), animated: { ...defaultLyricsAnimation(), on } } }
   const state = observable({ active: theme, helper: { connected: false } } as AppState)
   const edit = vi.fn((fn: (t: Theme) => void) => fn(theme))
   const store = { get: () => state.get(), subscribe: (fn: (s: AppState) => void) => state.subscribe(fn), edit } as unknown as Store
@@ -42,5 +42,18 @@ describe('LyricsTab animated lyrics', () => {
     for (const label of ['Word by word', 'Glow', 'Lift', 'Blur the rest', 'Gradient fill']) expect(switches().some(s => s.startsWith(label))).toBe(true)
     toggle('Blur the rest')
     expect(theme.lyrics.animated.blurRest).toBe(true)
+  })
+})
+
+describe('LyricsTab lyrics page edges', () => {
+  it('floats the Now playing column and queue, and the library only while it is kept', () => {
+    const { theme, switches, toggle } = mount(false)
+    expect(switches().some(s => s.startsWith('Floating library'))).toBe(false)
+    toggle('Floating Now playing and queue')
+    expect(theme.layout.lyricsPanelFloating).toBe(true)
+
+    const kept = mount(false, { lyricsKeepLibrary: true })
+    kept.toggle('Floating library')
+    expect(kept.theme.layout.lyricsLibraryFloating).toBe(true)
   })
 })

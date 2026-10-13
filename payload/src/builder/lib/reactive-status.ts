@@ -23,7 +23,7 @@ export function reactiveStatusLine(status: AudioStatus, opts: { enabled: boolean
     case 'needs-permission':
       return { tone: 'warn', title: 'Permission needed', detail: MAC_ALLOW }
     case 'unsupported':
-      return { tone: 'warn', title: 'Not available here', detail: status.message ?? 'Needs macOS 14.2 or later, or Windows 11.' }
+      return { tone: 'warn', title: 'Not available here', detail: status.message ?? 'Needs macOS 14.2 or later, or Windows 10 version 2004 or later.' }
     case 'error':
       return { tone: 'warn', title: "Couldn't listen", detail: status.message ?? 'Something went wrong. Try switching it off and on.' }
     case 'off':

@@ -212,6 +212,8 @@ describe('themes saved before lyrics and Now playing layout existed', () => {
       lyricsNowPlaying: false,
       lyricsNowPlayingVideo: true,
       lyricsNowPlayingQueue: true,
+      lyricsLibraryFloating: false,
+      lyricsPanelFloating: false,
     })
     expect(t.lyrics).toEqual({ background: 'spotify', fontScale: 1, font: 'theme', align: 'left', animated: defaultLyricsAnimation() })
     expect(t.lyrics.animated.on).toBe(true)
@@ -330,6 +332,10 @@ describe('lyrics page Now playing column', () => {
     expect(validateTheme({ ...darcula, layout: { lyricsNowPlayingVideo: 'no' } }).layout.lyricsNowPlayingVideo).toBe(true)
     expect(validateTheme({ ...darcula, layout: {} }).layout.lyricsNowPlayingQueue).toBe(true)
     expect(validateTheme({ ...darcula, layout: { lyricsNowPlayingQueue: false } }).layout.lyricsNowPlayingQueue).toBe(false)
+    expect(validateTheme({ ...darcula, layout: {} }).layout.lyricsLibraryFloating).toBe(false)
+    expect(validateTheme({ ...darcula, layout: { lyricsLibraryFloating: true } }).layout.lyricsLibraryFloating).toBe(true)
+    expect(validateTheme({ ...darcula, layout: {} }).layout.lyricsPanelFloating).toBe(false)
+    expect(validateTheme({ ...darcula, layout: { lyricsPanelFloating: true } }).layout.lyricsPanelFloating).toBe(true)
   })
 
   it('keeps a valid top bar search position, else centre', () => {

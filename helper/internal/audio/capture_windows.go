@@ -1,6 +1,6 @@
 //go:build windows
 
-// Windows capture: WASAPI process loopback of Spotify's process tree (Windows 10 build 20348+ / Windows 11).
+// Windows capture: WASAPI process loopback of Spotify's process tree (Windows 10 2004, build 19041, or newer).
 // Older Windows reports ErrUnsupported; we never fall back to capturing all system audio.
 package audio
 

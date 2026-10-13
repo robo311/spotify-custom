@@ -16,6 +16,8 @@ const BASE: LayoutConfig = {
   lyricsNowPlaying: false,
   lyricsNowPlayingVideo: true,
   lyricsNowPlayingQueue: true,
+  lyricsLibraryFloating: false,
+  lyricsPanelFloating: false,
 }
 
 describe('LAYOUT_OPTIONS', () => {

@@ -9,8 +9,10 @@ import (
 )
 
 const (
-	// wasapiMinBuild is the first Windows build with process loopback (Windows Server 2022 / Windows 11).
-	wasapiMinBuild = 20348
+	// wasapiMinBuild is the first Windows build where process loopback works (Windows 10 2004). Microsoft documents
+	// 20348 (Windows Server 2022 / Windows 11), but the API is already there in 2004–22H2 (OBS's per-app capture uses it).
+	// If activation fails on some build anyway, E_NOTIMPL still maps to ErrUnsupported.
+	wasapiMinBuild = 19041
 
 	wasapiFormatIEEEFloat = 3 // WAVE_FORMAT_IEEE_FLOAT
 	wasapiVTBlob          = 65

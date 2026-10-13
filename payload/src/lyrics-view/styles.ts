@@ -48,7 +48,9 @@ export const VIEW_CSS = `
   background-image: linear-gradient(90deg, var(--sc-accent), var(--ly-sung));
 }
 
-.lift .line:not(.past) .w { transform: translateY(calc((1 - var(--p, 0)) * 0.06em)) scale(calc(1 + var(--g, 0) * 0.035)); transition: transform 240ms ease-out; }
+/* Per word only in word mode: a transformed word under the line's gradient (background-clip: text) is painted at the
+   line's start, so with word by word off the line lifts as a whole. */
+.lift.words .line:not(.past) .w { transform: translateY(calc((1 - var(--p, 0)) * 0.06em)) scale(calc(1 + var(--g, 0) * 0.035)); transition: transform 240ms ease-out; }
 .lift:not(.words) .line.active { transform: scale(1.03); }
 .glow .line.active .w {
   /* No filter transition: Chromium interpolates drop-shadow colours wrongly (flashes near-black); --g is eased per frame instead. */
@@ -77,6 +79,6 @@ export const VIEW_CSS = `
 
 @media (prefers-reduced-motion: reduce) {
   .view.entering { animation: none; }
-  .lift .line:not(.past) .w, .lift:not(.words) .line.active { transform: none; }
+  .lift.words .line:not(.past) .w, .lift:not(.words) .line.active { transform: none; }
 }
 `

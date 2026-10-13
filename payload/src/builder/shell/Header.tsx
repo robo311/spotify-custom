@@ -1,7 +1,7 @@
 // Panel header: which theme you're editing (renamable if it's yours), the tour, undo/redo, dock and close, and the palette
 // ribbon: the theme's colours as one segmented strip along the bottom edge, morphing with every palette edit
 // (a click opens Colours). It is also the panel's drag handle: press anywhere that isn't a control and drag;
-// double-click to dock.
+// double-click to dock. The running app version sits faintly at the end of the meta line.
 import { useState } from 'preact/hooks'
 import { CircleQuestionMark, PanelRight, Redo2, Undo2, X } from 'lucide-static'
 import type { Palette } from '../../types'
@@ -74,6 +74,13 @@ const styles = css`
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+  }
+  .b-header__version {
+    flex: none;
+    margin-left: auto;
+    font-size: 10.5px;
+    font-variant-numeric: tabular-nums;
+    color: color-mix(in oklch, var(--b-sub) 55%, transparent);
   }
   .b-header__actions {
     display: flex;
@@ -148,6 +155,7 @@ export function Header({ onDragStart, onDock }: HeaderProps) {
   const canUndo = useApp(s => s.canUndo)
   const canRedo = useApp(s => s.canRedo)
   const presets = useApp(s => s.presets)
+  const helper = useApp(s => s.helper)
   const [renaming, setRenaming] = useState(false)
 
   const basedOn = active.basedOn ? presets.find(p => p.id === active.basedOn)?.name : null
@@ -198,6 +206,11 @@ export function Header({ onDragStart, onDock }: HeaderProps) {
         <div class="b-header__meta b-hint">
           <span class="b-header__meta-text">{meta}</span>
           <SaveIndicator />
+          {helper.connected && (
+            <span class="b-header__version" title="Spotify Custom version">
+              {helper.version === 'dev' ? 'dev build' : `v${helper.version}`}
+            </span>
+          )}
         </div>
       </div>
       <div class="b-header__actions">

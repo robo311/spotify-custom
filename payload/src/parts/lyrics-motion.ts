@@ -14,9 +14,9 @@ import * as S from './selectors'
 // vanish under the fade for the length of the morph and pop back at its end.
 const EASE = 'cubic-bezier(.2, .8, .2, 1)'
 const CASCADE_LINES = 14
-const CASCADE_START_MS = 160
-const CASCADE_STEP_MS = 45
-const LINE_RISE_MS = 640
+const CASCADE_START_MS = 60
+const CASCADE_STEP_MS = 25
+const LINE_RISE_MS = 420
 /**
  * On <html> from the moment the view starts opening until the last cascading line has risen (set by lyrics-intro.ts).
  * Spotify remounts the outgoing and incoming lines on every line change, so a cascade tied to the open view alone
@@ -38,7 +38,7 @@ export function compileLyricsMotion(theme: Pick<Theme, 'lyrics' | 'layout'>): st
   const column = theme.layout.lyricsNowPlaying
     ? [
         `  ${S.LYRICS_VIEW_OPEN} ${COLUMN_HOST} { view-transition-name: ${COLUMN_LAYER}; }`,
-        `  ::view-transition-new(${COLUMN_LAYER}) { animation: sc-npv-in 560ms ${EASE} both; }`,
+        `  ::view-transition-new(${COLUMN_LAYER}) { animation: sc-npv-in 440ms ${EASE} both; }`,
         `  ::view-transition-old(${COLUMN_LAYER}) { animation: sc-npv-out 300ms cubic-bezier(.4, 0, 1, 1) both; }`,
         '  @keyframes sc-npv-in { from { opacity: 0; transform: translateX(56px); } }',
         '  @keyframes sc-npv-out { to { opacity: 0; transform: translateX(56px); } }',
@@ -46,8 +46,8 @@ export function compileLyricsMotion(theme: Pick<Theme, 'lyrics' | 'layout'>): st
     : []
   return [
     '@media (prefers-reduced-motion: no-preference) {',
-    `  ${vt}::view-transition-group(*) { animation-duration: 520ms !important; animation-timing-function: ${EASE} !important; }`,
-    `  ${vt}::view-transition-old(root), ${vt}::view-transition-new(root) { animation-duration: 360ms !important; }`,
+    `  ${vt}::view-transition-group(*) { animation-duration: 400ms !important; animation-timing-function: ${EASE} !important; }`,
+    `  ${vt}::view-transition-old(root), ${vt}::view-transition-new(root) { animation-duration: 280ms !important; }`,
     `  ${S.LYRICS_VIEW_CLOSING} ${S.NPV_SCROLL_VIEWPORT} { view-transition-name: ${PANEL_CONTENT_LAYER}; }`,
     `  ${[...PANEL_FOREGROUND_LAYERS, PANEL_CONTENT_LAYER].map(layer => `${vt}::view-transition-group(${layer})`).join(', ')} { z-index: 1; }`,
     ...lines,

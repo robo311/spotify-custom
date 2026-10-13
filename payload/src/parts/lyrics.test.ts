@@ -130,6 +130,18 @@ describe('compileLyrics', () => {
     expect(compileLyrics(SPOTIFY)).not.toContain('buttonPrimary')
   })
 
+  // Spotify's view switcher (cover, Canvas, artist image, lyrics) swaps the view's content underneath ours, which keeps
+  // drawing lyrics over the picture. Without our view (no synced lyrics) the switcher stays.
+  it("hides Spotify's view switcher, and the divider beside it, while our animated lyrics show", () => {
+    const css = compileLyrics({ ...SPOTIFY, animated: { ...SPOTIFY.animated, on: true } })
+    const rule = css.split('}').find(r => r.includes('radiogroup')) ?? ''
+    expect(rule).toContain(`[${LYRICS_VIEW_SLOT.ownAttr}] `)
+    expect(rule).toContain(':is([role="radiogroup"], [role="radiogroup"] + :not(:has(button)))')
+    expect(rule).toContain('display: none !important;')
+    expect(compileLyrics(SPOTIFY)).not.toContain('radiogroup')
+    for (const r of css.split('}')) expect(r).not.toMatch(/:has\([^)]*:has\(/)
+  })
+
   it('sets font, alignment and size', () => {
     const css = compileLyrics({ ...SPOTIFY, font: 'jetbrains-mono', align: 'center', fontScale: 1.25 })
     expect(css).toContain('font-family: "SC Mono", var(--fallback-fonts, monospace) !important;')

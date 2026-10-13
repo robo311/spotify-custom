@@ -12,6 +12,9 @@ export const SPOTIFY_OVERLAYS = '[role="dialog"], [role="menu"]'
 /** Player bar: the drawer stops above it so playback controls stay usable. */
 export const NOW_PLAYING_BAR = '[data-testid="now-playing-bar"]'
 
+/** The "Playing on <device>" strip Spotify adds to the player bar (a direct child) while Connect plays elsewhere. */
+export const REMOTE_DEVICE_STRIP = `${NOW_PLAYING_BAR} > div:has(> [data-encore-id="textLink"])`
+
 /** Current cover art in the player bar (for "From album art"). */
 export const NOW_PLAYING_COVER = '[data-testid="now-playing-widget"] [data-testid="cover-art-image"], [data-testid="now-playing-widget"] img'
 

@@ -146,6 +146,10 @@ export function compileLyrics(style: LyricsStyle): string {
     rules.push({ selector: `[${LYRICS_VIEW_SLOT.ownAttr}] ${S.LYRICS_CINEMA_BG} > :has(${S.LYRICS_LINE})`, decls: { visibility: 'hidden' } })
     // Spotify's "Sync" button scrolls its hidden lines; ours follow the song again by themselves after a scroll.
     rules.push({ selector: `[${LYRICS_VIEW_SLOT.ownAttr}] ${S.LYRICS_SYNC_BUTTON}`, decls: { visibility: 'hidden' } })
+    // Its view switcher swaps the view's content (cover, Canvas, artist image) under our lines, which keep drawing
+    // over the picture; it goes, with the divider that follows it.
+    const modes = S.LYRICS_VIEW_MODES
+    rules.push({ selector: `[${LYRICS_VIEW_SLOT.ownAttr}] ${S.LYRICS_VIEW_HEADER} :is(${modes}, ${modes} + :not(:has(button)))`, decls: { display: 'none' } })
   }
   return renderRules(rules)
 }

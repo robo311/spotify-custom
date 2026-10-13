@@ -18,6 +18,15 @@ function iconRules(svgSelector: string, svg: string): string {
   ].join('\n')
 }
 
+// With unread items Spotify adds its own dot (an svg) inside the notification bell's button. The button's svg rules
+// would mask it with our icon too (a second, blue bell): it keeps its own shape, drawn over ours. Same
+// specificity as those rules and after them, so it wins.
+const NOTIFICATION_DOT = '[data-testid="notification-dot"] svg'
+const NOTIFICATION_DOT_RULES = [
+  `${NOTIFICATION_DOT} > * { visibility: visible !important; }`,
+  `${NOTIFICATION_DOT} { background-color: transparent !important; -webkit-mask: none !important; mask: none !important; }`,
+].join('\n')
+
 /** The markup for a per-button choice ('' when its gallery id is unknown, e.g. from a newer version). */
 export function choiceSvg(choice: IconChoice): string {
   return 'svg' in choice ? choice.svg : (galleryIcon(choice.gallery) ?? '')
@@ -36,6 +45,7 @@ export function compileIcons(packId: string, packs: IconPack[], overrides: Recor
     for (const target of ICON_TARGETS[name]) {
       css.push(iconRules(targetSvgSelector(target), svg))
     }
+    if (name === 'notifications') css.push(NOTIFICATION_DOT_RULES)
   }
   return css.join('\n')
 }

@@ -35,7 +35,17 @@ describe('lyrics view motion', () => {
   })
 
   it('keeps the intro mark long enough for the last line to finish rising', () => {
-    expect(LYRICS_INTRO_MS).toBe(160 + 13 * 45 + 640)
+    expect(LYRICS_INTRO_MS).toBe(60 + 13 * 25 + 420)
+  })
+
+  // Spotify itself spends ~300 ms before the morph starts. A cascade ending ~1.4 s after that (measured 1.7 s from the
+  // click) read as the lyrics still loading; keep the whole opening within the morph's neighbourhood.
+  it('settles the opening quickly: short morph, cascade done within 850 ms', () => {
+    const css = compileLyricsMotion(theme({ lyricsNowPlaying: true }, { background: 'theme' }))
+    expect(LYRICS_INTRO_MS).toBeLessThanOrEqual(850)
+    for (const ms of css.matchAll(/animation(?:-duration)?: (?:sc-npv-in )?(\d+)ms/g)) {
+      expect(Number(ms[1])).toBeLessThanOrEqual(440)
+    }
   })
 
   it('slides our Now playing column in and out as its own transition layer', () => {

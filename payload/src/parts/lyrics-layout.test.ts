@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { defaultLyrics } from '../theme/model'
 import type { LayoutConfig, LyricsStyle } from '../types'
 import { compileLyrics } from './lyrics'
-import { compileLyricsIdle, compileLyricsLayout, compileLyricsPanel } from './lyrics-layout'
+import { compileLyricsFloatingShade, compileLyricsIdle, compileLyricsLayout, compileLyricsPanel } from './lyrics-layout'
 import { SPOTIFY_LYRICS, SPOTIFY_LYRICS_LAYOUT } from './fixtures/lyrics-theme'
 
 const SPOTIFY = SPOTIFY_LYRICS
@@ -43,12 +43,13 @@ describe('compileLyricsLayout', () => {
     expect(compileLyricsLayout(LAYOUT)).not.toContain('margin-left')
   })
 
-  it('leaves a floating library rounded, with the gap at the window edge, in immersive mode too', () => {
+  it('leaves a floating library rounded, with the gap at the window edge and inset top and bottom, in immersive mode too', () => {
     for (const lyricsImmersive of [false, true]) {
       const css = compileLyricsLayout({ ...LAYOUT, lyricsKeepLibrary: true, lyricsLibraryFloating: true, lyricsImmersive })
       const library = css.split('}').filter(r => r.includes('#Desktop_LeftSidebar_Id'))
-      expect(library.join('')).not.toContain('margin')
+      expect(library.join('')).not.toMatch(/margin-(left|right)|calc\(-1/)
       expect(library.join('')).not.toContain('radius')
+      expect(library.find(r => r.includes('transform: none'))).toContain('margin-top: var(--panel-gap, 8px) !important;\n  margin-bottom: var(--panel-gap, 8px) !important;')
       expect(css).toContain('transform: none !important;')
     }
   })
@@ -115,10 +116,11 @@ describe('our Now playing column beside the lyrics', () => {
     expect(column({ librarySide: 'right' })).toContain('margin-left: calc(-1 * var(--panel-gap, 8px)) !important;')
   })
 
-  it('floats rounded, with the gaps around it, when the right column floats (in immersive mode too)', () => {
+  it('floats rounded, with the gaps around it and inset top and bottom, when the right column floats (in immersive mode too)', () => {
     for (const lyricsImmersive of [false, true]) {
       const column = rules(compileLyricsLayout({ ...LAYOUT, lyricsNowPlaying: true, lyricsPanelFloating: true, lyricsImmersive })).find(r => r.includes('grid-area')) ?? ''
-      expect(column).not.toContain('margin')
+      expect(column).not.toMatch(/margin-(left|right)|calc\(-1/)
+      expect(column).toContain('margin-top: var(--panel-gap, 8px) !important;\n  margin-bottom: var(--panel-gap, 8px) !important;')
       expect(column).toContain('--sc-lyrics-npv-radius: 8px !important;')
     }
   })
@@ -201,7 +203,18 @@ describe('lyrics view with Spotify\'s right panel (queue, friends) open', () => 
     expect(css).toContain('border-top-right-radius: 0 !important;')
     expect(panel({ librarySide: 'right' })).toContain('margin-left: calc(-1 * var(--panel-gap, 8px)) !important;')
     expect(panel({ librarySide: 'right' })).toContain('border-bottom-left-radius: 0 !important;')
-    expect(panel({ lyricsPanelFloating: true })).toBe('')
+    for (const rule of css.split('}')) expect(rule).not.toMatch(/:has\([^)]*:has\(/)
+  })
+
+  // Floating, the panel keeps Spotify's gaps and rounded corners, and is inset top and bottom like our column.
+  it('insets a floating panel top and bottom, without touching its edge or corners', () => {
+    const css = compileLyricsPanel({ lyrics: { ...SPOTIFY, background: 'theme' }, layout: { ...LAYOUT, lyricsPanelFloating: true } })
+    const rules = css.split('}').filter(r => r.trim())
+    expect(rules).toHaveLength(1)
+    expect(rules[0]).toContain(RIGHT_OPEN)
+    expect(rules[0]).toContain('#Desktop_PanelContainer_Id')
+    expect(rules[0]).toContain('margin-top: var(--panel-gap, 8px) !important;\n  margin-bottom: var(--panel-gap, 8px) !important;')
+    expect(css).not.toMatch(/radius|margin-(left|right)/)
     for (const rule of css.split('}')) expect(rule).not.toMatch(/:has\([^)]*:has\(/)
   })
 
@@ -307,5 +320,31 @@ describe('right-panel state selector', () => {
     expect(html.matches(`${S.LYRICS_VIEW_OPEN}${S.RIGHT_PANEL_OPEN}`)).toBe(true)
     html.removeAttribute('data-cinema-npv-postenter')
     html.removeAttribute('data-right-sidebar-open-postenter')
+  })
+})
+
+// Spotify darkens the top of the lyrics view under its header row. Floating side columns leave gaps above them
+// that showed the bare cover beside that shade; the shade moves behind the whole window width instead.
+describe('header shade with floating side columns', () => {
+  const shade = (layout: Partial<LayoutConfig>, background: LyricsStyle['background'] = 'cover-blur') =>
+    compileLyricsFloatingShade({ lyrics: { ...SPOTIFY, background }, layout: { ...LAYOUT, ...layout } })
+
+  it('spans the window under the top bar instead of only the lyrics view', () => {
+    for (const layout of [{ lyricsPanelFloating: true }, { lyricsKeepLibrary: true, lyricsLibraryFloating: true }]) {
+      const rules = shade(layout).split('}')
+      const ours = rules.find(r => r.includes("[data-testid=\"root\"] > div:has(> #Desktop_LeftSidebar_Id)::after")) ?? ''
+      expect(ours).toContain('[data-cinema-npv-postenter]')
+      expect(ours).toContain('grid-row: main-view / auto !important;')
+      expect(ours).toContain('height: 120px !important;')
+      expect(ours).toContain('linear-gradient(rgba(0, 0, 0, 0.85) 0%')
+      expect(rules.find(r => r.includes(':not(:has([data-overlayscrollbars]))::before'))).toContain('visibility: hidden !important;')
+    }
+  })
+
+  it("leaves Spotify's shade alone unless something floats on the blurred cover, outside immersive mode", () => {
+    expect(shade({})).toBe('')
+    expect(shade({ lyricsLibraryFloating: true })).toBe('')
+    expect(shade({ lyricsPanelFloating: true }, 'theme')).toBe('')
+    expect(shade({ lyricsPanelFloating: true, lyricsImmersive: true })).toBe('')
   })
 })

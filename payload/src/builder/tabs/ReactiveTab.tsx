@@ -5,6 +5,7 @@ import { reactiveMonitor } from '../../audio'
 import { REACTIVE_SENSITIVITY_MAX, REACTIVE_SENSITIVITY_MIN, REACTIVE_SYNC_MAX, REACTIVE_SYNC_MIN } from '../../theme/model'
 import { useApp, useEnv } from '../context'
 import { reactiveStatusLine } from '../lib/reactive-status'
+import { NOW_PLAYING_BAR, REMOTE_DEVICE_STRIP } from '../selectors'
 import { css, useStyles } from '../styles/sheet'
 import { ColorField } from '../ui/ColorField'
 import { Field } from '../ui/Field'
@@ -51,6 +52,21 @@ function useAudioStatus(): AudioStatus {
   return status
 }
 
+/** Whether Spotify plays on another device (Connect), from the strip it adds to the player bar. */
+function useRemotePlayback(): boolean {
+  const [remote, setRemote] = useState(() => document.querySelector(REMOTE_DEVICE_STRIP) !== null)
+  useEffect(() => {
+    const bar = document.querySelector(NOW_PLAYING_BAR)
+    if (!bar) return
+    const check = () => setRemote(document.querySelector(REMOTE_DEVICE_STRIP) !== null)
+    const observer = new MutationObserver(check)
+    observer.observe(bar, { childList: true })
+    check()
+    return () => observer.disconnect()
+  }, [])
+  return remote
+}
+
 function useReducedMotion(): boolean {
   const [reduced, setReduced] = useState(() => window.matchMedia('(prefers-reduced-motion: reduce)').matches)
   useEffect(() => {
@@ -70,9 +86,11 @@ export function ReactiveTab() {
   const accent = useApp(s => s.active.palette.accent)
   const [colourOpen, setColourOpen] = useState(false)
   const status = useAudioStatus()
+  const platform = useApp(s => s.helper.platform)
+  const remote = useRemotePlayback()
   const reducedMotion = useReducedMotion()
   const anyOn = look.spectrum.on || look.pulse.on || look.background.on || look.lyrics.on
-  const line = reactiveStatusLine(status, { enabled: settings.enabled, anyEffectOn: anyOn })
+  const line = reactiveStatusLine(status, { enabled: settings.enabled, anyEffectOn: anyOn, platform, remote })
 
   const editLook = (mutate: (l: ReactiveLook) => void, coalesceKey?: string) =>
     store.edit(t => mutate(t.effects.reactive), coalesceKey ? { coalesceKey } : undefined)

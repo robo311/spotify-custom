@@ -3,7 +3,7 @@ import type { IconPack } from '../types'
 import { BUILTIN_ICON_PACKS, compileIcons, galleryIcon, ICON_GALLERY, ICON_NAMES } from '.'
 import { toLineIcon } from './packs'
 import { pixelSvg } from './pack-pixel'
-import { ICON_TARGETS, targetSvgSelector } from './selectors'
+import { ICON_TARGETS, iconSvgSelector, targetSvgSelector } from './selectors'
 
 // Trimmed from Spotify 1.3.3's player controls (play state) and a card play button.
 const PLAYER_HTML = `
@@ -131,6 +131,22 @@ describe('per-button icons', () => {
     for (const name of ['home', 'browse', 'notifications', 'friends'] as const) {
       expect(ICON_TARGETS[name].flatMap(t => [...document.querySelectorAll(targetSvgSelector(t))]), name).toHaveLength(1)
     }
+  })
+
+  // With unread items Spotify adds a dot (its own svg) inside the bell button; masked with the bell, it showed as a
+  // second, blue bell over the first.
+  it("leaves Spotify's notification dot alone, so it shows over the replaced bell", () => {
+    document.body.innerHTML = `<button data-testid="whats-new-feed-button"><svg id="bell"><path d="M1"/></svg>
+      <div data-testid="notification-dot"><span>New</span><svg id="dot"><circle r="6"/></svg></div></button>`
+    const css = compileIcons('line', BUILTIN_ICON_PACKS)
+    const bell = css.indexOf(`${iconSvgSelector('notifications')} {`)
+    const dot = css.indexOf('[data-testid="notification-dot"] svg {')
+    expect(bell).toBeGreaterThanOrEqual(0)
+    expect(dot).toBeGreaterThan(bell)
+    expect(css.slice(dot)).toMatch(/^\[data-testid="notification-dot"\] svg \{[^}]*mask: none !important;/)
+    expect(css).toContain('[data-testid="notification-dot"] svg > * { visibility: visible !important; }')
+    expect(document.querySelector('#dot')?.matches('[data-testid="notification-dot"] svg')).toBe(true)
+    expect(compileIcons('spotify', BUILTIN_ICON_PACKS)).toBe('')
   })
 
   it('replaces a button icon with a gallery icon or own SVG, beating the pack', () => {

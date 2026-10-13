@@ -1,5 +1,5 @@
 // What the Reactive tab says about music capture right now, in plain words. Pure.
-import type { AudioStatus } from '../../types'
+import type { AudioStatus, HelperState } from '../../types'
 
 export type StatusTone = 'live' | 'idle' | 'warn'
 
@@ -11,7 +11,25 @@ export interface StatusLine {
 
 const MAC_ALLOW = 'Allow Spotify Custom in System Settings → Privacy & Security → Screen & System Audio Recording, then switch music-reactive off and on.'
 
-export function reactiveStatusLine(status: AudioStatus, opts: { enabled: boolean; anyEffectOn: boolean }): StatusLine {
+export interface StatusContext {
+  enabled: boolean
+  anyEffectOn: boolean
+  platform: HelperState['platform']
+  /** Spotify Connect: the song plays on another device, so this computer's Spotify makes no sound. */
+  remote: boolean
+}
+
+/** Silence while a song plays: another device, else whatever stops the sound on this system. */
+function noSignal(opts: StatusContext): StatusLine {
+  if (opts.remote) {
+    return { tone: 'warn', title: 'Playing on another device', detail: "Music-reactive hears only this computer's Spotify. Pick this computer in Spotify's device list." }
+  }
+  const volume = "Check that the song is playing here with Spotify's volume up."
+  const detail = opts.platform === 'darwin' ? `${volume} If you said no to the audio permission: ${MAC_ALLOW}` : volume
+  return { tone: 'warn', title: 'No sound is reaching us', detail }
+}
+
+export function reactiveStatusLine(status: AudioStatus, opts: StatusContext): StatusLine {
   if (!opts.enabled) return { tone: 'idle', title: 'Off', detail: 'Switch it on to let the theme move with the music.' }
   switch (status.state) {
     case 'listening':
@@ -19,7 +37,7 @@ export function reactiveStatusLine(status: AudioStatus, opts: { enabled: boolean
     case 'starting':
       return { tone: 'idle', title: 'Starting…' }
     case 'no-signal':
-      return { tone: 'warn', title: 'No sound is reaching us', detail: `If you said no to the audio permission on a Mac: ${MAC_ALLOW}` }
+      return noSignal(opts)
     case 'needs-permission':
       return { tone: 'warn', title: 'Permission needed', detail: MAC_ALLOW }
     case 'unsupported':

@@ -185,18 +185,6 @@ export function LyricsTab() {
             })
           }
         />
-        {keepLibrary && (
-          <Toggle
-            label="Floating library"
-            description="Rounded, with a gap at the window edge. Off: it runs to the edge"
-            checked={libraryFloating}
-            onChange={v =>
-              store.edit(t => {
-                t.layout.lyricsLibraryFloating = v
-              })
-            }
-          />
-        )}
         <Toggle
           label="Now playing column"
           description="Cover, song and what's up next beside the lyrics"
@@ -231,9 +219,21 @@ export function LyricsTab() {
             />
           </>
         )}
+        {keepLibrary && (
+          <Toggle
+            label="Floating library"
+            description="Rounded, with space all around it. Off: it runs to the window edge"
+            checked={libraryFloating}
+            onChange={v =>
+              store.edit(t => {
+                t.layout.lyricsLibraryFloating = v
+              })
+            }
+          />
+        )}
         <Toggle
           label="Floating Now playing and queue"
-          description="The column beside the lyrics and Spotify's queue: rounded, with a gap at the window edge. Off: they run to the edge"
+          description="The column beside the lyrics and Spotify's queue: rounded, with space all around them. Off: they run to the window edge"
           checked={panelFloating}
           onChange={v =>
             store.edit(t => {

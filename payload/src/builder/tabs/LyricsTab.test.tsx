@@ -56,4 +56,10 @@ describe('LyricsTab lyrics page edges', () => {
     kept.toggle('Floating library')
     expect(kept.theme.layout.lyricsLibraryFloating).toBe(true)
   })
+
+  it('keeps the two floating switches together', () => {
+    const labels = mount(false, { lyricsKeepLibrary: true, lyricsNowPlaying: true }).switches()
+    const library = labels.findIndex(s => s.startsWith('Floating library'))
+    expect(labels[library + 1]).toMatch(/^Floating Now playing and queue/)
+  })
 })

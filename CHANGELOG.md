@@ -3,6 +3,34 @@
 All notable changes to Spotify Custom. Versions follow `X.Y.Z`; installed copies update themselves (see
 [docs/install-guide.md](docs/install-guide.md#updates)).
 
+## 0.2.7 — 2026-10-13
+
+### Added
+
+- **App version in the theme studio.** The studio's header shows which Spotify Custom version you're running, small
+  and faint at the end of the line under the theme name.
+
+### Changed
+
+- **Floating lyrics columns.** A floating library, Now playing column or queue on the lyrics page now also keeps a gap
+  above and below, so it stands clear of the top bar and the player. With the blurred cover background, the dark
+  shade under the lyrics page's header row now runs across those gaps too, so they don't show as lighter strips. In
+  the Lyrics settings, "Floating library" and "Floating Now playing and queue" now sit together.
+- **Animated lyrics hide Spotify's view switcher.** The cover, Canvas, artist image and lyrics buttons in the lyrics
+  page's header swapped the picture underneath our lyrics, which kept drawing over it. They're hidden while animated
+  lyrics show; songs without synced lyrics still have them.
+
+### Fixed
+
+- **Music-reactive "No sound" message.** On Windows it no longer points to the Mac's System Settings. It now tells
+  you to check that the song plays on this computer with Spotify's volume up. When Spotify plays on another device
+  (Spotify Connect), it says so, since the sound then never reaches this computer.
+- **Lyrics page opens and closes faster.** The first lines used to finish rising about 1.7 s after the click, which
+  looked like the lyrics were still loading; they're now in place after about 1.1 s. The open/close morph is shorter
+  too (about 120 ms less each way).
+- **Notification bell.** With unread items in What's new, a second, blue bell showed over the bell (any icon pack
+  except Spotify's). It's Spotify's unread dot again, over the bell.
+
 ## 0.2.6 — 2026-10-13
 
 ### Added

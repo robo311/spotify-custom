@@ -206,6 +206,8 @@ export const VIDEO_PLAYER_CINEMA = '[data-testid="video-player-cinema"]'
 /** A music video's card (the music video's related videos; the Now playing panel's videos section). */
 export const VIDEO_CARD = '[data-testid="video-card-image"]'
 export const LYRICS_VIEW_HEADER = `${LYRICS_CINEMA_HOST} > :has(button):not(:has([data-overlayscrollbars]))`
+/** Spotify's view switcher in the header row (cover, Canvas, artist image, lyrics), its only radio group. */
+export const LYRICS_VIEW_MODES = '[role="radiogroup"]'
 /** Spotify's "Sync" button (back to the sung line after scrolling away), the view's only primary button. */
 export const LYRICS_SYNC_BUTTON = `${LYRICS_CINEMA_HOST} > :has(> * > [data-encore-id="buttonPrimary"])`
 /** Scroll viewport of the lyrics (OverlayScrollbars library attribute); its box stays put while lyrics scroll. */

@@ -112,7 +112,7 @@ describe('our Now playing column beside the lyrics', () => {
     const column = (layout: Partial<LayoutConfig>) =>
       rules(compileLyricsLayout({ ...LAYOUT, lyricsNowPlaying: true, ...layout })).find(r => r.includes('grid-area')) ?? ''
     expect(column({})).toContain('margin-right: calc(-1 * var(--panel-gap, 8px)) !important;')
-    expect(column({})).toContain('--sc-lyrics-npv-radius: 8px 0 0 8px !important;')
+    expect(column({})).toContain('--sc-lyrics-npv-radius: var(--sc-lyrics-npv-corner, 8px) 0 0 var(--sc-lyrics-npv-corner, 8px) !important;')
     expect(column({ librarySide: 'right' })).toContain('margin-left: calc(-1 * var(--panel-gap, 8px)) !important;')
   })
 
@@ -121,7 +121,7 @@ describe('our Now playing column beside the lyrics', () => {
       const column = rules(compileLyricsLayout({ ...LAYOUT, lyricsNowPlaying: true, lyricsPanelFloating: true, lyricsImmersive })).find(r => r.includes('grid-area')) ?? ''
       expect(column).not.toMatch(/margin-(left|right)|calc\(-1/)
       expect(column).toContain('margin-top: var(--panel-gap, 8px) !important;\n  margin-bottom: var(--panel-gap, 8px) !important;')
-      expect(column).toContain('--sc-lyrics-npv-radius: 8px !important;')
+      expect(column).toContain('--sc-lyrics-npv-radius: var(--sc-lyrics-npv-corner, 8px) !important;')
     }
   })
 

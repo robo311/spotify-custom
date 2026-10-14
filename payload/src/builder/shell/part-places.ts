@@ -17,6 +17,7 @@ export const PART_PLACES: Readonly<Partial<Record<string, TabId>>> = {
   homeButton: 'topbar',
   shortcuts: 'home',
   stats: 'home',
+  lyricsColumn: 'lyrics',
   npvCards: 'nowplaying',
   shelfHeaders: 'home',
 }

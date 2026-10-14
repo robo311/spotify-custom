@@ -46,6 +46,7 @@ export const PART_ICONS: Readonly<Partial<Record<string, string>>> = {
   homeButton: House,
   shortcuts: LayoutGrid,
   stats: ChartColumn,
+  lyricsColumn: PanelRight,
   npvCards: SquareStack,
   shelfHeaders: Heading,
 }

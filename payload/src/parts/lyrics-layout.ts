@@ -163,12 +163,14 @@ function nowPlayingColumnRules(layout: LayoutConfig): CssRule[] {
   // Flush with the window edge (over the grid's padding) instead of leaving a strip of dead space beside the lyrics;
   // the corners on that edge go square. Immersive (full height) puts it flush with the top and bottom too, all square.
   // Floating, it keeps the grid's gaps and all its corners round, inset top and bottom.
+  // The round corners are the part's radius (the lyricsColumn part sets --sc-lyrics-npv-corner).
   const edge = left ? 'right' : 'left'
+  const corner = 'var(--sc-lyrics-npv-corner, 8px)'
   const flush = layout.lyricsPanelFloating
-    ? { ...FLOATING_INSET, '--sc-lyrics-npv-radius': '8px' }
+    ? { ...FLOATING_INSET, '--sc-lyrics-npv-radius': corner }
     : layout.lyricsImmersive
       ? { [`margin-${edge}`]: 'calc(-1 * var(--panel-gap, 8px))', ...FLUSH_VERTICAL, '--sc-lyrics-npv-radius': '0' }
-      : { [`margin-${edge}`]: 'calc(-1 * var(--panel-gap, 8px))', '--sc-lyrics-npv-radius': left ? '8px 0 0 8px' : '0 8px 8px 0' }
+      : { [`margin-${edge}`]: 'calc(-1 * var(--panel-gap, 8px))', '--sc-lyrics-npv-radius': left ? `${corner} 0 0 ${corner}` : `0 ${corner} ${corner} 0` }
   return [
     { selector: COLUMN_HOST, decls: { display: 'none' } },
     { selector: `${on} ${S.LYRICS_CINEMA_HOST}`, decls: { 'grid-column': viewColumns } },

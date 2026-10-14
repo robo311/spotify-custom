@@ -1,7 +1,7 @@
 // The curated, customisable parts of Spotify's UI. Each part is a data recipe: which elements it is, which
 // properties the builder offers, and where each property lands. Adding a part = adding one recipe.
 import type { PartDef, PartStyle } from '../types'
-import { anyOf, renderRules, within, type CssRule } from './css'
+import { anyOf, isGradient, renderRules, within, type CssRule } from './css'
 import { normaliseTarget, propRules, type StyleProp, type TargetSpec } from './style-props'
 import * as S from './selectors'
 
@@ -22,6 +22,11 @@ export interface PartRecipe {
   radius?: number
   /** Offers picture layers behind the part (drawn by src/bar-layers inside the root). */
   layers?: true
+  /**
+   * Spotify washes inside the part that fade into --background-base over an opaque colour. Under a gradient that
+   * variable is transparent, so the wash would end in a hard edge: these fade out with a mask instead.
+   */
+  gradientFades?: string[]
 }
 
 const ROOT = '&'
@@ -53,6 +58,7 @@ export const PART_RECIPES: PartRecipe[] = [
     selectors: [S.MAIN_VIEW],
     hideable: false,
     targets: { background: [ROOT], text: [ROOT], accent: [ROOT], radius: [ROOT_CLIPPED] },
+    gradientFades: [S.HOME_HEADER_WASH],
   },
   {
     id: 'rightPanel',
@@ -188,6 +194,23 @@ export const PART_RECIPES: PartRecipe[] = [
     },
   },
   {
+    id: 'lyricsColumn',
+    label: 'Now playing column',
+    description: 'Cover, song and up next beside the lyrics',
+    selectors: [S.LYRICS_COLUMN],
+    hideable: false,
+    pageSpecific: true,
+    // Our own column, drawn in a shadow root: it reads these variables (nowplaying/styles.ts). The radius rounds only
+    // the corners the lyrics layout leaves round (parts/lyrics-layout.ts).
+    targets: {
+      background: [{ vars: ['--sc-lyrics-npv-bg'] }],
+      text: [{ vars: ['--sc-lyrics-npv-text'] }, { vars: ['--sc-lyrics-npv-subdued'], fade: 70 }],
+      accent: [{ vars: ['--sc-lyrics-npv-accent'] }],
+      radius: [{ vars: ['--sc-lyrics-npv-corner'] }],
+    },
+    radius: 8,
+  },
+  {
     id: 'npvCards',
     label: 'Now playing cards',
     description: 'Artist, credits and queue cards in the Now playing panel',
@@ -221,6 +244,9 @@ export function compileRecipe(recipe: PartRecipe, style: PartStyle): string {
   }
   // The layers' container is positioned against the bar and stacks inside it, above its background, under its content.
   if (recipe.layers && style.layers?.some(l => !l.hidden)) rules.push({ selector: root, decls: { position: 'relative', isolation: 'isolate' } })
+  if (recipe.gradientFades && style.background !== undefined && isGradient(style.background)) {
+    rules.push({ selector: recipe.gradientFades.join(', '), decls: { 'mask-image': 'linear-gradient(#000, transparent)' } })
+  }
   return renderRules(rules)
 }
 

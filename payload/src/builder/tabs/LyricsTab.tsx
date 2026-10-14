@@ -15,6 +15,7 @@ import { Toggle } from '../ui/Toggle'
 import { Field } from '../ui/Field'
 import { FontPicker } from '../ui/FontPicker'
 import { BackgroundTiles } from './lyrics/BackgroundTiles'
+import { PartSection } from '../parts/PartSection'
 
 const LINES: readonly { key: keyof LyricLineColors; label: string; hint: string }[] = [
   { key: 'activeLine', label: 'Sung line', hint: 'The line being sung now' },
@@ -252,6 +253,8 @@ export function LyricsTab() {
           }
         />
       </Section>
+
+      <PartSection partId="lyricsColumn" hint={nowPlaying ? undefined : 'Turn on Now playing column above to see it beside the lyrics.'} />
     </>
   )
 }

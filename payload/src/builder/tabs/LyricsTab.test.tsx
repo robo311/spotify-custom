@@ -12,7 +12,7 @@ const sync = (fn: () => void) => void act(fn)
 function mount(on: boolean, layout: Partial<Theme['layout']> = {}) {
   const base = PRESETS[0]
   const theme: Theme = { ...structuredClone(base), layout: { ...defaultLayout(), ...layout }, lyrics: { ...defaultLyrics(), animated: { ...defaultLyricsAnimation(), on } } }
-  const state = observable({ active: theme, helper: { connected: false } } as AppState)
+  const state = observable({ active: theme, helper: { connected: false }, partStatus: {} } as AppState)
   const edit = vi.fn((fn: (t: Theme) => void) => fn(theme))
   const store = { get: () => state.get(), subscribe: (fn: (s: AppState) => void) => state.subscribe(fn), edit } as unknown as Store
   const host = document.createElement('div')

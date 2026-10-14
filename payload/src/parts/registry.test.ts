@@ -13,11 +13,11 @@ function recipe(id: string): PartRecipe {
 }
 
 describe('PARTS registry', () => {
-  it('has the 17 curated parts with unique ids', () => {
+  it('has the 18 curated parts with unique ids', () => {
     expect(PARTS.map(p => p.id)).toEqual([
       'sidebar', 'topBar', 'main', 'rightPanel', 'playerBar', 'cards',
       'buttons', 'cardPlayButton', 'playerPlayButton', 'progressBar', 'volumeBar', 'searchBox',
-      'homeButton', 'shortcuts', 'stats', 'npvCards', 'shelfHeaders',
+      'homeButton', 'shortcuts', 'stats', 'lyricsColumn', 'npvCards', 'shelfHeaders',
     ])
   })
 
@@ -29,7 +29,7 @@ describe('PARTS registry', () => {
   })
 
   it('flags parts that only exist on some pages', () => {
-    expect(PARTS.filter(p => p.pageSpecific).map(p => p.id)).toEqual(['cards', 'buttons', 'shortcuts', 'stats', 'npvCards', 'shelfHeaders'])
+    expect(PARTS.filter(p => p.pageSpecific).map(p => p.id)).toEqual(['cards', 'buttons', 'shortcuts', 'stats', 'lyricsColumn', 'npvCards', 'shelfHeaders'])
   })
 
   it('never relies on hashed classes, aria-labels or text', () => {
@@ -68,6 +68,22 @@ describe('compileRecipe', () => {
     const css = compileRecipe(recipe('sidebar'), { background: 'linear-gradient(#111, #222)' })
     expect(css).toContain('--background-base: transparent !important;')
     expect(css).toContain('background: linear-gradient(#111, #222) !important;')
+  })
+
+  it("fades Home's header wash out under a main view gradient instead of cutting it off", () => {
+    const wash = '#main-view main > div:has(> [data-testid="home-page"]) > :first-child {\n  mask-image: linear-gradient(#000, transparent) !important;'
+    expect(compileRecipe(recipe('main'), { background: 'linear-gradient(180deg, #45475a, #181825)' })).toContain(wash)
+    expect(compileRecipe(recipe('main'), { background: '#181825' })).not.toContain('mask-image')
+  })
+
+  it("styles the lyrics Now playing column through the variables its shadow styles read", () => {
+    const css = compileRecipe(recipe('lyricsColumn'), { background: '#202030', text: '#eeeeff', accent: '#ff7a59', radius: 16 })
+    expect(css).toContain('#sc-lyrics-npv {')
+    expect(css).toContain('--sc-lyrics-npv-bg: #202030 !important;')
+    expect(css).toContain('--sc-lyrics-npv-text: #eeeeff !important;')
+    expect(css).toContain('--sc-lyrics-npv-subdued: color-mix(in oklab, #eeeeff 70%, transparent) !important;')
+    expect(css).toContain('--sc-lyrics-npv-accent: #ff7a59 !important;')
+    expect(css).toContain('--sc-lyrics-npv-corner: 16px !important;')
   })
 
   it('styles card play buttons and the player play button separately', () => {

@@ -1,14 +1,14 @@
 // Column styles. Lives in the column's shadow root and only sees inherited custom properties: the palette (--sc-*)
 // and Spotify's --background-base, which the cover-blur lyrics background turns translucent on the host (parts/lyrics.ts),
-// so the column matches the library next to it.
+// so the column matches the library next to it. The lyricsColumn part's colours (--sc-lyrics-npv-*) win over both.
 
 export const COLUMN_CSS = /* css */ `
 :host { display: flex; min-width: 0; min-height: 0; }
 .npv {
-  --bg: var(--background-base, var(--sc-background, #121212));
-  --text: var(--sc-text, #fff);
-  --sub: var(--sc-text-subdued, #b3b3b3);
-  --accent: var(--sc-accent, #1ed760);
+  --bg: var(--sc-lyrics-npv-bg, var(--background-base, var(--sc-background, #121212)));
+  --text: var(--sc-lyrics-npv-text, var(--sc-text, #fff));
+  --sub: var(--sc-lyrics-npv-subdued, var(--sc-text-subdued, #b3b3b3));
+  --accent: var(--sc-lyrics-npv-accent, var(--sc-accent, #1ed760));
   --hover: color-mix(in oklab, var(--text) 8%, transparent);
   --ease: cubic-bezier(.2, .8, .2, 1);
   box-sizing: border-box;

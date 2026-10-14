@@ -5,6 +5,20 @@ All notable changes to Spotify Custom. Versions follow `X.Y.Z`; installed copies
 
 ## Unreleased
 
+## 0.3.1 — 2026-10-14
+
+### Added
+
+- **Style the Now playing column beside the lyrics.** Point and click now picks it, and it has its own section at the
+  bottom of the Lyrics tab: background, text and accent colours and corner roundness. Corners against the window edge
+  stay square unless the column floats.
+
+### Fixed
+
+- **A gradient behind the main view no longer ends in a hard edge on Home.** Spotify's colour wash at the top of Home
+  now fades out smoothly into your gradient, so the gradient carries on behind the whole page instead of being cut off
+  under the shortcut cards.
+
 ## 0.3.0 — 2026-10-14
 
 ### Added

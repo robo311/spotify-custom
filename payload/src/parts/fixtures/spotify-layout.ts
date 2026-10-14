@@ -81,6 +81,7 @@ export const SPOTIFY_LAYOUT_HTML = `
         </section>
       </div></section></main>
     </div>
+    <div id="sc-lyrics-npv"></div>
     <div><div><div><aside id="Desktop_PanelContainer_Id"><p id="panel-text">Queue</p>
       <div data-testid="NPV_Panel_OpenDiv"><div data-sc-panel-key="track"></div><div id="npv-credits" data-sc-panel-key="credits"></div></div>
     </aside></div></div></div>

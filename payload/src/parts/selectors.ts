@@ -56,6 +56,11 @@ export const SHORTCUT_CARD = '[data-testid="home-page"] div:has(> div > [data-te
 /** The grid laying the cards out; Spotify sizes the cards through --item-height on it. */
 export const SHORTCUT_GRID = '[data-testid="home-page"] div:has(> div > div > [data-testid="shortcut-background"])'
 export const SHORTCUT_TEXT = '[data-encore-id="text"]'
+/**
+ * Home's colour wash behind the top of the page (the first sibling of the page section): the colour is set inline and
+ * Spotify's dark gradient over it fades into --background-base.
+ */
+export const HOME_HEADER_WASH = '#main-view main > div:has(> [data-testid="home-page"]) > :first-child'
 
 // ---------- Album, playlist and song pages ----------
 
@@ -117,6 +122,8 @@ export const ARTIST_ACTION_BACKDROP = `${ARTIST_HEADER} + div > :first-child`
 
 /** Our own stats shelf host (home module marks extension shelves with data-sc-shelf-key="ext:<id>"). */
 export const STATS_SHELF = '[data-sc-shelf-key="ext:stats"]'
+/** Our own Now playing column beside the lyrics (its host; drawn by src/nowplaying, see LYRICS_COLUMN_SLOT). */
+export const LYRICS_COLUMN = '#sc-lyrics-npv'
 
 export const SHELF_TITLE = '[data-testid="component-shelf"] h2'
 export const SHELF_SEE_ALL = '[data-testid="component-shelf"] [data-testid="see-all-link"]'

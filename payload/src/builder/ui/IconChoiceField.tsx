@@ -212,7 +212,7 @@ export function IconChoiceField({ name, label, defaultOpen = false }: IconChoice
   const state = !choice ? (packSvg ? 'From the icon pack' : 'Spotify’s icon') : 'svg' in choice ? 'Your SVG' : (ICON_GALLERY.find(i => i.id === choice.gallery)?.label ?? 'Gallery icon')
 
   return (
-    <div class="b-ichoice">
+    <div class="b-ichoice" data-icon={name}>
       <button type="button" class="b-ichoice__row" aria-expanded={open} onClick={() => setOpen(!open)}>
         <span class="b-ichoice__well" data-custom={choice !== undefined}>
           {current ? <Glyph svg={current} /> : <NativeGlyph name={name} />}

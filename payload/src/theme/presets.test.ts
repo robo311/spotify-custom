@@ -5,17 +5,19 @@ import { PRESETS, DEFAULT_PRESET_ID } from './presets'
 import { validateTheme } from './model'
 
 describe('presets', () => {
-  it('ships the 10 agreed presets with unique ids, default first', () => {
+  it('ships the 12 agreed presets with unique ids, default first', () => {
     expect(PRESETS.map(p => p.id)).toEqual([
       'tokyo-night',
       'darcula',
       'spotify-original',
       'catppuccin-mocha',
+      'catppuccin-latte',
       'gruvbox-dark',
       'nord',
       'midnight-blue',
       'sunset',
       'forest',
+      'galaxy',
       'mono',
     ])
     expect(PRESETS[0]?.id).toBe(DEFAULT_PRESET_ID)
@@ -64,17 +66,28 @@ describe('presets', () => {
       darcula: 'glow',
       'spotify-original': 'spotify',
       'catppuccin-mocha': 'glow',
+      'catppuccin-latte': 'glow',
       'tokyo-night': 'glow',
       'gruvbox-dark': 'glow',
       nord: 'glow',
       'midnight-blue': 'flow',
       sunset: 'flow',
       forest: 'wave',
+      galaxy: 'flow',
       mono: 'glow',
     })
   })
 
   it('shows our Now playing column on the lyrics page exactly for the cover-blur moods', () => {
     for (const p of PRESETS) expect(p.layout.lyricsNowPlaying).toBe(p.lyrics.background === 'cover-blur')
+  })
+
+  it('gives Galaxy nebula and planet layers in its top bar as the bar-layer example, and no other preset a picture', () => {
+    const withLayers = PRESETS.flatMap(p => Object.entries(p.parts).filter(([, s]) => s.layers).map(([part]) => `${p.id}.${part}`))
+    expect(withLayers).toEqual(['galaxy.topBar'])
+    expect(PRESETS.find(p => p.id === 'galaxy')?.parts.topBar.layers).toMatchObject([
+      { src: { builtin: 'nebula' }, fit: 'fill', fade: 'both' },
+      { src: { builtin: 'planet' }, fit: 'free' },
+    ])
   })
 })

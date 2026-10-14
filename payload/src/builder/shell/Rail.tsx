@@ -1,14 +1,26 @@
-// Vertical tab rail. Roving focus: arrow keys move between tabs, Home/End jump to the ends.
+// Vertical tab rail. Roving focus: arrow keys move between tabs, Home/End jump to the ends. A hairline gap separates
+// the tab groups (theme · areas · more).
 import { useEnv, useUi, type TabId } from '../context'
 import { css, useStyles } from '../styles/sheet'
-import { savePrefs } from '../lib/prefs'
+import { selectTab } from '../lib/navigate'
 import { Icon } from '../ui/Icon'
 import { TABS } from './tabs'
 
 // One lit key slides to the active tab: the rail's only motion, and it answers the click.
 const TAB_H = 52
 const TAB_GAP = 2
+const GROUP_GAP = 11
 const RAIL_PAD = 6
+
+/** Tabs that open a new group get the extra gap above them. */
+const startsGroup = (i: number) => i > 0 && TABS[i].group !== TABS[i - 1].group
+
+/** The key's offset for tab i: the tabs above it plus the group gaps above it. */
+function keyOffset(i: number): number {
+  let gaps = 0
+  for (let j = 1; j <= i; j++) if (startsGroup(j)) gaps++
+  return i * (TAB_H + TAB_GAP) + gaps * GROUP_GAP
+}
 
 const styles = css`
   .b-rail {
@@ -34,7 +46,7 @@ const styles = css`
     border-radius: var(--b-r-md);
     background: var(--b-key);
     box-shadow: var(--b-key-edge);
-    transform: translateY(calc(var(--i) * ${TAB_H + TAB_GAP}px));
+    transform: translateY(var(--y));
     transition: transform 280ms var(--b-ease);
     pointer-events: none;
   }
@@ -51,7 +63,21 @@ const styles = css`
     color: var(--b-sub);
     font-size: 10.5px;
     font-weight: 500;
+    line-height: 1.15;
+    text-align: center;
     transition: color var(--b-fast) var(--b-ease), background var(--b-fast) var(--b-ease);
+  }
+  .b-rail__tab[data-group-start='true'] {
+    margin-top: ${GROUP_GAP}px;
+  }
+  .b-rail__tab[data-group-start='true']::before {
+    content: '';
+    position: absolute;
+    top: ${-(GROUP_GAP + TAB_GAP) / 2 - 0.5}px;
+    left: 10px;
+    right: 10px;
+    height: 1px;
+    background: var(--b-line);
   }
   .b-rail__tab:hover {
     color: var(--b-text);
@@ -75,10 +101,7 @@ export function Rail() {
   const { ui } = useEnv()
   const tab = useUi(s => s.tab)
 
-  const select = (id: TabId) => {
-    ui.set(s => ({ ...s, tab: id }))
-    savePrefs({ tab: id })
-  }
+  const select = (id: TabId) => selectTab(ui, id)
 
   const onKeyDown = (e: KeyboardEvent) => {
     const i = TABS.findIndex(t => t.id === tab)
@@ -93,10 +116,11 @@ export function Rail() {
 
   return (
     <nav class="b-rail" role="tablist" aria-orientation="vertical" aria-label="Theme studio sections" onKeyDown={onKeyDown}>
-      <span class="b-rail__key" aria-hidden="true" style={{ '--i': Math.max(0, TABS.findIndex(t => t.id === tab)) }} />
-      {TABS.map(t => (
+      <span class="b-rail__key" aria-hidden="true" style={{ '--y': `${keyOffset(Math.max(0, TABS.findIndex(t => t.id === tab)))}px` }} />
+      {TABS.map((t, i) => (
         <button
           key={t.id}
+          data-group-start={startsGroup(i)}
           id={`b-tab-${t.id}`}
           type="button"
           role="tab"

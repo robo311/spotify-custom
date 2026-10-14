@@ -118,6 +118,16 @@ describe('beat pulse', () => {
     vi.restoreAllMocks()
   })
 
+  it('never kicks our own top-bar buttons (studio, What’s new, update)', () => {
+    document.body.innerHTML = '<span id="sc-entry"><button></button></span><button data-testid="control-button-playpause"></button>'
+    const { calls } = stubAnimate()
+    const pulse = startPulse()
+    pulse.update(levels(1), context())
+    expect(calls.map(c => c.el)).toEqual([document.querySelector('[data-testid="control-button-playpause"]')])
+    pulse.dispose()
+    vi.restoreAllMocks()
+  })
+
   it('stays still for reduced motion and for targets switched off', () => {
     document.body.innerHTML = '<button data-testid="control-button-playpause"></button>'
     const { calls } = stubAnimate()

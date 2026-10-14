@@ -2,5 +2,5 @@
 // Settings.artworkStyles.
 export { startLibrary, type LibraryController } from './controller'
 export { ARTWORK_ICONS, artworkIconSvg, type ArtworkIcon } from './icons'
-export { imageToDataUrl } from './image'
+export { encodeWithinBudget, imageToDataUrl, type Encode } from './image'
 export { libraryItemAt, LIKED_SONGS_URI } from './keys'

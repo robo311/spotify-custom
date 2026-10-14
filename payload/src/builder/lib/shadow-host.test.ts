@@ -6,7 +6,7 @@ import { createShadowMount, isOwnElement } from './shadow-host'
 
 describe('isOwnElement', () => {
   it("recognises the builder's own hosts and what's inside them", () => {
-    const ui = observable<UiSnapshot>({ open: true, tab: 'start', picking: true, editingArtwork: null })
+    const ui = observable<UiSnapshot>({ open: true, tab: 'themes', picking: true, editingArtwork: null })
     const mount = createShadowMount('builder', 'div', {} as Store, ui, h('span', {}))
     const child = document.createElement('span')
     mount.host.append(child)

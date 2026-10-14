@@ -2,7 +2,7 @@
 // Palette semantics (see types.ts): background = content panels, surface = app frame around them,
 // elevated = cards/menus/hover. Every preset must pass presets.test.ts (readability + distinctness rules).
 import type { Effects, LayoutConfig, LyricsStyle, Palette, Theme } from '../types'
-import { defaultEffects, defaultHomeStyle, defaultLayout, defaultLyrics, defaultLyricsAnimation, defaultPageStyle, defaultReactiveLook, THEME_SCHEMA } from './model'
+import { defaultBarLayer, defaultEffects, defaultHomeStyle, defaultLayout, defaultLyrics, defaultLyricsAnimation, defaultPageStyle, defaultReactiveLook, THEME_SCHEMA } from './model'
 
 export const DEFAULT_PRESET_ID = 'tokyo-night'
 export const SPOTIFY_ORIGINAL_ID = 'spotify-original'
@@ -113,6 +113,22 @@ export const PRESETS: Theme[] = [
     radius: 12,
   }),
   preset({
+    id: 'catppuccin-latte',
+    name: 'Catppuccin Latte',
+    // The light flavour: panels on base, a crust frame, and cards one step darker (surface0) since Latte has no white.
+    palette: {
+      background: '#eff1f5', // base
+      surface: '#dce0e8', // crust
+      elevated: '#ccd0da', // surface0
+      text: '#4c4f69', // text
+      textSubdued: '#53566e', // subtext1, darkened: subtext1 itself fails contrast on surface0 cards
+      accent: '#8839ef', // mauve
+      onAccent: '#eff1f5', // base
+      border: '#bcc0cc', // surface1
+    },
+    radius: 12,
+  }),
+  preset({
     id: 'gruvbox-dark',
     name: 'Gruvbox Dark',
     palette: {
@@ -178,8 +194,11 @@ export const PRESETS: Theme[] = [
     lyrics: { background: 'cover-blur', align: 'center', fontScale: 1.1 },
     // Lyrics page gets our Now playing column: the blurred cover backdrop is the star there.
     layout: { lyricsNowPlaying: true },
-    // The signature coral-to-amber sweep on the big play button.
-    parts: { playButton: { background: 'linear-gradient(135deg, #ff6b6b 0%, #ff8f5a 45%, #ffc24b 100%)' } },
+    // The signature coral-to-amber sweep on the big play buttons.
+    parts: {
+      cardPlayButton: { background: 'linear-gradient(135deg, #ff6b6b 0%, #ff8f5a 45%, #ffc24b 100%)' },
+      playerPlayButton: { background: 'linear-gradient(135deg, #ff6b6b 0%, #ff8f5a 45%, #ffc24b 100%)' },
+    },
     effects: { ambientGlow: true, progressBar: 'flow' },
   }),
   preset({
@@ -198,6 +217,37 @@ export const PRESETS: Theme[] = [
     radius: 12,
     lyrics: { background: 'theme', align: 'center' },
     effects: { ambientGlow: true, progressBar: 'wave' },
+  }),
+  preset({
+    id: 'galaxy',
+    name: 'Galaxy',
+    palette: {
+      background: '#120d2b',
+      surface: '#0a0719',
+      elevated: '#231b4d',
+      text: '#eee9ff',
+      textSubdued: '#b4a9e0',
+      accent: '#e08bff',
+      onAccent: '#1a0b2e',
+      border: '#382c70',
+    },
+    radius: 14,
+    lyrics: { background: 'cover-blur', align: 'center', fontScale: 1.1 },
+    // Lyrics page gets our Now playing column: the blurred cover backdrop is the star there.
+    layout: { lyricsNowPlaying: true },
+    // A violet-to-cyan nebula on the big play buttons. The top bar shows off bar layers: nebula clouds filling the bar,
+    // faded at both sides, and a planet on its own layer, free to drag.
+    parts: {
+      cardPlayButton: { background: 'linear-gradient(135deg, #7b5cff 0%, #e070ff 50%, #6fe3ff 100%)' },
+      playerPlayButton: { background: 'linear-gradient(135deg, #7b5cff 0%, #e070ff 50%, #6fe3ff 100%)' },
+      topBar: {
+        layers: [
+          { ...defaultBarLayer('nebula'), name: 'Nebula', src: { builtin: 'nebula' }, x: 75, fade: 'both' },
+          { ...defaultBarLayer('planet'), name: 'Planet', src: { builtin: 'planet' }, fit: 'free', x: 76 },
+        ],
+      },
+    },
+    effects: { ambientGlow: true, progressBar: 'flow' },
   }),
   preset({
     id: 'mono',

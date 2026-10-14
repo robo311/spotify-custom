@@ -1,7 +1,7 @@
 // Pages › Albums & playlists: the header of album, song and playlist pages (backdrop, layout, height) and its cover
 // and title size. The banner layout applies to albums and songs only.
 import { useState } from 'preact/hooks'
-import { Disc3 } from 'lucide-static'
+import { Album, Disc3, RectangleHorizontal } from 'lucide-static'
 import type { PageStyle } from '../../../types'
 import { COVER_SIZE_MAX, COVER_SIZE_MIN, PAGE_TITLE_SCALE_MAX, PAGE_TITLE_SCALE_MIN, SPOTIFY_COVER_SIZE } from '../../../theme/model'
 import { useApp, useEnv } from '../../context'
@@ -31,7 +31,7 @@ export function AlbumsTab({ page, edit }: { page: PageStyle; edit: PageEdit }) {
   return (
     <>
       <Section
-        title="Header"
+        title="Header" icon={RectangleHorizontal}
         aside={
           <Button icon={Disc3} onClick={openPlayingAlbum}>
             Show an album
@@ -88,7 +88,7 @@ export function AlbumsTab({ page, edit }: { page: PageStyle; edit: PageEdit }) {
         {page.headerLayout === 'banner' && <span class="b-hint">Albums and songs. Playlists keep Spotify’s layout: their covers are often text or mosaics.</span>}
       </Section>
 
-      <Section title="Cover and title">
+      <Section title="Cover and title" icon={Album}>
         <Slider
           label="Cover size"
           min={COVER_SIZE_MIN}

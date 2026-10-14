@@ -1,5 +1,125 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
+exports[`compileTheme > compiles catppuccin-latte deterministically 1`] = `
+"/* variables */
+:root {
+  --sc-background: #eff1f5;
+  --sc-surface: #dce0e8;
+  --sc-elevated: #ccd0da;
+  --sc-text: #4c4f69;
+  --sc-text-subdued: #53566e;
+  --sc-accent: #8839ef;
+  --sc-on-accent: #eff1f5;
+  --sc-border: #bcc0cc;
+  --sc-radius: 12px;
+  --sc-font-ui: "SC Inter", var(--fallback-fonts, sans-serif);
+  --sc-font-mono: "SC Mono";
+  --section-border-radius: 12px;
+}
+body {
+  --encore-body-font-stack: "SC Inter", var(--fallback-fonts, sans-serif);
+  --encore-title-font-stack: "SC Inter", var(--fallback-fonts, sans-serif);
+  --encore-variable-font-stack: "SC Inter", var(--fallback-fonts, sans-serif);
+}
+
+/* encore */
+html.encore-dark-theme, html.encore-dark-theme .encore-base-set {
+  --background-base: var(--sc-background);
+  --background-highlight: color-mix(in oklab, var(--sc-background), var(--sc-text) 7%);
+  --background-press: color-mix(in oklab, var(--sc-background), var(--sc-surface) 60%);
+  --background-elevated-base: var(--sc-elevated);
+  --background-elevated-highlight: color-mix(in oklab, var(--sc-elevated), var(--sc-text) 7%);
+  --background-elevated-press: color-mix(in oklab, var(--sc-elevated), var(--sc-surface) 40%);
+  --background-tinted-base: color-mix(in oklab, var(--sc-text) 10%, transparent);
+  --background-tinted-highlight: color-mix(in oklab, var(--sc-text) 14%, transparent);
+  --background-tinted-press: color-mix(in oklab, var(--sc-text) 21%, transparent);
+  --text-base: var(--sc-text);
+  --text-subdued: var(--sc-text-subdued);
+  --text-bright-accent: var(--sc-accent);
+  --text-positive: var(--sc-accent);
+  --essential-base: var(--sc-text);
+  --essential-subdued: color-mix(in oklab, var(--sc-text-subdued), var(--sc-background) 35%);
+  --essential-bright-accent: var(--sc-accent);
+  --essential-positive: var(--sc-accent);
+  --decorative-base: var(--sc-text);
+  --decorative-subdued: var(--sc-border);
+}
+html.encore-dark-theme .encore-app-frame-set,
+html.encore-dark-theme .encore-muted-accent-set,
+html.encore-dark-theme .encore-inverted-dark-set {
+  --background-base: var(--sc-surface);
+  --background-highlight: color-mix(in oklab, var(--sc-surface), var(--sc-text) 6%);
+  --background-press: color-mix(in oklab, var(--sc-surface), var(--sc-text) 12%);
+  --background-elevated-base: color-mix(in oklab, var(--sc-surface), var(--sc-text) 6%);
+  --background-elevated-highlight: color-mix(in oklab, var(--sc-surface), var(--sc-text) 10%);
+  --background-elevated-press: color-mix(in oklab, var(--sc-surface), var(--sc-background) 50%);
+  --background-tinted-base: color-mix(in oklab, var(--sc-text) 10%, transparent);
+  --background-tinted-highlight: color-mix(in oklab, var(--sc-text) 14%, transparent);
+  --background-tinted-press: color-mix(in oklab, var(--sc-text) 21%, transparent);
+  --text-base: var(--sc-text);
+  --text-subdued: var(--sc-text-subdued);
+  --text-bright-accent: var(--sc-accent);
+  --text-positive: var(--sc-accent);
+  --essential-base: var(--sc-text);
+  --essential-subdued: color-mix(in oklab, var(--sc-text-subdued), var(--sc-background) 35%);
+  --essential-bright-accent: var(--sc-accent);
+  --essential-positive: var(--sc-accent);
+  --decorative-base: var(--sc-text);
+  --decorative-subdued: color-mix(in oklab, var(--sc-border), var(--sc-surface) 30%);
+}
+html.encore-dark-theme .encore-bright-accent-set,
+html.encore-dark-theme .encore-positive-set {
+  --background-base: var(--sc-accent);
+  --background-highlight: color-mix(in oklab, var(--sc-accent), var(--sc-text) 18%);
+  --background-press: color-mix(in oklab, var(--sc-accent), var(--sc-surface) 18%);
+  --background-elevated-base: color-mix(in oklab, var(--sc-accent), var(--sc-text) 18%);
+  --background-elevated-highlight: color-mix(in oklab, var(--sc-accent), var(--sc-text) 18%);
+  --background-elevated-press: color-mix(in oklab, var(--sc-accent), var(--sc-surface) 18%);
+  --background-tinted-base: var(--sc-accent);
+  --background-tinted-highlight: var(--sc-accent);
+  --background-tinted-press: var(--sc-accent);
+  --text-base: var(--sc-on-accent);
+  --text-subdued: var(--sc-on-accent);
+  --text-bright-accent: var(--sc-on-accent);
+  --text-positive: var(--sc-on-accent);
+  --essential-base: var(--sc-on-accent);
+  --essential-subdued: var(--sc-on-accent);
+  --essential-bright-accent: var(--sc-on-accent);
+  --essential-positive: var(--sc-on-accent);
+  --decorative-base: var(--sc-on-accent);
+  --decorative-subdued: color-mix(in oklab, var(--sc-accent), var(--sc-surface) 18%);
+}
+html.encore-dark-theme .encore-inverted-set,
+html.encore-dark-theme .encore-inverted-light-set {
+  --background-base: var(--sc-text);
+  --background-highlight: color-mix(in oklab, var(--sc-text), var(--sc-background) 6%);
+  --background-press: color-mix(in oklab, var(--sc-text), var(--sc-background) 22%);
+  --background-elevated-base: color-mix(in oklab, var(--sc-text), var(--sc-background) 6%);
+  --background-elevated-highlight: color-mix(in oklab, var(--sc-text), var(--sc-background) 6%);
+  --background-elevated-press: color-mix(in oklab, var(--sc-text), var(--sc-background) 22%);
+  --background-tinted-base: var(--sc-text);
+  --background-tinted-highlight: var(--sc-text);
+  --background-tinted-press: var(--sc-text);
+  --text-base: var(--sc-background);
+  --text-subdued: color-mix(in oklab, var(--sc-background), var(--sc-text) 35%);
+  --text-bright-accent: color-mix(in oklab, var(--sc-accent), var(--sc-background) 35%);
+  --essential-base: var(--sc-background);
+  --essential-subdued: color-mix(in oklab, var(--sc-background), var(--sc-text) 45%);
+  --essential-bright-accent: color-mix(in oklab, var(--sc-accent), var(--sc-background) 25%);
+  --decorative-base: var(--sc-background);
+  --decorative-subdued: color-mix(in oklab, var(--sc-text), var(--sc-background) 13%);
+}
+
+/* parts */
+/* parts-marker */
+
+/* layout */
+/* layout-marker */
+
+/* icons */
+/* icons-marker line */"
+`;
+
 exports[`compileTheme > compiles catppuccin-mocha deterministically 1`] = `
 "/* variables */
 :root {
@@ -255,6 +375,126 @@ exports[`compileTheme > compiles forest deterministically 1`] = `
   --sc-font-ui: "SC Inter", var(--fallback-fonts, sans-serif);
   --sc-font-mono: "SC Mono";
   --section-border-radius: 12px;
+}
+body {
+  --encore-body-font-stack: "SC Inter", var(--fallback-fonts, sans-serif);
+  --encore-title-font-stack: "SC Inter", var(--fallback-fonts, sans-serif);
+  --encore-variable-font-stack: "SC Inter", var(--fallback-fonts, sans-serif);
+}
+
+/* encore */
+html.encore-dark-theme, html.encore-dark-theme .encore-base-set {
+  --background-base: var(--sc-background);
+  --background-highlight: color-mix(in oklab, var(--sc-background), var(--sc-text) 7%);
+  --background-press: color-mix(in oklab, var(--sc-background), var(--sc-surface) 60%);
+  --background-elevated-base: var(--sc-elevated);
+  --background-elevated-highlight: color-mix(in oklab, var(--sc-elevated), var(--sc-text) 7%);
+  --background-elevated-press: color-mix(in oklab, var(--sc-elevated), var(--sc-surface) 40%);
+  --background-tinted-base: color-mix(in oklab, var(--sc-text) 10%, transparent);
+  --background-tinted-highlight: color-mix(in oklab, var(--sc-text) 14%, transparent);
+  --background-tinted-press: color-mix(in oklab, var(--sc-text) 21%, transparent);
+  --text-base: var(--sc-text);
+  --text-subdued: var(--sc-text-subdued);
+  --text-bright-accent: var(--sc-accent);
+  --text-positive: var(--sc-accent);
+  --essential-base: var(--sc-text);
+  --essential-subdued: color-mix(in oklab, var(--sc-text-subdued), var(--sc-background) 35%);
+  --essential-bright-accent: var(--sc-accent);
+  --essential-positive: var(--sc-accent);
+  --decorative-base: var(--sc-text);
+  --decorative-subdued: var(--sc-border);
+}
+html.encore-dark-theme .encore-app-frame-set,
+html.encore-dark-theme .encore-muted-accent-set,
+html.encore-dark-theme .encore-inverted-dark-set {
+  --background-base: var(--sc-surface);
+  --background-highlight: color-mix(in oklab, var(--sc-surface), var(--sc-text) 6%);
+  --background-press: color-mix(in oklab, var(--sc-surface), var(--sc-text) 12%);
+  --background-elevated-base: color-mix(in oklab, var(--sc-surface), var(--sc-text) 6%);
+  --background-elevated-highlight: color-mix(in oklab, var(--sc-surface), var(--sc-text) 10%);
+  --background-elevated-press: color-mix(in oklab, var(--sc-surface), var(--sc-background) 50%);
+  --background-tinted-base: color-mix(in oklab, var(--sc-text) 10%, transparent);
+  --background-tinted-highlight: color-mix(in oklab, var(--sc-text) 14%, transparent);
+  --background-tinted-press: color-mix(in oklab, var(--sc-text) 21%, transparent);
+  --text-base: var(--sc-text);
+  --text-subdued: var(--sc-text-subdued);
+  --text-bright-accent: var(--sc-accent);
+  --text-positive: var(--sc-accent);
+  --essential-base: var(--sc-text);
+  --essential-subdued: color-mix(in oklab, var(--sc-text-subdued), var(--sc-background) 35%);
+  --essential-bright-accent: var(--sc-accent);
+  --essential-positive: var(--sc-accent);
+  --decorative-base: var(--sc-text);
+  --decorative-subdued: color-mix(in oklab, var(--sc-border), var(--sc-surface) 30%);
+}
+html.encore-dark-theme .encore-bright-accent-set,
+html.encore-dark-theme .encore-positive-set {
+  --background-base: var(--sc-accent);
+  --background-highlight: color-mix(in oklab, var(--sc-accent), var(--sc-text) 18%);
+  --background-press: color-mix(in oklab, var(--sc-accent), var(--sc-surface) 18%);
+  --background-elevated-base: color-mix(in oklab, var(--sc-accent), var(--sc-text) 18%);
+  --background-elevated-highlight: color-mix(in oklab, var(--sc-accent), var(--sc-text) 18%);
+  --background-elevated-press: color-mix(in oklab, var(--sc-accent), var(--sc-surface) 18%);
+  --background-tinted-base: var(--sc-accent);
+  --background-tinted-highlight: var(--sc-accent);
+  --background-tinted-press: var(--sc-accent);
+  --text-base: var(--sc-on-accent);
+  --text-subdued: var(--sc-on-accent);
+  --text-bright-accent: var(--sc-on-accent);
+  --text-positive: var(--sc-on-accent);
+  --essential-base: var(--sc-on-accent);
+  --essential-subdued: var(--sc-on-accent);
+  --essential-bright-accent: var(--sc-on-accent);
+  --essential-positive: var(--sc-on-accent);
+  --decorative-base: var(--sc-on-accent);
+  --decorative-subdued: color-mix(in oklab, var(--sc-accent), var(--sc-surface) 18%);
+}
+html.encore-dark-theme .encore-inverted-set,
+html.encore-dark-theme .encore-inverted-light-set {
+  --background-base: var(--sc-text);
+  --background-highlight: color-mix(in oklab, var(--sc-text), var(--sc-background) 6%);
+  --background-press: color-mix(in oklab, var(--sc-text), var(--sc-background) 22%);
+  --background-elevated-base: color-mix(in oklab, var(--sc-text), var(--sc-background) 6%);
+  --background-elevated-highlight: color-mix(in oklab, var(--sc-text), var(--sc-background) 6%);
+  --background-elevated-press: color-mix(in oklab, var(--sc-text), var(--sc-background) 22%);
+  --background-tinted-base: var(--sc-text);
+  --background-tinted-highlight: var(--sc-text);
+  --background-tinted-press: var(--sc-text);
+  --text-base: var(--sc-background);
+  --text-subdued: color-mix(in oklab, var(--sc-background), var(--sc-text) 35%);
+  --text-bright-accent: color-mix(in oklab, var(--sc-accent), var(--sc-background) 35%);
+  --essential-base: var(--sc-background);
+  --essential-subdued: color-mix(in oklab, var(--sc-background), var(--sc-text) 45%);
+  --essential-bright-accent: color-mix(in oklab, var(--sc-accent), var(--sc-background) 25%);
+  --decorative-base: var(--sc-background);
+  --decorative-subdued: color-mix(in oklab, var(--sc-text), var(--sc-background) 13%);
+}
+
+/* parts */
+/* parts-marker */
+
+/* layout */
+/* layout-marker */
+
+/* icons */
+/* icons-marker line */"
+`;
+
+exports[`compileTheme > compiles galaxy deterministically 1`] = `
+"/* variables */
+:root {
+  --sc-background: #120d2b;
+  --sc-surface: #0a0719;
+  --sc-elevated: #231b4d;
+  --sc-text: #eee9ff;
+  --sc-text-subdued: #b4a9e0;
+  --sc-accent: #e08bff;
+  --sc-on-accent: #1a0b2e;
+  --sc-border: #382c70;
+  --sc-radius: 14px;
+  --sc-font-ui: "SC Inter", var(--fallback-fonts, sans-serif);
+  --sc-font-mono: "SC Mono";
+  --section-border-radius: 14px;
 }
 body {
   --encore-body-font-stack: "SC Inter", var(--fallback-fonts, sans-serif);

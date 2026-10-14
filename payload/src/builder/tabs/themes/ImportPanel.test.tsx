@@ -13,7 +13,7 @@ function mount() {
   const store = { parseShareCode: () => PRESETS[0], preview, importTheme: vi.fn() } as unknown as Store
   const host = document.createElement('div')
   const root = host.attachShadow({ mode: 'open' })
-  const ui = observable<UiSnapshot>({ open: true, tab: 'share', picking: false, editingArtwork: null })
+  const ui = observable<UiSnapshot>({ open: true, tab: 'themes', picking: false, editingArtwork: null })
   sync(() => render(h(BuilderContext.Provider, { value: { store, ui, root } }, h(ImportPanel, {})), root))
   return { root, ui, preview }
 }

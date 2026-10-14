@@ -8,7 +8,8 @@ import { mountEntry } from './entry/mount-entry'
 
 /** Injects the top-bar button and the theme builder drawer. Returns unmount. */
 export function mountBuilder(store: Store): () => void {
-  const ui = observable<UiSnapshot>({ open: false, tab: loadPrefs().tab, picking: false, editingArtwork: null })
+  const prefs = loadPrefs()
+  const ui = observable<UiSnapshot>({ open: false, tab: prefs.tab, picking: false, editingArtwork: null, whatsNewSeen: prefs.whatsNewSeen })
   const unmountDrawer = mountDrawer(store, ui)
   const unmountEntry = mountEntry(store, ui)
   return () => {

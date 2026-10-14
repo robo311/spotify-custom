@@ -40,6 +40,30 @@ export interface PartStyle {
   accent?: Color
   radius?: number // px
   size?: number // px, for round buttons (e.g. the Home button); the icon scales with it
+  layers?: BarLayer[] // pictures behind the bar (top bar, player bar), bottom first; at most 5
+}
+
+export type BarLayerFit = 'free' | 'fill' | 'tile'
+export type BarLayerFade = 'none' | 'left' | 'right' | 'both'
+
+/** One picture behind a bar. Positions are relative to the bar, so a layout survives window resizes. */
+export interface BarLayer {
+  id: string // stable within the bar: selection and undo follow it
+  name: string // shown in the studio, e.g. the file name
+  src: { builtin: string } | { data: string } // built-in art id (src/art) or an uploaded png/jpeg/webp data URL
+  /**
+   * free = placed anywhere at any size (may poke out past the edges); fill = covers the bar at any width;
+   * tile = repeated along the bar.
+   */
+  fit: BarLayerFit
+  x: number // free/tile: centre, % of the bar's width (-50–150) · fill: focus point, 0–100 %
+  y: number // free/tile: centre, % of the bar's height (-150–250) · fill: focus point, 0–100 %
+  size: number // free/tile: height, % of the bar's height (10–600) · fill: zoom, 100–400 %
+  opacity: number // 0–100 %
+  blur: number // 0–20 px
+  brightness: number // 50–150 %
+  fade: BarLayerFade // softens these edges into the bar's own colour
+  hidden: boolean
 }
 
 export interface NowPlayingLayout {
@@ -130,7 +154,7 @@ export interface ReactiveLook {
   sensitivity: number // 0.5–2, 1 = default; scales the incoming levels before every effect
   // live spectrum rising from the progress bar · blocks = LED-meter segments · peaks = bars with falling peak caps
   spectrum: { on: boolean; intensity: number; shape: 'bars' | 'mirror' | 'line' | 'blocks' | 'peaks'; color: 'accent' | 'cover' }
-  pulse: { on: boolean; intensity: number; cover: boolean; play: boolean; entry: boolean } // kick on beats
+  pulse: { on: boolean; intensity: number; cover: boolean; play: boolean } // kick on beats
   // a light that breathes with loudness; customColor (hex) is used for color 'custom', accent while it's null
   background: { on: boolean; intensity: number; color: 'cover' | 'accent' | 'custom'; customColor: Color | null }
   lyrics: { on: boolean; intensity: number } // the sung line swells and brightens with the voice

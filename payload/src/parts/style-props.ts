@@ -6,7 +6,8 @@ import type { PartStyle } from '../types'
 import { ACCENT_SET } from './selectors'
 import { fade, isGradient, mix, type CssRule, type Declarations } from './css'
 
-export type StyleProp = keyof PartStyle
+/** The single-value properties; `layers` are drawn by src/bar-layers. */
+export type StyleProp = Exclude<keyof PartStyle, 'layers'>
 
 /** Where a property applies inside a part. A plain string is shorthand for `{ sel }`. */
 export interface Target {

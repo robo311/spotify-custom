@@ -1,6 +1,6 @@
 // The studio's door: an outline artist's palette drawn like Spotify's own top-bar icons (16px, ~1.5px stroke).
 // At rest it is as quiet as its neighbours; colour appears only with intent: on hover and while the studio is open the
-// palette tilts and its paint dots pop in the theme's colours, and a theme change makes them flash once. A breathing
+// palette tilts and its paint dots grow in the theme's colours (eased, no bounce), and a theme change makes them flash once. A breathing
 // ring shows Album Mode is steering the colours. (A waiting update has its own button beside it: UpdateButton.)
 import { useEffect, useMemo, useRef, useState } from 'preact/hooks'
 import { contrastRatio } from '../../theme/palette'
@@ -19,20 +19,11 @@ const styles = css`
     height: 32px;
     border-radius: 50%;
     color: var(--sc-text-subdued, #b3b3b3);
-    transition:
-      color 120ms ease,
-      transform 160ms var(--b-spring);
+    transition: color 120ms ease;
   }
   .b-entry:hover,
   .b-entry[aria-expanded='true'] {
     color: var(--sc-text, #fff);
-  }
-  .b-entry:hover {
-    transform: scale(1.04);
-  }
-  .b-entry:active {
-    transform: scale(0.9);
-    transition-duration: 60ms;
   }
   .b-entry svg {
     width: 16px;
@@ -44,7 +35,7 @@ const styles = css`
   .b-entry__body {
     transform-box: view-box;
     transform-origin: 50% 60%;
-    transition: transform 420ms var(--b-spring);
+    transition: transform 300ms ease-out;
   }
   .b-entry:hover .b-entry__body,
   .b-entry[aria-expanded='true'] .b-entry__body {
@@ -58,7 +49,7 @@ const styles = css`
     transform: scale(0.56);
     fill: currentColor;
     transition:
-      transform 360ms var(--b-spring),
+      transform 240ms ease-out,
       fill 220ms ease;
     transition-delay: var(--d);
   }
@@ -80,7 +71,7 @@ const styles = css`
     border-radius: 50%;
     background: var(--sc-accent, #1ed760);
     transform: scale(0);
-    transition: transform 240ms var(--b-spring);
+    transition: transform 200ms ease-out;
   }
   .b-entry[aria-expanded='true'] .b-entry__active {
     transform: scale(1);

@@ -1,6 +1,6 @@
-// Pages › General: what every kind of page shares: title typography, the big play button, and track lists
-// (album, playlist and song pages, and the Popular list on artist pages).
-import { Columns3 } from 'lucide-static'
+// Pages › General: what every kind of page shares: the background behind pages, title typography, the big play
+// button, and track lists (album, playlist and song pages, and the Popular list on artist pages).
+import { CirclePlay, Columns3, Heading, ListMusic } from 'lucide-static'
 import type { PageStyle } from '../../../types'
 import { Button } from '../../ui/Button'
 import { Field } from '../../ui/Field'
@@ -8,6 +8,7 @@ import { OptionTiles } from '../../ui/OptionTiles'
 import { Section } from '../../ui/Section'
 import { Segmented } from '../../ui/Segmented'
 import { Toggle } from '../../ui/Toggle'
+import { PartSection } from '../../parts/PartSection'
 import type { PageEdit } from './groups'
 import { EqualiserField } from './EqualiserField'
 import { chooseColumns } from './navigation'
@@ -17,7 +18,9 @@ import { ROWS } from './previews'
 export function GeneralTab({ page, edit }: { page: PageStyle; edit: PageEdit }) {
   return (
     <>
-      <Section title="Titles">
+      <PartSection partId="main" title="Page background" hint="Behind every page, Home included." />
+
+      <Section title="Titles" icon={Heading}>
         <span class="b-hint">Album, playlist and song titles, and artist names.</span>
         <Field label="Title weight">
           <Segmented<PageStyle['titleWeight']>
@@ -47,7 +50,7 @@ export function GeneralTab({ page, edit }: { page: PageStyle; edit: PageEdit }) 
         <Toggle label="Capitals" description="Title in upper case" checked={page.titleUppercase} onChange={v => edit('titleUppercase', v)} />
       </Section>
 
-      <Section title="Play button">
+      <Section title="Play button" icon={CirclePlay}>
         <Field label="Size">
           <Segmented<PageStyle['playSize']>
             label="Play button size"
@@ -74,7 +77,7 @@ export function GeneralTab({ page, edit }: { page: PageStyle; edit: PageEdit }) 
         </Field>
       </Section>
 
-      <Section title="Track list">
+      <Section title="Track list" icon={ListMusic}>
         <OptionTiles label="Row style" value={page.rows} options={ROWS} columns={3} onChange={v => edit('rows', v)} />
         <Field label="Song covers">
           <Segmented<PageStyle['thumbnails']>

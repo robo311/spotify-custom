@@ -14,6 +14,7 @@ import { Slider } from '../ui/Slider'
 import { Toggle } from '../ui/Toggle'
 import { IconChoiceField } from '../ui/IconChoiceField'
 import { KeyTabs } from '../ui/KeyTabs'
+import { BarLayersField } from './BarLayersField'
 import { PaintField } from './PaintField'
 import { ProgressStylePicker } from './ProgressStylePicker'
 import { ShortcutLayoutPicker } from './ShortcutLayoutPicker'
@@ -68,7 +69,7 @@ const PART_EXTRAS: Partial<Record<string, { tab: string; heading?: string; Compo
   npvCards: { tab: 'Spacing', heading: 'Spacing', Component: CardSpacing },
 }
 
-type Group = 'extra' | 'colour' | 'shape'
+type Group = 'extra' | 'colour' | 'pictures' | 'shape'
 
 const styles = css`
   .b-part-editor {
@@ -105,6 +106,7 @@ export function PartEditor({ part, tabs = false }: { part: PartDef; tabs?: boole
   const groups: { id: Group; label: string }[] = [
     ...(extra ? [{ id: 'extra' as const, label: extra.tab }] : []),
     ...(['background', 'text', 'accent'].some(p => part.props.includes(p as keyof PartStyle)) ? [{ id: 'colour' as const, label: 'Colour' }] : []),
+    ...(part.props.includes('layers') ? [{ id: 'pictures' as const, label: 'Pictures' }] : []),
     ...(part.props.includes('radius') || part.size ? [{ id: 'shape' as const, label: 'Shape' }] : []),
   ]
   const [chosen, setChosen] = useState<Group | null>(null)
@@ -112,7 +114,7 @@ export function PartEditor({ part, tabs = false }: { part: PartDef; tabs?: boole
   const shows = (g: Group) => !tabs || current === g
 
   return (
-    <div class="b-part-editor">
+    <div class="b-part-editor" data-part={part.id}>
       {part.hideable && <Toggle label={`Hide ${part.label.toLowerCase()}`} checked={hidden} onChange={v => store.edit(setHidden(part.id, v))} />}
       {!hidden && tabs && groups.length > 1 && (
         <KeyTabs<Group> label={`${part.label} settings`} tabs={groups} value={current} onChange={setChosen} />
@@ -145,6 +147,12 @@ export function PartEditor({ part, tabs = false }: { part: PartDef; tabs?: boole
                 onChange={v => edit(prop, v)}
               />
             ))}
+          {shows('pictures') && part.props.includes('layers') && (
+            <div class="b-part-editor__group" data-tour="bar-pictures">
+              {!tabs && <span class="b-label">Pictures</span>}
+              <BarLayersField partId={part.id} />
+            </div>
+          )}
           {shows('shape') && part.props.includes('radius') && (
             <Slider label="Corner roundness" min={0} max={24} unit="px" value={style?.radius ?? part.radius ?? globalRadius} onInput={v => edit('radius', v)} />
           )}

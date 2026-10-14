@@ -1,4 +1,4 @@
-// The guided tour on screen: a spotlight on the real control a step is about and a card beside it (Back / Next /
+// A guide on screen (the guided tour, or a release's What's new showcase): a spotlight on the real control a step is about and a card beside it (Back / Next /
 // Skip). It never blocks anything: every control stays clickable, so each step can be tried on the spot. Esc or
 // closing the studio ends it; while pick mode is on (step "Point and style") pick mode owns the dimming and Esc.
 import { useEffect, useLayoutEffect, useRef, useState } from 'preact/hooks'
@@ -8,8 +8,7 @@ import { listenEscape } from '../lib/escape-key'
 import type { Box } from '../lib/pick'
 import { placeTourCard } from '../lib/tour-placement'
 import { Button } from '../ui/Button'
-import { TOUR_STEPS } from './steps'
-import { endTour, goToStep } from './tour'
+import { endTour, goToStep, stepsOf } from './tour'
 
 const PAD = 4 // the spotlight's breathing room around its target
 const CARD_W = 300
@@ -102,6 +101,7 @@ export function TourLayer() {
   useStyles(styles)
   const { ui, root } = useEnv()
   const index = useUi(s => s.tour)
+  const guide = useUi(s => s.guide)
   const open = useUi(s => s.open)
   const running = index !== undefined
 
@@ -119,7 +119,7 @@ export function TourLayer() {
   }, [running, root, ui])
 
   if (!running || !open) return null
-  return <TourStep key={index} index={index} />
+  return <TourStep key={`${guide ?? 'tour'}-${index}`} index={index} />
 }
 
 interface Layout {
@@ -132,8 +132,10 @@ const sameLayout = (a: Layout, b: Layout) => JSON.stringify(a) === JSON.stringif
 function TourStep({ index }: { index: number }) {
   const { ui, root } = useEnv()
   const picking = useUi(s => s.picking)
-  const step = TOUR_STEPS[index]
-  const last = index === TOUR_STEPS.length - 1
+  const guide = useUi(s => s.guide)
+  const steps = stepsOf(guide)
+  const step = steps[index] ?? steps[0]
+  const last = index >= steps.length - 1
   const cardRef = useRef<HTMLDivElement>(null)
   const [layout, setLayout] = useState<Layout | null>(null)
 
@@ -182,7 +184,7 @@ function TourStep({ index }: { index: number }) {
         style={{ transform: layout ? `translate3d(${layout.card.x}px, ${layout.card.y}px, 0)` : undefined, visibility: layout ? undefined : 'hidden' }}
       >
         <span class="b-tour__count">
-          {index + 1} / {TOUR_STEPS.length}
+          {index + 1} / {steps.length}
         </span>
         <h2 class="b-tour__title" id={titleId}>
           {step.title}
@@ -190,7 +192,7 @@ function TourStep({ index }: { index: number }) {
         <p class="b-tour__body">{step.body}</p>
         <div class="b-tour__actions">
           <button type="button" class="b-tour__skip" onClick={() => endTour(ui)}>
-            Skip tour
+            {guide === 'whatsNew' ? 'Skip' : 'Skip tour'}
           </button>
           <Button disabled={index === 0} onClick={() => goToStep(ui, index - 1)}>
             Back

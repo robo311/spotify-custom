@@ -19,7 +19,7 @@ function mount(initial: Partial<UiSnapshot> = {}) {
   root.append(header)
   const mountPoint = document.createElement('div')
   root.append(mountPoint)
-  const ui = observable<UiSnapshot>({ open: true, tab: 'colours', picking: false, editingArtwork: null, ...initial })
+  const ui = observable<UiSnapshot>({ open: true, tab: 'look', picking: false, editingArtwork: null, ...initial })
   sync(() => render(h(BuilderContext.Provider, { value: { store: {} as Store, ui, root } }, h(TourLayer, {})), mountPoint))
   const button = (label: string) => [...root.querySelectorAll<HTMLButtonElement>('button')].find(b => b.textContent === label)
   const click = (label: string) => sync(() => button(label)?.click())
@@ -34,7 +34,7 @@ function mount(initial: Partial<UiSnapshot> = {}) {
 
 describe('startTour', () => {
   it('opens the studio on the first step', () => {
-    const ui = observable<UiSnapshot>({ open: false, tab: 'share', picking: true, editingArtwork: null })
+    const ui = observable<UiSnapshot>({ open: false, tab: 'advanced', picking: true, editingArtwork: null })
     startTour(ui)
     expect(ui.get()).toMatchObject({ open: true, tab: TOUR_STEPS[0].tab, picking: false, tour: 0 })
   })

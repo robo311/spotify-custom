@@ -1,4 +1,4 @@
-// Keeps our entry button in Spotify's top-right button group. Spotify (React) may re-render the top bar,
+// Keeps our entry buttons (update, What's new, studio) in Spotify's top-right button group. Spotify (React) may re-render the top bar,
 // so a scoped observer re-inserts it; a slow interval covers the top bar itself being replaced.
 import type { Store } from '../../types'
 import type { UiSnapshot } from '../context'
@@ -7,6 +7,7 @@ import { createShadowMount } from '../lib/shadow-host'
 import { ENTRY_ANCHORS, NAV_BAR } from '../selectors'
 import { EntryButton } from './EntryButton'
 import { UpdateButton } from './UpdateButton'
+import { WhatsNewButton } from './WhatsNewButton'
 
 const RECHECK_MS = 2000
 
@@ -26,6 +27,7 @@ export function mountEntry(store: Store, ui: Observable<UiSnapshot>): () => void
     ui,
     <>
       <UpdateButton />
+      <WhatsNewButton />
       <EntryButton />
     </>,
   )

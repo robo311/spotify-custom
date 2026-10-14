@@ -5,6 +5,7 @@ import { BuilderContext, type UiSnapshot } from '../context'
 import { observable } from '../lib/observable'
 import { loadPrefs, savePrefs } from '../lib/prefs'
 import { TourPrompt } from './TourPrompt'
+import { WHATS_NEW } from './whats-new'
 
 const sync = (fn: () => void) => void act(fn)
 
@@ -15,7 +16,7 @@ function mount({ withEntry = true } = {}) {
   const host = document.createElement('div')
   document.body.append(host)
   const root = host.attachShadow({ mode: 'open' })
-  const ui = observable<UiSnapshot>({ open: false, tab: 'colours', picking: false, editingArtwork: null })
+  const ui = observable<UiSnapshot>({ open: false, tab: 'look', picking: false, editingArtwork: null })
   sync(() => render(h(BuilderContext.Provider, { value: { store: {} as Store, ui, root } }, h(TourPrompt, {})), root))
   const button = (label: string) => [...root.querySelectorAll<HTMLButtonElement>('button')].find(b => b.textContent === label)
   const prompt = () => root.querySelector('[role="dialog"]')
@@ -67,11 +68,23 @@ describe('TourPrompt', () => {
     t.unmount()
   })
 
+  it('counts what’s new as seen for new users, whatever they answer: the tour covers it', () => {
+    for (const answer of ['Not now', 'Show me']) {
+      localStorage.clear()
+      const t = mount()
+      sync(() => t.button(answer)?.click())
+      expect(loadPrefs().whatsNewSeen, answer).toBe(WHATS_NEW.id)
+      expect(t.ui.get().whatsNewSeen, answer).toBe(WHATS_NEW.id)
+      t.unmount()
+    }
+  })
+
   it('opening the studio another way counts as an answer', () => {
     const t = mount()
     sync(() => t.ui.set(s => ({ ...s, open: true })))
     expect(t.prompt()).toBeNull()
     expect(loadPrefs().tourSeen).toBe(true)
+    expect(loadPrefs().whatsNewSeen).toBe(WHATS_NEW.id)
     t.unmount()
   })
 })

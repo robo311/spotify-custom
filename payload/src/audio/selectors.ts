@@ -10,7 +10,6 @@ export const NOW_PLAYING_COVER = '[data-testid="now-playing-widget"] [data-testi
 export const NOW_PLAYING_COVER_IMAGE = `${NOW_PLAYING_COVER} [data-testid="cover-art-image"]`
 export const PLAY_PAUSE = '[data-testid="control-button-playpause"]'
 /** Our own theme studio button host (builder/entry). */
-export const ENTRY = '#sc-entry'
 export const LYRICS_LINE = '[data-testid="lyrics-line"]'
 /**
  * The lyrics view's scroll host: it paints the view's background and doesn't scroll (its viewport inside does). Found

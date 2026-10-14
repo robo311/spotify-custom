@@ -1,11 +1,12 @@
-// Advanced: hand-written CSS (applied live, last), the customisations folder, and restarting Spotify.
+// Advanced: hand-written CSS (applied live, last), extensions, the customisations folder, and restarting Spotify.
 import { useEffect, useRef, useState } from 'preact/hooks'
-import { FolderOpen, RotateCw } from 'lucide-static'
+import { CodeXml, FolderOpen, Plug, RotateCw } from 'lucide-static'
 import type { Store } from '../../types'
 import { useApp, useEnv } from '../context'
 import { css, useStyles } from '../styles/sheet'
 import { Button } from '../ui/Button'
 import { Section } from '../ui/Section'
+import { ExtensionsSection } from './advanced/ExtensionsSection'
 
 const styles = css`
   .b-css {
@@ -118,11 +119,12 @@ export function AdvancedTab() {
 
   return (
     <>
-      <Section title="Custom CSS" tour="advanced">
+      <Section title="Custom CSS" icon={CodeXml} tour="advanced">
         <span class="b-hint">For people who know CSS. Changes apply as you type and are saved with this theme.</span>
         <CssEditor />
       </Section>
-      <Section title="Your customisations folder">
+      <ExtensionsSection />
+      <Section title="Your customisations folder" icon={FolderOpen}>
         <span class="b-hint">Themes, icon packs and extensions you add by hand live here.</span>
         {helper.connected && <div class="b-adv__path b-mono">{helper.dataDir}</div>}
         <div>
@@ -131,7 +133,7 @@ export function AdvancedTab() {
           </Button>
         </div>
       </Section>
-      <Section title="Spotify">
+      <Section title="Spotify" icon={Plug}>
         <div class="b-adv__status">
           <span class="b-adv__dot" data-ok={helper.connected} />
           {helper.connected ? `Connected to Spotify Custom ${helper.version}` : 'Running without the Spotify Custom app: changes are kept in this Spotify only'}

@@ -6,7 +6,7 @@ import { css, useStyles } from '../../styles/sheet'
 import { parseShareInput, type ShareParseResult } from '../../lib/share-input'
 import { pickFile, readFileAsText } from '../../lib/files'
 import { Button } from '../../ui/Button'
-import { MiniSpotify } from '../start/MiniSpotify'
+import { MiniSpotify } from './MiniSpotify'
 
 const styles = css`
   .b-import {

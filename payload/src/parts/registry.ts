@@ -20,6 +20,8 @@ export interface PartRecipe {
   size?: { min: number; max: number; default: number }
   /** Spotify's own corner radius here, when it isn't the theme's (round buttons). */
   radius?: number
+  /** Offers picture layers behind the part (drawn by src/bar-layers inside the root). */
+  layers?: true
 }
 
 const ROOT = '&'
@@ -42,6 +44,7 @@ export const PART_RECIPES: PartRecipe[] = [
     selectors: [S.TOP_BAR],
     hideable: false,
     targets: { background: [ROOT], text: [ROOT] },
+    layers: true,
   },
   {
     id: 'main',
@@ -67,6 +70,7 @@ export const PART_RECIPES: PartRecipe[] = [
     hideable: false,
     // The track title has a hard-coded white, so it needs the colour directly.
     targets: { background: [ROOT], text: [ROOT, S.NOW_PLAYING_TITLE, S.NOW_PLAYING_LINK], accent: [ROOT] },
+    layers: true,
   },
   {
     id: 'cards',
@@ -87,10 +91,18 @@ export const PART_RECIPES: PartRecipe[] = [
     targets: { background: [S.BUTTON_FILL], text: [ROOT, S.BUTTON_FILL], radius: [ROOT, S.BUTTON_FILL] },
   },
   {
-    id: 'playButton',
+    id: 'cardPlayButton',
+    label: 'Play buttons',
+    description: 'The round play buttons on cards and pages',
+    selectors: [S.CARD_PLAY_BUTTON],
+    hideable: false,
+    targets: { background: [S.BUTTON_FILL], text: [S.BUTTON_FILL], radius: [ROOT, S.BUTTON_FILL] },
+  },
+  {
+    id: 'playerPlayButton',
     label: 'Play button',
-    description: 'The big round play buttons',
-    selectors: [S.CARD_PLAY_BUTTON, S.PLAYER_PLAY_PAUSE],
+    description: 'Play and pause in the player bar',
+    selectors: [S.PLAYER_PLAY_PAUSE],
     hideable: false,
     targets: { background: [S.BUTTON_FILL], text: [S.BUTTON_FILL], radius: [ROOT, S.BUTTON_FILL] },
   },
@@ -207,6 +219,8 @@ export function compileRecipe(recipe: PartRecipe, style: PartStyle): string {
       rules.push(...propRules(prop, value, within(root, target.sel), target))
     }
   }
+  // The layers' container is positioned against the bar and stacks inside it, above its background, under its content.
+  if (recipe.layers && style.layers?.some(l => !l.hidden)) rules.push({ selector: root, decls: { position: 'relative', isolation: 'isolate' } })
   return renderRules(rules)
 }
 
@@ -219,7 +233,7 @@ function toPartDef(recipe: PartRecipe): PartDef {
     label: recipe.label,
     description: recipe.description,
     selectors: recipe.selectors,
-    props: Object.keys(recipe.targets) as StyleProp[],
+    props: [...(Object.keys(recipe.targets) as StyleProp[]), ...(recipe.layers ? (['layers'] as const) : [])],
     hideable: recipe.hideable,
     pageSpecific: recipe.pageSpecific === true,
     gradient: takesGradient(recipe),

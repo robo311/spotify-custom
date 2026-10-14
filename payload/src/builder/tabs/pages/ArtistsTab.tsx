@@ -1,5 +1,5 @@
 // Pages › Artists (theme.pageStyle.artist*): the banner photo's treatment and height, and the size of the artist's name.
-import { UserRound } from 'lucide-static'
+import { GalleryHorizontal, UserRound } from 'lucide-static'
 import type { PageStyle } from '../../../types'
 import { PAGE_TITLE_SCALE_MAX, PAGE_TITLE_SCALE_MIN } from '../../../theme/model'
 import { Button } from '../../ui/Button'
@@ -14,7 +14,7 @@ export function ArtistsTab({ page, edit }: { page: PageStyle; edit: PageEdit }) 
   return (
     <>
       <Section
-        title="Banner"
+        title="Banner" icon={GalleryHorizontal}
         aside={
           <Button icon={UserRound} onClick={openPlayingArtist}>
             Show an artist
@@ -49,7 +49,7 @@ export function ArtistsTab({ page, edit }: { page: PageStyle; edit: PageEdit }) 
         </Field>
       </Section>
 
-      <Section title="Name">
+      <Section title="Name" icon={UserRound}>
         <Slider
           label="Name size"
           min={PAGE_TITLE_SCALE_MIN * 100}

@@ -1,5 +1,6 @@
+import type { PartStyle } from '../types'
 import { describe, expect, it } from 'vitest'
-import { FOLDER_IMAGE_MAX_CHARS, PART_SIZE_MAX, ThemeValidationError, defaultHomeStyle, defaultLayout, defaultNowPlaying, defaultPageStyle, defaultLyrics, defaultLyricsAnimation, defaultReactiveLook, forkTheme, isSlug, normalizeSettings, slugify, uniqueId, validateTheme } from './model'
+import { BAR_LAYER_BLUR_MAX, BAR_LAYER_MAX_CHARS, BAR_LAYER_SIZE, BAR_LAYER_X, BAR_LAYER_Y, BAR_LAYERS_MAX, FOLDER_IMAGE_MAX_CHARS, PART_SIZE_MAX, defaultBarLayer, ThemeValidationError, defaultHomeStyle, defaultLayout, defaultNowPlaying, defaultPageStyle, defaultLyrics, defaultLyricsAnimation, defaultReactiveLook, forkTheme, isSlug, normalizeSettings, slugify, uniqueId, validateTheme } from './model'
 import { PRESETS } from './presets'
 
 const [darcula] = PRESETS.filter(p => p.id === 'darcula')
@@ -93,6 +94,80 @@ describe('validateTheme', () => {
   })
 })
 
+describe('bar layers', () => {
+  const PNG = 'data:image/png;base64,iVBORw0KGgo='
+  const layersOf = (layers: unknown, part = 'topBar') =>
+    (validateTheme({ ...darcula, parts: { [part]: { layers } } }).parts as Partial<Record<string, PartStyle>>)[part]?.layers
+
+  it('fills every setting with a default when only the picture is given', () => {
+    expect(layersOf([{ src: { data: PNG } }])).toEqual([{ ...defaultBarLayer('layer-1'), src: { data: PNG } }])
+    expect(defaultBarLayer('a')).toEqual({
+      id: 'a', name: 'Picture', fit: 'fill', x: 50, y: 50, size: 100,
+      opacity: 100, blur: 0, brightness: 100, fade: 'none', hidden: false,
+    })
+  })
+
+  it('keeps ids and names, and clamps free placement to the overflow ranges', () => {
+    const [layer] = layersOf([{ id: 'moon', name: 'moon.png', src: { builtin: 'planet' }, fit: 'free', x: 400, y: -900, size: 5, blur: 99, brightness: 10, opacity: 55.4, fade: 'left', hidden: true }]) ?? []
+    expect(layer).toEqual({
+      id: 'moon', name: 'moon.png', src: { builtin: 'planet' }, fit: 'free',
+      x: BAR_LAYER_X.max, y: BAR_LAYER_Y.min, size: BAR_LAYER_SIZE.free.min,
+      opacity: 55, blur: BAR_LAYER_BLUR_MAX, brightness: 50, fade: 'left', hidden: true,
+    })
+    expect(BAR_LAYER_X).toEqual({ min: -50, max: 150 })
+    expect(BAR_LAYER_Y).toEqual({ min: -150, max: 250 })
+  })
+
+  it('keeps fill focus inside the picture and its zoom at 100–400 %', () => {
+    const [layer] = layersOf([{ src: { data: PNG }, fit: 'fill', x: 140, y: -3, size: 20 }]) ?? []
+    expect(layer).toMatchObject({ x: 100, y: 0, size: 100 })
+    expect(layersOf([{ src: { data: PNG }, fit: 'fill', size: 900 }])?.[0]?.size).toBe(400)
+  })
+
+  it('keeps at most five layers and gives clashing or missing ids fresh ones', () => {
+    const layers = layersOf(Array.from({ length: 7 }, () => ({ id: 'same', src: { data: PNG } }))) ?? []
+    expect(layers).toHaveLength(BAR_LAYERS_MAX)
+    expect(BAR_LAYERS_MAX).toBe(5)
+    expect(new Set(layers.map(l => l.id)).size).toBe(5)
+    expect(layers[0]?.id).toBe('same')
+  })
+
+  it('trims long names and replaces empty ones', () => {
+    expect(layersOf([{ src: { data: PNG }, name: 'x'.repeat(80) }])?.[0]?.name).toHaveLength(40)
+    expect(layersOf([{ src: { data: PNG }, name: '  ' }])?.[0]?.name).toBe('Picture')
+  })
+
+  it('falls back to defaults for unknown choices', () => {
+    expect(layersOf([{ src: { data: PNG }, fit: 'stretch', fade: 'top', x: 'left' }])?.[0]).toMatchObject({ fit: 'fill', fade: 'none', x: 50 })
+  })
+
+  it.each([
+    ['no picture', {}],
+    ['a remote url', { src: { data: 'https://evil.example/x.png' } }],
+    ['an svg upload', { src: { data: 'data:image/svg+xml;base64,PHN2Zz4=' } }],
+    ['css in the data', { src: { data: `${PNG}"); background: red` } }],
+    ['an oversized picture', { src: { data: 'data:image/webp;base64,' + 'A'.repeat(BAR_LAYER_MAX_CHARS) } }],
+    ['a built-in id that is not a slug', { src: { builtin: '../x' } }],
+    ['both kinds at once', { src: { builtin: 'planet', data: PNG } }],
+  ])('drops a layer with %s and keeps the others', (_, bad) => {
+    expect(layersOf([bad, { id: 'ok', src: { data: PNG } }])?.map(l => l.id)).toEqual(['ok'])
+  })
+
+  it('drops the list when nothing valid is left, keeping the rest of the part', () => {
+    expect(validateTheme({ ...darcula, parts: { topBar: { text: '#ffffff', layers: [{ src: {} }] } } }).parts).toEqual({ topBar: { text: '#ffffff' } })
+    expect(validateTheme({ ...darcula, parts: { topBar: { layers: 'nope' } } }).parts).toEqual({})
+  })
+
+  it('turns a picture from the single-image version into one layer', () => {
+    const image = { src: { data: PNG }, fit: 'contain', x: 100, y: 50, opacity: 40, blur: 2, brightness: 120, fade: 'left' }
+    expect(validateTheme({ ...darcula, parts: { topBar: { image } } }).parts.topBar.layers).toEqual([
+      { ...defaultBarLayer('layer-1'), src: { data: PNG }, fit: 'free', x: 100, y: 50, size: 100, opacity: 40, blur: 2, brightness: 120, fade: 'left' },
+    ])
+    expect(validateTheme({ ...darcula, parts: { topBar: { image: { ...image, fit: 'cover', x: 80 } } } }).parts.topBar.layers?.[0]).toMatchObject({ fit: 'fill', x: 80, size: 100 })
+    expect(validateTheme({ ...darcula, parts: { topBar: { image: { ...image, fit: 'tile' } } } }).parts.topBar.layers?.[0]).toMatchObject({ fit: 'tile', size: 100 })
+  })
+})
+
 describe('identity helpers', () => {
   it('slugifies names into safe path segments', () => {
     expect(slugify('Môj Tmavý Štýl!!')).toBe('moj-tmavy-styl')
@@ -157,7 +232,7 @@ describe('music-reactive look', () => {
     })
     expect(v.sensitivity).toBe(2)
     expect(v.spectrum).toEqual({ on: true, intensity: 100, shape: 'bars', color: 'cover' })
-    expect(v.pulse).toEqual({ on: false, intensity: 0, cover: false, play: true, entry: true })
+    expect(v.pulse).toEqual({ on: false, intensity: 0, cover: false, play: true })
     expect(v.background).toEqual(defaultReactiveLook().background)
     expect(v.lyrics).toEqual({ on: true, intensity: 33 })
   })
@@ -386,6 +461,26 @@ describe('part size', () => {
   it('keeps a clamped button size', () => {
     const t = validateTheme({ ...darcula, parts: { homeButton: { size: 200 }, other: { size: 'big' } } })
     expect(t.parts).toEqual({ homeButton: { size: PART_SIZE_MAX } })
+  })
+})
+
+describe('play buttons split into card and player buttons', () => {
+  const old = { background: '#ff7a59', radius: 6 }
+
+  it('gives a theme saved with one play button style the same look on both', () => {
+    expect(validateTheme({ ...darcula, parts: { playButton: old } }).parts).toEqual({ cardPlayButton: old, playerPlayButton: old })
+  })
+
+  it('keeps styles already split, and stays the same when loaded again', () => {
+    const once = validateTheme({ ...darcula, parts: { playButton: old, playerPlayButton: { text: '#000000' } } })
+    expect(once.parts).toEqual({ cardPlayButton: old, playerPlayButton: { text: '#000000' } })
+    expect(validateTheme(once).parts).toEqual(once.parts)
+  })
+
+  it('keeps a reset button reset', () => {
+    const split = validateTheme({ ...darcula, parts: { playButton: old } })
+    const { playerPlayButton: _reset, ...rest } = split.parts
+    expect(validateTheme({ ...split, parts: rest }).parts).toEqual({ cardPlayButton: old })
   })
 })
 

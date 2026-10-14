@@ -1,5 +1,5 @@
 // Presets and your themes, as one hover-preview area: gliding anywhere inside keeps previewing, leaving reverts.
-import { CopyPlus } from 'lucide-static'
+import { CopyPlus, FolderHeart, LayoutGrid } from 'lucide-static'
 import { useApp, useEnv } from '../../context'
 import { css, useStyles } from '../../styles/sheet'
 import { Button } from '../../ui/Button'
@@ -36,11 +36,11 @@ export function GallerySections() {
   return (
     <GalleryPreviewContext.Provider value={preview}>
       <div onPointerLeave={() => preview.leaveGallery()}>
-        <Section title="Presets" tour="presets">
+        <Section title="Presets" icon={LayoutGrid} tour="presets">
           <ThemeGallery themes={presets} />
         </Section>
         <Section
-          title="Your themes"
+          title="Your themes" icon={FolderHeart}
           aside={
             <div class="b-start__actions">
               {!isPreset && active.basedOn && <ResetButton label="Reset to the original preset" onClick={() => store.resetToPreset()} />}

@@ -8,6 +8,7 @@ import { startLyricsLibrary, startPartsRuntime, startPlayingRow, watchPanelSecti
 import { startHome } from './home'
 import { startLyricsColumn } from './nowplaying'
 import { startLyricsView } from './lyrics-view'
+import { startBarLayers } from './bar-layers'
 import { startCanvasCover } from './canvas'
 import { startLibrary } from './library'
 import { mountBuilder } from './builder'
@@ -138,6 +139,9 @@ function boot() {
 
     const lyricsView = startLyricsView(() => store.get().active.lyrics.animated)
     disposers.push(onSliceChange(store, s => s.active.lyrics, () => lyricsView.refresh()), () => lyricsView.dispose())
+
+    const barLayers = startBarLayers(() => store.get().active.parts)
+    disposers.push(onSliceChange(store, s => s.active.parts, () => barLayers.refresh()), () => barLayers.dispose())
 
     const canvasCover = startCanvasCover(() => store.get().active)
     disposers.push(onSliceChange(store, s => s.active, () => canvasCover.refresh()), () => canvasCover.dispose())

@@ -22,7 +22,7 @@ function mount(handlers: Handlers, anchor = { x: 10, y: 10, width: 50, height: 2
   const host = document.createElement('div')
   document.body.append(host)
   const root = host.attachShadow({ mode: 'open' })
-  const ui = observable<UiSnapshot>({ open: true, tab: 'parts', picking: true, editingArtwork: null })
+  const ui = observable<UiSnapshot>({ open: true, tab: 'themes', picking: true, editingArtwork: null })
   const env = { store: {} as Store, ui, root }
   const draw = (next: Handlers | null) =>
     sync(() => render(h(BuilderContext.Provider, { value: env }, next && h(Popover, { anchor, label: 'Style it', ...next, children })), root))
@@ -102,7 +102,7 @@ describe('Popover', () => {
     const opener = document.createElement('button')
     root.append(opener)
     opener.focus()
-    const ui = observable<UiSnapshot>({ open: true, tab: 'parts', picking: true, editingArtwork: null })
+    const ui = observable<UiSnapshot>({ open: true, tab: 'themes', picking: true, editingArtwork: null })
     const mountPoint = document.createElement('div')
     root.append(mountPoint)
     const anchor = { x: 10, y: 10, width: 50, height: 20 }

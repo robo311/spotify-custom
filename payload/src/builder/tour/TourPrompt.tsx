@@ -1,13 +1,13 @@
 // First run: a small card hanging from the studio button in Spotify's top bar offers the guided tour. Asked once:
 // Show me, Not now, or opening the studio some other way all count as the answer (the tour stays one click away in
 // the studio's header). It waits for the studio button, so it always points at something real.
-import { useEffect, useState } from 'preact/hooks'
+import { useCallback, useEffect, useState } from 'preact/hooks'
 import { useEnv, useUi } from '../context'
 import { css, useStyles } from '../styles/sheet'
 import { loadPrefs, savePrefs } from '../lib/prefs'
 import { OWN_ID_PREFIX } from '../lib/shadow-host'
 import { Button } from '../ui/Button'
-import { startTour } from './tour'
+import { markWhatsNewSeen, startTour } from './tour'
 
 const ENTRY_ID = `${OWN_ID_PREFIX}entry` // the entry button's host (entry/mount-entry.tsx)
 const RECHECK_MS = 1000 // the top bar can appear late and the window can be resized
@@ -94,16 +94,16 @@ export function TourPrompt() {
   const [pending, setPending] = useState(() => !loadPrefs().tourSeen)
   const [anchor, setAnchor] = useState<Anchor | null>(null)
 
-  const answer = () => {
+  /** New users get the tour, which covers everything: this release's What's new counts as seen too. */
+  const answer = useCallback(() => {
     savePrefs({ tourSeen: true })
+    markWhatsNewSeen(ui)
     setPending(false)
-  }
+  }, [ui])
 
   useEffect(() => {
-    if (!pending || !open) return
-    savePrefs({ tourSeen: true })
-    setPending(false)
-  }, [pending, open])
+    if (pending && open) answer()
+  }, [pending, open, answer])
 
   useEffect(() => {
     if (!pending) return

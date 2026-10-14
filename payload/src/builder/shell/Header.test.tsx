@@ -19,7 +19,7 @@ function mount(helper: Partial<AppState['helper']>) {
   const store = { get: () => state.get(), subscribe: (fn: (s: AppState) => void) => state.subscribe(fn) } as unknown as Store
   const host = document.createElement('div')
   const root = host.attachShadow({ mode: 'open' })
-  const ui = observable<UiSnapshot>({ open: true, tab: 'start', picking: false, editingArtwork: null })
+  const ui = observable<UiSnapshot>({ open: true, tab: 'themes', picking: false, editingArtwork: null })
   void act(() => render(h(BuilderContext.Provider, { value: { store, ui, root } }, h(Header, { onDragStart: vi.fn() })), root))
   return root
 }

@@ -1,4 +1,5 @@
 // Music-reactive: the master switch and sync (personal settings) and how each effect looks (part of the theme).
+import { ChartColumn, HeartPulse, MicVocal, Radio, Wind } from 'lucide-static'
 import { useEffect, useState } from 'preact/hooks'
 import type { AudioStatus, ReactiveLook } from '../../types'
 import { reactiveMonitor } from '../../audio'
@@ -124,7 +125,7 @@ export function ReactiveTab() {
 
   return (
     <>
-      <Section title="Music-reactive">
+      <Section title="Music-reactive" icon={Radio}>
         <Toggle
           label="React to the music"
           description="Listens only to Spotify's own sound. Nothing is recorded or saved."
@@ -173,7 +174,7 @@ export function ReactiveTab() {
         />
       </Section>
 
-      <Section title="Spectrum">
+      <Section title="Spectrum" icon={ChartColumn}>
         {onOff('spectrum', 'Spectrum', "The song's sound as bars rising from the progress bar")}
         {look.spectrum.on && (
           <>
@@ -215,7 +216,7 @@ export function ReactiveTab() {
         )}
       </Section>
 
-      <Section title="Beat pulse">
+      <Section title="Beat pulse" icon={HeartPulse}>
         {onOff('pulse', 'Beat pulse', reducedMotion ? 'Paused: your system asks for reduced motion' : 'Kicks on every beat')}
         {look.pulse.on && (
           <>
@@ -224,7 +225,6 @@ export function ReactiveTab() {
               [
                 ['cover', 'Cover art'],
                 ['play', 'Play button'],
-                ['entry', 'Theme studio button'],
               ] as const
             ).map(([key, label]) => (
               <Toggle
@@ -242,7 +242,7 @@ export function ReactiveTab() {
         )}
       </Section>
 
-      <Section title="Breathing background">
+      <Section title="Breathing background" icon={Wind}>
         {onOff('background', 'Breathing background', 'A light that swells with the bass')}
         {look.background.on && (
           <>
@@ -283,7 +283,7 @@ export function ReactiveTab() {
         )}
       </Section>
 
-      <Section title="Lyrics">
+      <Section title="Lyrics" icon={MicVocal}>
         {onOff('lyrics', 'Lyrics react', 'The sung line grows and brightens with the voice')}
         {look.lyrics.on && intensity('lyrics')}
       </Section>

@@ -22,7 +22,7 @@ function mount() {
   const host = document.createElement('div')
   document.body.append(host)
   const root = host.attachShadow({ mode: 'open' })
-  const ui = observable<UiSnapshot>({ open: true, tab: 'start', picking: false, editingArtwork: null })
+  const ui = observable<UiSnapshot>({ open: true, tab: 'themes', picking: false, editingArtwork: null })
   sync(() => render(h(BuilderContext.Provider, { value: { store: {} as Store, ui, root } }, h(Probe, {})), root))
   const spotify = document.createElement('div')
   spotify.innerHTML = '<input id="search"><div role="dialog"><button id="in-dialog"></button></div><button id="plain"></button>'

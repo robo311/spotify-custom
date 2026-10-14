@@ -12,7 +12,7 @@ function mount(status: AppState['saveStatus'], retrySave: () => void = () => und
   const store = { get: () => state.get(), subscribe: (fn: (s: AppState) => void) => state.subscribe(fn), retrySave } as unknown as Store
   const host = document.createElement('div')
   const root = host.attachShadow({ mode: 'open' })
-  const ui = observable<UiSnapshot>({ open: true, tab: 'start', picking: false, editingArtwork: null })
+  const ui = observable<UiSnapshot>({ open: true, tab: 'themes', picking: false, editingArtwork: null })
   sync(() => render(h(BuilderContext.Provider, { value: { store, ui, root } }, h(SaveIndicator, {})), root))
   const setStatus = (s: AppState['saveStatus']) => sync(() => state.set({ saveStatus: s } as AppState))
   return { root, setStatus }

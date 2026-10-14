@@ -1,10 +1,16 @@
 // The editor that opens next to a picked part: live edits, then Save (keep and close) or Cancel / Esc (put back
 // and close). Clicking outside keeps the changes, like design tools do; the header's save indicator confirms it.
+// Below the controls, a link opens the part's section in its area's tab, with everything else that area offers.
 // Its header is a live specimen of the part: a plate painted with the part's own background, its name set in the
 // part's text colour, and a readout of the resolved fill / text / accent values, so every edit shows right here.
+import { ArrowRight } from 'lucide-static'
 import type { PartDef } from '../../types'
 import { useApp, useEnv } from '../context'
 import { lookup } from '../lib/record'
+import { goTo } from '../lib/navigate'
+import { PART_PLACES } from '../shell/part-places'
+import { TABS } from '../shell/tabs'
+import { Icon } from '../ui/Icon'
 import { css, useStyles } from '../styles/sheet'
 import type { Box } from '../lib/pick'
 import { parsePaint } from '../lib/paint'
@@ -81,6 +87,22 @@ const styles = css`
   .b-ppop__body {
     padding: 14px 14px 16px;
   }
+  .b-ppop__more {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: calc(100% - 16px);
+    margin: 0 8px 4px;
+    padding: 8px 10px;
+    border-radius: var(--b-r-sm);
+    color: var(--b-sub);
+    font-weight: 500;
+    text-align: left;
+  }
+  .b-ppop__more:hover {
+    background: var(--b-hover);
+    color: var(--b-text);
+  }
   .b-ppop__foot {
     position: sticky;
     bottom: 0;
@@ -111,7 +133,7 @@ function paintLabel(paint: string): string {
 
 export function PartPopover({ part, anchor, onDone, onPlaced }: PartPopoverProps) {
   useStyles(styles)
-  const { store } = useEnv()
+  const { store, ui } = useEnv()
   const session = usePartSession(part.id)
   const style = useApp(s => lookup(s.active.parts, part.id))
   const palette = useApp(s => s.active.palette)
@@ -119,6 +141,7 @@ export function PartPopover({ part, anchor, onDone, onPlaced }: PartPopoverProps
     session.cancel()
     onDone()
   }
+  const place = TABS.find(t => t.id === PART_PLACES[part.id])
 
   const bg = style?.background ?? palette.surface
   const text = style?.text ?? palette.text
@@ -153,6 +176,20 @@ export function PartPopover({ part, anchor, onDone, onPlaced }: PartPopoverProps
       <div class="b-ppop__body">
         <PartEditor part={part} tabs />
       </div>
+      {place && (
+        // Like clicking outside: the edits stay.
+        <button
+          type="button"
+          class="b-ppop__more"
+          onClick={() => {
+            onDone()
+            goTo(ui, place.id, part.id)
+          }}
+        >
+          More in {place.label}
+          <Icon svg={ArrowRight} size={14} />
+        </button>
+      )}
       <div class="b-ppop__foot">
         <ResetButton onClick={() => store.edit(resetPartFully(part.id))} />
         <span class="b-ppop__spacer" />

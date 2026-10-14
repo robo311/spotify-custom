@@ -1,6 +1,6 @@
 // Lyrics: background, line colours, text, animated lyrics, and how the lyrics page behaves. Edits go to theme.lyrics / theme.layout.
 import { useState } from 'preact/hooks'
-import { MicVocal } from 'lucide-static'
+import { CaseSensitive, Columns3, Highlighter, MicVocal, PaintBucket, Sparkles } from 'lucide-static'
 import type { FontId, LyricsAnimation, LyricsStyle } from '../../types'
 import { LYRICS_SCALE_MAX, LYRICS_SCALE_MIN } from '../../theme/model'
 import { useApp, useEnv } from '../context'
@@ -50,7 +50,7 @@ export function LyricsTab() {
   return (
     <>
       <Section
-        title="Background"
+        title="Background" icon={PaintBucket}
         tour="lyrics"
         aside={
           <Button icon={MicVocal} onClick={() => document.querySelector<HTMLElement>(LYRICS_BUTTON)?.click()}>
@@ -61,7 +61,7 @@ export function LyricsTab() {
         <BackgroundTiles />
       </Section>
 
-      <Section title="Line colours">
+      <Section title="Line colours" icon={Highlighter}>
         <div style={{ display: 'grid', gap: '2px', margin: '0 -8px' }}>
           {LINES.map(line => (
             <ColorField
@@ -86,7 +86,7 @@ export function LyricsTab() {
         </div>
       </Section>
 
-      <Section title="Text">
+      <Section title="Text" icon={CaseSensitive}>
         <Slider
           label="Size"
           min={LYRICS_SCALE_MIN * 100}
@@ -129,7 +129,7 @@ export function LyricsTab() {
         </Field>
       </Section>
 
-      <Section title="Animated lyrics">
+      <Section title="Animated lyrics" icon={Sparkles}>
         <Toggle
           label="Animated lyrics"
           description="Lyrics drawn word by word, when the song has synced lyrics"
@@ -174,7 +174,7 @@ export function LyricsTab() {
         )}
       </Section>
 
-      <Section title="Lyrics page">
+      <Section title="Lyrics page" icon={Columns3}>
         <Toggle
           label="Keep library visible"
           description="Spotify hides your library while lyrics are open"

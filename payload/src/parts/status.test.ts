@@ -28,7 +28,7 @@ describe('findPartAt', () => {
   it('returns the innermost part', () => {
     mountSpotifyLayout()
     expect(findPartAt(byId('track-link'))?.id).toBe('playerBar')
-    expect(findPartAt(byId('card-play'))?.id).toBe('playButton')
+    expect(findPartAt(byId('card-play'))?.id).toBe('cardPlayButton')
     expect(findPartAt(byId('card-image'))?.id).toBe('cards')
     expect(findPartAt(byId('shelf-title'))?.id).toBe('shelfHeaders')
     expect(findPartAt(byId('panel-text'))?.id).toBe('rightPanel')
@@ -43,7 +43,8 @@ describe('findPartAt', () => {
 describe('partElements', () => {
   it('lists all elements of a part', () => {
     mountSpotifyLayout()
-    expect(partElements('playButton')).toHaveLength(2)
+    expect(partElements('cardPlayButton')).toHaveLength(1)
+    expect(partElements('playerPlayButton')).toHaveLength(1)
     expect(partElements('nope')).toEqual([])
   })
 })

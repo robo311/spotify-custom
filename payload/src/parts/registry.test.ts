@@ -13,10 +13,10 @@ function recipe(id: string): PartRecipe {
 }
 
 describe('PARTS registry', () => {
-  it('has the 16 curated parts with unique ids', () => {
+  it('has the 17 curated parts with unique ids', () => {
     expect(PARTS.map(p => p.id)).toEqual([
       'sidebar', 'topBar', 'main', 'rightPanel', 'playerBar', 'cards',
-      'buttons', 'playButton', 'progressBar', 'volumeBar', 'searchBox',
+      'buttons', 'cardPlayButton', 'playerPlayButton', 'progressBar', 'volumeBar', 'searchBox',
       'homeButton', 'shortcuts', 'stats', 'npvCards', 'shelfHeaders',
     ])
   })
@@ -70,11 +70,12 @@ describe('compileRecipe', () => {
     expect(css).toContain('background: linear-gradient(#111, #222) !important;')
   })
 
-  it('targets the fill span of both play buttons', () => {
-    const css = compileRecipe(recipe('playButton'), { background: '#ff7a59' })
-    expect(css).toContain(
-      ':is([data-testid="play-button"][data-encore-id="buttonPrimary"], [data-testid="control-button-playpause"]) > span {',
+  it('styles card play buttons and the player play button separately', () => {
+    expect(compileRecipe(recipe('cardPlayButton'), { background: '#ff7a59' })).toContain(
+      '[data-testid="play-button"][data-encore-id="buttonPrimary"] > span {',
     )
+    expect(compileRecipe(recipe('cardPlayButton'), { background: '#ff7a59' })).not.toContain('control-button-playpause')
+    expect(compileRecipe(recipe('playerPlayButton'), { background: '#ff7a59' })).toContain('[data-testid="control-button-playpause"] > span {')
   })
 
   it('colours hard-coded spots directly for text', () => {

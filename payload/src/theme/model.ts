@@ -3,6 +3,7 @@
 import type {
   Effects,
   ArtworkStyle,
+  BarLayer,
   FontId,
   HomeStyle,
   IconChoice,
@@ -35,7 +36,7 @@ export const PALETTE_KEYS: (keyof Palette)[] = [
   'onAccent',
   'border',
 ]
-const PART_STYLE_KEYS: (keyof PartStyle)[] = ['background', 'text', 'accent', 'radius', 'size']
+const PART_STYLE_KEYS: (keyof PartStyle)[] = ['background', 'text', 'accent', 'radius', 'size', 'layers']
 export const RADIUS_MIN = 0
 export const RADIUS_MAX = 24
 export const PART_SIZE_MIN = 28
@@ -169,7 +170,7 @@ export function defaultReactiveLook(): ReactiveLook {
   return {
     sensitivity: 1,
     spectrum: { on: false, intensity: 60, shape: 'bars', color: 'accent' },
-    pulse: { on: false, intensity: 60, cover: true, play: true, entry: true },
+    pulse: { on: false, intensity: 60, cover: true, play: true },
     background: { on: false, intensity: 60, color: 'cover', customColor: null },
     lyrics: { on: false, intensity: 60 },
   }
@@ -406,7 +407,6 @@ function validateReactiveLook(input: unknown): ReactiveLook {
       intensity: intensity(pulse.intensity, d.pulse.intensity),
       cover: flag(pulse.cover, d.pulse.cover),
       play: flag(pulse.play, d.pulse.play),
-      entry: flag(pulse.entry, d.pulse.entry),
     },
     background: {
       on: flag(background.on, d.background.on),
@@ -470,13 +470,26 @@ function validateParts(input: unknown): Record<string, PartStyle> {
         if (typeof value === 'number' && Number.isFinite(value)) style.size = Math.min(PART_SIZE_MAX, Math.max(PART_SIZE_MIN, Math.round(value)))
       } else if (key === 'background') {
         if (isPaint(value)) style.background = value
+      } else if (key === 'layers') {
+        const layers = validateBarLayers(value ?? legacyImageLayer(styleInput.image))
+        if (layers.length > 0) style.layers = layers
       } else if (isColor(value)) {
         style[key] = value
       }
     }
     if (Object.keys(style).length > 0) out[partId] = style
   }
-  return out
+  return splitPlayButton(out)
+}
+
+/**
+ * Themes made before the card and player play buttons were separate parts styled both as `playButton`: that style
+ * goes to each (unless it has its own) and the old id goes away, so resetting one later can't bring the copy back.
+ */
+function splitPlayButton(parts: Record<string, PartStyle>): Record<string, PartStyle> {
+  if (!('playButton' in parts)) return parts
+  const { playButton, ...rest } = parts
+  return { cardPlayButton: playButton, playerPlayButton: playButton, ...rest }
 }
 
 /** Escapes, comments, strings, at-rules and every function that can load an image. */
@@ -530,6 +543,87 @@ const ARTWORK_URI = /^(?:spotify:user:[^:\s]+:folder:[A-Za-z0-9]+|spotify:collec
 const FOLDER_IMAGE = /^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/]+=*$/
 /** Folder art is downscaled to ≤ 256 px before saving; anything bigger is not ours and would bloat settings.json. */
 export const FOLDER_IMAGE_MAX_CHARS = 200 * 1024
+
+/** Bar pictures are encoded to ≤ ~225 KB each (art/banner.ts); the cap leaves headroom without letting a theme balloon. */
+export const BAR_LAYER_MAX_CHARS = 300 * 1024
+export const BAR_LAYERS_MAX = 5
+export const BAR_LAYER_BLUR_MAX = 20
+export const BAR_LAYER_BRIGHTNESS = { min: 50, max: 150 }
+/** Free and tiled layers may sit partly outside the bar; fill layers keep their focus point inside the picture. */
+export const BAR_LAYER_X = { min: -50, max: 150 }
+export const BAR_LAYER_Y = { min: -150, max: 250 }
+export const BAR_LAYER_SIZE = { free: { min: 10, max: 600 }, fill: { min: 100, max: 400 } }
+const BAR_LAYER_NAME_MAX = 40
+
+export function defaultBarLayer(id: string): Omit<BarLayer, 'src'> {
+  return { id, name: 'Picture', fit: 'fill', x: 50, y: 50, size: 100, opacity: 100, blur: 0, brightness: 100, fade: 'none', hidden: false }
+}
+
+/** Exactly one source: a known-shape built-in id, or an uploaded raster picture (never SVG: it could load content). */
+function validateBarLayerSrc(input: unknown): BarLayer['src'] | null {
+  if (!isRecord(input) || Object.keys(input).length !== 1) return null
+  if (typeof input.builtin === 'string' && isSlug(input.builtin)) return { builtin: input.builtin }
+  const { data } = input
+  if (typeof data === 'string' && data.length <= BAR_LAYER_MAX_CHARS && FOLDER_IMAGE.test(data)) return { data }
+  return null
+}
+
+/** Positions keep a tenth of a percent: on a wide bar a whole percent is a visible ~20 px jump while dragging. */
+const position = (v: unknown, range: { min: number; max: number }, fallback: number) => clampNumber(v, range.min, range.max, fallback, 10)
+
+function validateBarLayer(input: unknown, id: string): BarLayer | null {
+  if (!isRecord(input)) return null
+  const src = validateBarLayerSrc(input.src)
+  if (!src) return null
+  const d = defaultBarLayer(id)
+  const fit = oneOf(['free', 'fill', 'tile'] as const, input.fit, d.fit)
+  const fill = fit === 'fill'
+  const name = typeof input.name === 'string' ? input.name.trim().slice(0, BAR_LAYER_NAME_MAX) : ''
+  return {
+    id,
+    name: name || d.name,
+    src,
+    fit,
+    x: position(input.x, fill ? { min: 0, max: 100 } : BAR_LAYER_X, d.x),
+    y: position(input.y, fill ? { min: 0, max: 100 } : BAR_LAYER_Y, d.y),
+    size: position(input.size, fill ? BAR_LAYER_SIZE.fill : BAR_LAYER_SIZE.free, d.size),
+    opacity: clampNumber(input.opacity, 0, 100, d.opacity),
+    blur: clampNumber(input.blur, 0, BAR_LAYER_BLUR_MAX, d.blur),
+    brightness: clampNumber(input.brightness, BAR_LAYER_BRIGHTNESS.min, BAR_LAYER_BRIGHTNESS.max, d.brightness),
+    fade: oneOf(['none', 'left', 'right', 'both'] as const, input.fade, d.fade),
+    hidden: input.hidden === true,
+  }
+}
+
+/** The first `layer-N` not taken yet. */
+function freeLayerId(taken: ReadonlySet<string>): string {
+  let n = 1
+  while (taken.has(`layer-${n}`)) n++
+  return `layer-${n}`
+}
+
+/** Up to five valid layers, bottom first, with unique ids (missing or clashing ones get a fresh `layer-N`). */
+function validateBarLayers(input: unknown): BarLayer[] {
+  if (!Array.isArray(input)) return []
+  const out: BarLayer[] = []
+  const taken = new Set<string>()
+  for (const raw of input) {
+    if (out.length === BAR_LAYERS_MAX) break
+    const wanted = isRecord(raw) && typeof raw.id === 'string' && isSlug(raw.id) && !taken.has(raw.id) ? raw.id : null
+    const layer = validateBarLayer(raw, wanted ?? freeLayerId(taken))
+    if (!layer) continue
+    taken.add(layer.id)
+    out.push(layer)
+  }
+  return out
+}
+
+/** Themes saved while a bar took a single picture: `image` becomes one layer (cover → fill, contain → free). */
+function legacyImageLayer(image: unknown): unknown[] | undefined {
+  if (!isRecord(image)) return undefined
+  const fit = image.fit === 'contain' ? 'free' : image.fit === 'tile' ? 'tile' : 'fill'
+  return [{ ...image, fit, size: 100 }]
+}
 
 function validateArtworkStyle(input: unknown): ArtworkStyle | null {
   if (!isRecord(input)) return null

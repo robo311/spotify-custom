@@ -1,10 +1,10 @@
-// Beat pulse: the cover, the play button and the studio button kick on beats. Each beat starts one short Web
+// Beat pulse: the cover and the play button kick on beats (never our own top-bar buttons). Each beat starts one short Web
 // Animation of the individual `scale` property: it composes with Spotify's own hover/press transforms, runs on the
 // compositor, and never touches style attributes (writing those on Spotify's elements makes the theme's [style*=]
 // and :has() selectors re-match on every write: measured ~1 s of main-thread work per 3 s for the cover alone).
 // Reduced motion: no pulse.
 import type { ReactiveLook } from '../../types'
-import { ENTRY, NOW_PLAYING_COVER, PLAY_PAUSE } from '../selectors'
+import { NOW_PLAYING_COVER, PLAY_PAUSE } from '../selectors'
 import { amount, type ReactiveEffect } from './effect'
 
 const KICK_MS = 240
@@ -35,7 +35,6 @@ export function startPulse(): ReactiveEffect {
   const targets: Target[] = [
     { selector: NOW_PLAYING_COVER, enabled: l => l.pulse.cover, max: 0.08, el: null, kick: null },
     { selector: PLAY_PAUSE, enabled: l => l.pulse.play, max: 0.14, el: null, kick: null },
-    { selector: ENTRY, enabled: l => l.pulse.entry, max: 0.2, el: null, kick: null },
   ]
   let previousBeat = 0
 

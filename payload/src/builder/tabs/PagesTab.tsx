@@ -1,8 +1,8 @@
 // Pages: the look of album, playlist, song and artist pages (theme.pageStyle), in three sub-tabs: General (what
 // every page shares), Albums & playlists, and Artists. Which setting lives where: pages/groups.ts.
-import { useState } from 'preact/hooks'
+import { useEffect, useState } from 'preact/hooks'
 import type { PageStyle } from '../../types'
-import { useApp, useEnv } from '../context'
+import { useApp, useEnv, useUi } from '../context'
 import { KeyTabs, type KeyTab } from '../ui/KeyTabs'
 import { ResetButton } from '../ui/ResetButton'
 import { AlbumsTab } from './pages/AlbumsTab'
@@ -18,7 +18,7 @@ const TABS: readonly KeyTab<PagesTabId>[] = [
 
 /** What each tab changes, under the tabs (the Albums tab also styles playlist headers). */
 const SCOPE: Record<PagesTabId, string> = {
-  general: 'Titles, play button and song lists on every page.',
+  general: 'Background, titles, play button and song lists on every page.',
   albums: 'Album, song and playlist pages.',
   artists: 'Artist pages.',
 }
@@ -36,6 +36,7 @@ export function PagesTab() {
   const { store } = useEnv()
   const page = useApp(s => s.active.pageStyle)
   const [tab, setTab] = useState(lastTab)
+  const focus = useUi(s => s.focus)
   const edit: PageEdit = <K extends keyof PageStyle>(key: K, value: PageStyle[K], coalesceKey?: string) =>
     store.edit(
       t => {
@@ -47,6 +48,12 @@ export function PagesTab() {
     lastTab = id
     setTab(id)
   }
+  // Going to a section here (pick mode's link to Page background) opens General, where it is.
+  useEffect(() => {
+    if (!focus) return
+    lastTab = 'general'
+    setTab('general')
+  }, [focus])
 
   return (
     <>

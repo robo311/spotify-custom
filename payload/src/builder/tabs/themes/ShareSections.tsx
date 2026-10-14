@@ -1,13 +1,13 @@
-// Share: copy a code to send in any chat, save a file, or bring in someone else's theme.
+// Themes › sharing: copy a code to send in any chat, save a file, or bring in someone else's theme.
 import { useEffect, useState } from 'preact/hooks'
-import { Check, Copy, Download } from 'lucide-static'
-import { useApp, useEnv } from '../context'
-import { css, useStyles } from '../styles/sheet'
-import { downloadText } from '../lib/files'
-import { shareFileName } from '../lib/share-input'
-import { Button } from '../ui/Button'
-import { Section } from '../ui/Section'
-import { ImportPanel } from './share/ImportPanel'
+import { Check, Copy, Download, Share2 } from 'lucide-static'
+import { useApp, useEnv } from '../../context'
+import { css, useStyles } from '../../styles/sheet'
+import { downloadText } from '../../lib/files'
+import { shareFileName } from '../../lib/share-input'
+import { Button } from '../../ui/Button'
+import { Section } from '../../ui/Section'
+import { ImportPanel } from './ImportPanel'
 
 const styles = css`
   .b-share__code {
@@ -43,12 +43,13 @@ async function copyText(text: string): Promise<void> {
   }
 }
 
-export function ShareTab() {
+export function ShareSections() {
   useStyles(styles)
   const { store } = useEnv()
   const active = useApp(s => s.active)
   const [copied, setCopied] = useState(false)
   const code = store.exportShareCode()
+  const hasPicture = Object.values(active.parts).some(p => p.layers?.some(l => 'data' in l.src))
 
   useEffect(() => {
     if (!copied) return
@@ -58,8 +59,14 @@ export function ShareTab() {
 
   return (
     <>
-      <Section title="Share this theme" tour="share">
+      <Section title="Share this theme" icon={Share2} tour="share">
         <span class="b-hint">Send the code to a friend. They paste it here and get exactly your look.</span>
+        {hasPicture && (
+          <span class="b-hint">
+            It includes your bar picture, so the code is long ({Math.round(code.length / 1024)} KB): many chats won’t take it
+            in one message, so Save as file is the easier way to send it.
+          </span>
+        )}
         <div class="b-share__code b-mono" title={code}>
           {code}
         </div>
@@ -76,7 +83,7 @@ export function ShareTab() {
           </Button>
         </div>
       </Section>
-      <Section title="Use a theme from someone">
+      <Section title="Use a theme from someone" icon={Download}>
         <ImportPanel />
       </Section>
     </>

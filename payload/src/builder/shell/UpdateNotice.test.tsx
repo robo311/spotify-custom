@@ -12,7 +12,7 @@ function mount(update: UpdateStatus, installUpdate: () => void = () => undefined
   const store = { get: () => state.get(), subscribe: (fn: (s: AppState) => void) => state.subscribe(fn), installUpdate } as unknown as Store
   const host = document.createElement('div')
   const root = host.attachShadow({ mode: 'open' })
-  const ui = observable<UiSnapshot>({ open: true, tab: 'start', picking: false, editingArtwork: null })
+  const ui = observable<UiSnapshot>({ open: true, tab: 'themes', picking: false, editingArtwork: null })
   sync(() => render(h(BuilderContext.Provider, { value: { store, ui, root } }, h(UpdateNotice, {})), root))
   const button = () => root.querySelector<HTMLButtonElement>('button')
   const setUpdate = (u: UpdateStatus) => sync(() => state.set({ update: u } as AppState))

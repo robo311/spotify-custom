@@ -1,6 +1,7 @@
-// Colours: the accent up front, every other colour one click away, then type and roundness.
+// Look: what the whole theme shares. The accent up front, every other colour one click away, type and roundness,
+// colours that follow the music, the icon pack, and the elements found all over Spotify (cards, buttons, play buttons).
 import { useMemo, useState } from 'preact/hooks'
-import { ChevronDown, WandSparkles } from 'lucide-static'
+import { Blend, ChevronDown, Droplet, Type, WandSparkles } from 'lucide-static'
 import type { FontId, Palette } from '../../types'
 import { useApp, useEnv } from '../context'
 import { css, useStyles } from '../styles/sheet'
@@ -18,7 +19,10 @@ import { Section } from '../ui/Section'
 import { Field } from '../ui/Field'
 import { FontPicker } from '../ui/FontPicker'
 import { Slider } from '../ui/Slider'
-import { ContrastBadge, ContrastMarker } from './colours/ContrastBadge'
+import { Toggle } from '../ui/Toggle'
+import { PartSection } from '../parts/PartSection'
+import { ContrastBadge, ContrastMarker } from './look/ContrastBadge'
+import { IconPacks } from './look/IconPacks'
 
 const styles = css`
   .b-colours__alert {
@@ -60,12 +64,13 @@ const styles = css`
   }
 `
 
-export function ColoursTab() {
+export function LookTab() {
   useStyles(styles)
   const { store } = useEnv()
   const palette = useApp(s => s.active.palette)
   const font = useApp(s => s.active.font)
   const radius = useApp(s => s.active.radius)
+  const effects = useApp(s => s.active.effects)
   const issues = useContrastIssues()
   const [showAll, setShowAll] = useState(false)
   const [openKey, setOpenKey] = useState<keyof Palette | null>(null)
@@ -97,7 +102,7 @@ export function ColoursTab() {
         </div>
       )}
 
-      <Section title="Accent" tour="accent">
+      <Section title="Accent" icon={Droplet} tour="accent">
         <ColorPicker value={palette.accent} onChange={hex => setColor('accent', hex)} suggestions={suggestions} footer={<ContrastBadge colorKey="accent" />} />
       </Section>
 
@@ -125,7 +130,7 @@ export function ColoursTab() {
         )}
       </Section>
 
-      <Section title="Type & shape">
+      <Section title="Type & shape" icon={Type}>
         <Field label="Font">
           <FontPicker<FontId>
             label="Font"
@@ -146,6 +151,35 @@ export function ColoursTab() {
           }, { coalesceKey: 'radius' })}
         />
       </Section>
+
+      <Section title="Living colours" icon={Blend} tour="effects">
+        <Toggle
+          label="Album Mode"
+          description="Colours follow the cover of whatever’s playing"
+          checked={effects.albumMode}
+          onChange={v =>
+            store.edit(t => {
+              t.effects.albumMode = v
+            })
+          }
+        />
+        <Toggle
+          label="Ambient glow"
+          description="A soft light from the cover behind each page"
+          checked={effects.ambientGlow}
+          onChange={v =>
+            store.edit(t => {
+              t.effects.ambientGlow = v
+            })
+          }
+        />
+      </Section>
+
+      <IconPacks />
+
+      <PartSection partId="cards" />
+      <PartSection partId="buttons" />
+      <PartSection partId="cardPlayButton" hint="Their size and shape on album and playlist pages: Pages › General." />
     </>
   )
 }

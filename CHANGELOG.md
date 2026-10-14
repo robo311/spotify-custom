@@ -3,6 +3,53 @@
 All notable changes to Spotify Custom. Versions follow `X.Y.Z`; installed copies update themselves (see
 [docs/install-guide.md](docs/install-guide.md#updates)).
 
+## Unreleased
+
+## 0.3.0 — 2026-10-14
+
+### Added
+
+- **Two new themes: Galaxy and Catppuccin Latte.** Galaxy is deep-space indigo with a violet-to-cyan nebula on the
+  play buttons, a flowing progress bar and the blurred cover behind the lyrics. Catppuccin Latte is the first light
+  theme: the light flavour of Catppuccin Mocha, with its mauve accent.
+- **Pictures in the top bar and the player bar, up to five per bar.** Under Pictures in the Top bar and Player tabs,
+  add pictures and combine them: the first fills the bar, later ones go on top wherever you put them, even partly past
+  the bar's top or bottom edge. Each picture has its own fit (free, fill or tile), size, position, opacity, blur,
+  brightness and edge fade, and can be hidden, reordered or replaced. **Arrange on the bar** turns the real bar into a
+  canvas: drag pictures to move them, drag a corner or scroll to resize, nudge with the arrow keys; Cancel puts
+  everything back, Done or Esc keeps it, and every drag is one undo step. Spotify's buttons and window dragging pause
+  only while you arrange. Wide pictures work best (at least 2400 × 160 px for the top bar); bigger ones are scaled down,
+  and a theme holds about 700 KB of pictures in total. Pictures are part of the theme, so share codes and theme files
+  carry them too (the code gets long; Save as file is easier to send). Galaxy shows the idea: nebula clouds fading out
+  at both sides, and a banded, ringed planet on its own layer that you can drag anywhere.
+- **New in Spotify Custom.** A sparkle button next to the theme studio button lights up in your accent colour after an
+  update that brings something new. Click it for a short showcase of what changed (this time: pictures in your bars);
+  skip or watch, and it goes quiet until the next release with news. It stays there to replay the showcase. New
+  installs get the guided tour instead, so the sparkle first lights up at the next release.
+
+### Changed
+
+- **Calmer top-bar buttons.** The theme studio and What's new buttons no longer bounce: not on hover or click, and
+  not to the music either. Beat pulse now kicks only the cover art and the play button, so its "Theme studio button"
+  switch is gone. The palette still tilts and shows your theme's colours, easing in without overshoot.
+- **One tab per area in the theme studio.** The tabs now follow Spotify's window: Top bar, Library, Home, Pages,
+  Lyrics, Now playing and Player each hold everything for that area: colours, layout, which buttons show and their
+  icons. Want to change the right panel? Open Now playing. Above them, Themes holds the gallery, starting points and
+  sharing, and Look holds what the whole theme shares: colours, font, roundness, Album Mode, ambient glow, the icon
+  pack, and cards and buttons found all over Spotify. Below them sit Reactive and Advanced, which now also lists your
+  extensions. The Parts, Layout, Icons, Extras and Share tabs are gone, and nothing appears in two places any more.
+- **Point and style lives in the studio's header**, so it's one click away from any tab. The editor that opens next
+  to a part now ends with a "More in …" link to that part's section in its tab, where everything else for that area
+  is; your edits stay.
+- **Card and player play buttons are styled separately.** The round play buttons on cards and pages are under Look;
+  the player's play button is under Player. Themes that styled "Play button" keep that look on both.
+- **Home's shortcut cards and Your listening** are set up in the Home tab, including switching Your listening on or
+  off. Before, their layout was only reachable by pointing at them.
+- **Easier-to-spot section titles in the theme studio.** Each section's title is a little bigger, with an icon on a
+  small key beside it, so you can find your way down a long tab at a glance.
+- **App version on its own line.** In the studio's header it now sits under "Your theme · …" instead of at the end
+  of that line.
+
 ## 0.2.7 — 2026-10-13
 
 ### Added

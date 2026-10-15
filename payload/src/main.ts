@@ -15,6 +15,8 @@ import { mountBuilder } from './builder'
 import { startExtensions, type ExtensionHost } from './ext'
 import { installSpotifyHooks, spotify } from './spotify'
 import { idleAudioChannel, startReactive } from './audio'
+import { startMenu } from './menu'
+import { startShortcuts } from './shortcuts'
 
 const BUILD_ID = __BUILD_ID__
 
@@ -151,6 +153,17 @@ function boot() {
 
     const library = startLibrary({ getStyles: () => store.get().settings.artworkStyles, onItems: f => store.setLibraryItems(f) })
     disposers.push(onSliceChange(store, s => s.settings.artworkStyles, () => library.refresh()), () => library.dispose())
+
+    const menu = startMenu(() => store.get().settings.menu)
+    const shortcuts = startShortcuts(() => store.get().settings.menu)
+    disposers.push(
+      onSliceChange(store, s => s.settings.menu, () => {
+        menu.refresh()
+        shortcuts.refresh()
+      }),
+      () => menu.dispose(),
+      () => shortcuts.dispose(),
+    )
 
     host = startExtensions({
       store,

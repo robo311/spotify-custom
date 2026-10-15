@@ -3,7 +3,7 @@
 // including hover/press states, without touching hashed classes.
 import { parse, wcagLuminance } from 'culori'
 import type { PartStyle } from '../types'
-import { ACCENT_SET } from './selectors'
+import { ACCENT_SET, RESIZE_BAR } from './selectors'
 import { fade, isGradient, mix, type CssRule, type Declarations } from './css'
 
 /** The single-value properties; `layers` are drawn by src/bar-layers. */
@@ -121,7 +121,10 @@ export function propRules(prop: StyleProp, value: string | number, selector: str
       const px = `${Number(value)}px`
       if (target.vars) return [{ selector, decls: fromVars(target.vars, px) }]
       if (!paint) return []
-      return [{ selector, decls: { 'border-radius': px, ...(target.clip ? { overflow: 'clip' } : {}) } }]
+      const rules: CssRule[] = [{ selector, decls: { 'border-radius': px } }]
+      // Clip the children, not the region: Spotify's resize bar hangs 8px outside the column and a clip there hides it from the mouse.
+      if (target.clip) rules.push({ selector: `${selector} > :not(${RESIZE_BAR})`, decls: { 'border-radius': px, overflow: 'clip' } })
+      return rules
     }
     case 'size': {
       const px = `${Math.round(Number(value) * (target.scale ?? 1))}px`

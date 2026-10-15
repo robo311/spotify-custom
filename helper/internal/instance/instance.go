@@ -1,5 +1,6 @@
 // Package instance keeps a single helper running per user. The first instance holds a lock file and
-// listens on a loopback control port; a second launch asks it to open Spotify, then exits.
+// listens on a loopback control port; a second launch asks it to open Spotify, then exits (a dev launch
+// asks it to quit and takes over instead).
 package instance
 
 import (
@@ -19,6 +20,9 @@ var ErrAlreadyRunning = errors.New("helper is already running")
 
 // CommandOpen asks the running instance to open (or focus) Spotify.
 const CommandOpen = "open"
+
+// CommandQuit asks the running instance to shut down (a dev helper taking over).
+const CommandQuit = "quit"
 
 // Lock is the held single-instance lock.
 type Lock struct{ f *os.File }
@@ -61,15 +65,31 @@ func Listen(ctx context.Context) (port int, commands <-chan string, err error) {
 			_ = conn.SetReadDeadline(time.Now().Add(2 * time.Second))
 			line, _ := bufio.NewReader(conn).ReadString('\n')
 			conn.Close()
-			if cmd := strings.TrimSpace(line); cmd == CommandOpen {
+			if cmd := strings.TrimSpace(line); cmd == CommandOpen || cmd == CommandQuit {
 				select {
 				case out <- cmd:
-				default: // a pending open already covers this one
+				default: // a pending command already covers this one
 				}
 			}
 		}
 	}()
 	return ln.Addr().(*net.TCPAddr).Port, out, nil
+}
+
+// TakeOver asks the instance listening on port to quit and takes the lock once it has let go. It returns
+// ErrAlreadyRunning if the lock is still held after timeout.
+func TakeOver(path string, port int, timeout time.Duration) (*Lock, error) {
+	if err := Signal(port, CommandQuit); err != nil {
+		return nil, err
+	}
+	deadline := time.Now().Add(timeout)
+	for {
+		lock, err := Acquire(path)
+		if !errors.Is(err, ErrAlreadyRunning) || time.Now().After(deadline) {
+			return lock, err
+		}
+		time.Sleep(100 * time.Millisecond)
+	}
 }
 
 // Signal sends a command to the running instance's control port.

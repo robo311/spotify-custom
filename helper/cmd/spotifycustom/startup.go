@@ -16,7 +16,7 @@ import (
 // folder and a disk-image copy goes away, so neither is registered (the installed copy does it on its first run).
 func applyLoginDefault(rt app.Runtime, exe string, release bool, enable func(exe string) error) error {
 	r := rt.Runtime()
-	if r.LoginDefaulted || !release || autostart.Temporary(exe) {
+	if r.LoginDefaulted || !ownsLoginItem(exe, release) {
 		return nil
 	}
 	if err := enable(exe); err != nil {
@@ -24,6 +24,12 @@ func applyLoginDefault(rt app.Runtime, exe string, release bool, enable func(exe
 	}
 	r.LoginDefaulted = true
 	return rt.SaveRuntime(r)
+}
+
+// ownsLoginItem reports whether this copy may be the one start-at-login launches: an installed release, not a
+// dev build, a disk-image copy or a `make release` build in the source tree.
+func ownsLoginItem(exe string, release bool) bool {
+	return release && !autostart.Temporary(exe) && !autostart.LocalBuild(exe)
 }
 
 // resyncShortcuts is how often Spotify's shortcuts are re-pointed: Spotify's updater recreates its own.

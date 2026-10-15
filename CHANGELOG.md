@@ -5,6 +5,34 @@ All notable changes to Spotify Custom. Versions follow `X.Y.Z`; installed copies
 
 ## Unreleased
 
+## 0.4.0 — 2026-10-15
+
+### Added
+
+- **Your own right-click menu.** Right-click a song and the menu now follows your theme's colours and your order.
+  Pick Spotify's order, the Spotify Custom layout (collect, go to, play and share, remove), or build your own in the
+  new Menu tab: drag items into any order, hide what you never use, and split the list with separators or named
+  groups. Every item still does exactly what Spotify's does. Menus for albums, playlists and artists get the same look
+  in Spotify's order.
+- **A better Add to playlist.** The playlist list in the menu shows covers, keeps your folders, and can be sorted A–Z,
+  in your library's order or in your own order, with favourite playlists pinned to the top. A search field appears
+  when you have many playlists.
+- **One-click shortcuts on songs.** Put up to three buttons, like Add to queue, Like or Add to playlist, right on song
+  rows, on the rows in your queue and next to the song in the player bar. Choose them in the Menu tab.
+
+### Fixed
+
+- **The library and the queue can be resized again with rounded corners on.** Rounding those columns clipped Spotify's
+  resize handle, which sits just outside them, so only a hair-thin strip could be grabbed. The corners now clip the
+  column's content instead, and the whole handle works.
+- **The right panel no longer slides sideways.** With the panel at its narrowest, the queue and Recently played tabs
+  didn't fit beside the close button, and switching tabs shifted the whole panel left with its text cut off. The tabs
+  now shorten with an ellipsis when space runs out, and the panel stays put.
+- **Development: `make dev` always runs your working copy.** A helper that was already running (for example a local
+  `make release` build started at login) used to keep the single-instance lock, so `make dev` exited silently and
+  the old build kept injecting. A dev helper now asks the running one to quit and takes over. Dev and local builds
+  no longer register themselves for Start at login, and `make dev` stops its payload watcher when it exits.
+
 ## 0.3.1 — 2026-10-14
 
 ### Added

@@ -264,6 +264,52 @@ export interface Settings {
   artworkStyles: Record<string, ArtworkStyle> // library item URI -> custom artwork
   reactive: ReactiveSettings
   lyricsColumnCollapsed: boolean // the lyrics page's Now playing column folded to a strip
+  menu: MenuSettings
+}
+
+// ---------- Right-click menu + shortcuts (owned by src/menu, personal) ----------
+
+/**
+ * One row of the song menu layout. Items are Spotify's own menu entries, identified by the `menuAction` prop Spotify
+ * gives each of them (stable and language-independent, e.g. 'add-to-queue'); labels and icons come from the live menu.
+ */
+export type MenuEntry =
+  | { kind: 'item'; key: string; hidden?: boolean }
+  | { kind: 'separator' }
+  | { kind: 'group'; label: string } // a labelled divider that starts a group
+
+/** stock = Spotify's order (in our panel) · ours = the Spotify Custom layout · custom = MenuSettings.custom. */
+export type MenuPreset = 'stock' | 'ours' | 'custom'
+
+/** The "Add to playlist" submenu (ours, built from Spotify's library). */
+export interface PlaylistMenuSettings {
+  sort: 'library' | 'name' | 'custom' // library = Spotify's own order · name = A–Z · custom = `order`
+  order: string[] // playlist URIs for sort = custom; playlists not listed follow in library order
+  pinned: string[] // playlist URIs always shown first, in this order
+  covers: boolean // playlist covers beside the names
+  folders: boolean // folders as nested submenus (false = one flat list)
+}
+
+/** One-click actions that run without opening the menu. */
+export type ShortcutAction =
+  | 'add-to-queue'
+  | 'add-to-liked-songs'
+  | 'add-to-playlist'
+  | 'go-to-album'
+  | 'go-to-artist'
+  | 'go-to-radio'
+  | 'share'
+  | 'remove-from-queue'
+
+/** Where shortcut buttons appear: song rows in lists · rows in the queue / recently played panel · the player bar song. */
+export type ShortcutSurface = 'rows' | 'queue' | 'playerBar'
+
+export interface MenuSettings {
+  enabled: boolean // false = Spotify's own menus, untouched
+  preset: MenuPreset
+  custom: MenuEntry[] // the layout used when preset = custom
+  playlists: PlaylistMenuSettings
+  shortcuts: Record<ShortcutSurface, ShortcutAction[]> // ≤ SHORTCUTS_MAX each, in order
 }
 
 /** Personal (never in share codes): turning capture on is a permission decision, and sync depends on the speakers. */

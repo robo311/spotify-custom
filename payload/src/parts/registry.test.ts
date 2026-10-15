@@ -4,6 +4,7 @@ import { compileParts, PARTS } from '.'
 import { compileRecipe, PART_RECIPES, type PartRecipe } from './registry'
 import { readableOn } from './style-props'
 import { mountSpotifyLayout } from './fixtures/spotify-layout'
+import { RESIZE_BAR } from './selectors'
 import { defaultLyrics, defaultPageStyle } from '../theme/model'
 
 function recipe(id: string): PartRecipe {
@@ -172,6 +173,24 @@ describe('compileRecipe', () => {
     const css = compileRecipe(recipe('sidebar'), { radius: 18 })
     expect(css).toContain('border-radius: 18px !important;')
     expect(css).toContain('overflow: clip !important;')
+  })
+
+  it('never clips the resize bar Spotify hangs 8px outside the library and right panel columns', () => {
+    // Spotify 1.3.4, from the live DOM: the bar is the column's second child at left/right -8px, so a clip on the
+    // column itself hid it from the mouse (only a sliver could be grabbed).
+    document.body.innerHTML = `<div data-testid="root"><div>
+      <div id="Desktop_LeftSidebar_Id"><nav id="library"></nav><div data-testid="LayoutResizer__resize-bar"></div></div>
+      <div><div id="panel"><aside id="Desktop_PanelContainer_Id"></aside></div><div data-testid="LayoutResizer__resize-bar"></div></div>
+    </div></div>`
+    for (const [id, inner] of [['sidebar', '#library'], ['rightPanel', '#panel']] as const) {
+      const css = compileRecipe(recipe(id), { radius: 18 })
+      const clipped = css.split('}').filter(r => r.includes('overflow: clip')).map(r => r.slice(0, r.indexOf('{')).trim())
+      expect(clipped, id).not.toHaveLength(0)
+      for (const el of document.querySelectorAll(clipped.join(', '))) {
+        expect(el.querySelector(RESIZE_BAR), `${id}: ${el.outerHTML.slice(0, 60)}`).toBeNull()
+      }
+      expect(document.querySelector(inner)?.matches(clipped.join(', ')), id).toBe(true)
+    }
   })
 })
 

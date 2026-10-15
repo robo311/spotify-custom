@@ -1,6 +1,6 @@
 import type { PartStyle } from '../types'
 import { describe, expect, it } from 'vitest'
-import { BAR_LAYER_BLUR_MAX, BAR_LAYER_MAX_CHARS, BAR_LAYER_SIZE, BAR_LAYER_X, BAR_LAYER_Y, BAR_LAYERS_MAX, FOLDER_IMAGE_MAX_CHARS, PART_SIZE_MAX, defaultBarLayer, ThemeValidationError, defaultHomeStyle, defaultLayout, defaultNowPlaying, defaultPageStyle, defaultLyrics, defaultLyricsAnimation, defaultReactiveLook, forkTheme, isSlug, normalizeSettings, slugify, uniqueId, validateTheme } from './model'
+import { BAR_LAYER_BLUR_MAX, BAR_LAYER_MAX_CHARS, BAR_LAYER_SIZE, BAR_LAYER_X, BAR_LAYER_Y, BAR_LAYERS_MAX, FOLDER_IMAGE_MAX_CHARS, PART_SIZE_MAX, defaultBarLayer, ThemeValidationError, defaultHomeStyle, defaultLayout, defaultNowPlaying, defaultPageStyle, defaultLyrics, defaultLyricsAnimation, defaultMenuSettings, defaultReactiveLook, forkTheme, isSlug, normalizeSettings, slugify, uniqueId, validateTheme } from './model'
 import { PRESETS } from './presets'
 
 const [darcula] = PRESETS.filter(p => p.id === 'darcula')
@@ -198,6 +198,7 @@ describe('normalizeSettings', () => {
       artworkStyles: {},
       reactive: { enabled: false, syncMs: 0 },
       lyricsColumnCollapsed: false,
+      menu: defaultMenuSettings(),
     })
     expect(normalizeSettings(null, 'darcula').activeTheme).toBe('darcula')
     expect(normalizeSettings(null, 'darcula').lyricsColumnCollapsed).toBe(false)
@@ -209,6 +210,51 @@ describe('normalizeSettings', () => {
     expect(normalizeSettings({ reactive: { enabled: 'yes', syncMs: 999 } }, 'darcula').reactive).toEqual({ enabled: false, syncMs: 300 })
     expect(normalizeSettings({ reactive: { enabled: true, syncMs: -42.4 } }, 'darcula').reactive).toEqual({ enabled: true, syncMs: -42 })
     expect(normalizeSettings({ reactive: { enabled: true, syncMs: 'x' } }, 'darcula').reactive).toEqual({ enabled: true, syncMs: 0 })
+  })
+})
+
+describe('menu settings', () => {
+  const menu = (input: unknown) => normalizeSettings({ menu: input }, 'darcula').menu
+
+  it('starts with our menu and Add to queue on song rows', () => {
+    expect(menu(undefined)).toEqual({
+      enabled: true,
+      preset: 'ours',
+      custom: [],
+      playlists: { sort: 'library', order: [], pinned: [], covers: true, folders: true },
+      shortcuts: { rows: ['add-to-queue'], queue: [], playerBar: [] },
+    })
+  })
+
+  it('keeps a valid custom layout and drops malformed rows', () => {
+    const custom = [
+      { kind: 'group', label: 'Mine' },
+      { kind: 'item', key: 'add-to-queue' },
+      { kind: 'item', key: 'show-credits', hidden: true },
+      { kind: 'separator' },
+      { kind: 'item', key: 'add-to-queue' }, // duplicate
+      { kind: 'item', key: '' },
+      { kind: 'group', label: 'x'.repeat(80) },
+      { kind: 'bogus' },
+      'separator',
+    ]
+    expect(menu({ enabled: false, preset: 'custom', custom }).custom).toEqual([
+      { kind: 'group', label: 'Mine' },
+      { kind: 'item', key: 'add-to-queue' },
+      { kind: 'item', key: 'show-credits', hidden: true },
+      { kind: 'separator' },
+      { kind: 'group', label: 'x'.repeat(40) },
+    ])
+    expect(menu({ enabled: false, preset: 'nope' })).toMatchObject({ enabled: false, preset: 'ours' })
+  })
+
+  it('validates the playlist submenu and shortcuts', () => {
+    const m = menu({
+      playlists: { sort: 'name', order: ['spotify:playlist:a', 3], pinned: 'x', covers: false, folders: 'no' },
+      shortcuts: { rows: ['go-to-album', 'nope', 'go-to-album', 'share', 'add-to-queue', 'go-to-radio'], queue: 'x', playerBar: ['add-to-liked-songs'] },
+    })
+    expect(m.playlists).toEqual({ sort: 'name', order: ['spotify:playlist:a'], pinned: [], covers: false, folders: true })
+    expect(m.shortcuts).toEqual({ rows: ['go-to-album', 'share', 'add-to-queue'], queue: [], playerBar: ['add-to-liked-songs'] })
   })
 })
 

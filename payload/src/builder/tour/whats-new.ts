@@ -9,32 +9,26 @@ export interface WhatsNew {
 }
 
 export const WHATS_NEW: WhatsNew = {
-  id: '0.3.0',
-  label: 'pictures in your bars',
+  id: '0.4.0',
+  label: 'your own right-click menu',
   steps: [
     {
-      tab: 'topbar',
-      target: '[data-tour="bar-pictures"]',
-      title: 'Pictures in your bars',
-      body: 'The top bar and the player bar can now carry pictures: up to five each, stacked into one scene. Each picture has its own fit, size, position, opacity, blur, brightness and soft edges. The player bar has the same section in the Player tab.',
+      tab: 'menu',
+      target: '[data-tour="menu-layout"]',
+      title: 'Your own right-click menu',
+      body: 'Right-click a song: the menu now wears your theme’s colours. Keep Spotify’s order, use the Spotify Custom layout, or make it yours here: drag items around, hide what you never use, and split the list with separators or named groups.',
     },
     {
-      tab: 'topbar',
-      target: '[data-tour="add-picture"]',
-      title: 'Add your own',
-      body: 'Wide pictures work best, at least 2400 × 160 px. The first one fills the bar; the next ones go on top, wherever you put them, even half past the bar’s edge.',
+      tab: 'menu',
+      target: '[data-tour="menu-playlists"]',
+      title: 'A better Add to playlist',
+      body: 'The playlist list shows covers and keeps your folders. Sort it A–Z, in your library’s order or your own, and pin the playlists you add to most so they’re always on top.',
     },
     {
-      tab: 'topbar',
-      target: '[data-tour="arrange"]',
-      title: 'Arrange on the bar',
-      body: 'Once you have a picture, Arrange turns the real bar into a canvas: drag to move, drag a corner or scroll to resize, arrows to nudge. Cancel puts everything back; every drag is one undo step.',
-    },
-    {
-      tab: 'themes',
-      target: '[data-tour="presets"]',
-      title: 'See it in Galaxy',
-      body: 'Galaxy shows the idea: nebula clouds fading out at the sides, and a ringed planet on its own layer. Pick it, then arrange the planet wherever you like. Your own themes are one click away.',
+      tab: 'menu',
+      target: '[data-tour="menu-shortcuts"]',
+      title: 'One click instead of three',
+      body: 'Put up to three buttons, like Add to queue or Like, right on song rows, on the rows in your queue and next to the song in the player bar.',
     },
   ],
 }

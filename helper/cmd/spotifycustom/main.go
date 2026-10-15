@@ -86,8 +86,12 @@ func run() int {
 		return 0
 	}
 
-	lock, err := instance.Acquire(filepath.Join(dir, "helper.lock"))
-	if errors.Is(err, instance.ErrAlreadyRunning) {
+	lockPath := filepath.Join(dir, "helper.lock")
+	lock, err := instance.Acquire(lockPath)
+	if errors.Is(err, instance.ErrAlreadyRunning) && opts.dev {
+		// `make dev` must run this build, not whichever copy started first (e.g. at login).
+		lock, err = takeOverRunningInstance(dir, lockPath, log)
+	} else if errors.Is(err, instance.ErrAlreadyRunning) {
 		signalRunningInstance(dir, log)
 		return 0
 	}
@@ -174,7 +178,12 @@ func run() int {
 				tray.Quit()
 			}()
 			go func() {
-				for range opens {
+				for cmd := range opens {
+					if cmd == instance.CommandQuit {
+						log.Info("quitting: another helper takes over")
+						cancel()
+						continue
+					}
 					loop.OpenSpotify()
 				}
 			}()
@@ -227,6 +236,21 @@ func signalRunningInstance(dir string, log *slog.Logger) {
 	}
 }
 
+// takeOverRunningInstance asks the running helper to quit and takes its lock. Its shutdown waits up to 5 s for
+// the connection to Spotify to close, so this waits a little longer.
+func takeOverRunningInstance(dir, lockPath string, log *slog.Logger) (*instance.Lock, error) {
+	st, err := store.New(dir, log)
+	if err != nil {
+		return nil, err
+	}
+	log.Info("another helper is running; asking it to quit")
+	lock, err := instance.TakeOver(lockPath, st.Runtime().ControlPort, 8*time.Second)
+	if err != nil {
+		return nil, fmt.Errorf("take over from the running helper (quit it from its menu bar icon): %w", err)
+	}
+	return lock, nil
+}
+
 func listenForSecondLaunches(ctx context.Context, st *store.Store, log *slog.Logger) <-chan string {
 	port, cmds, err := instance.Listen(ctx)
 	if err != nil {
@@ -270,7 +294,7 @@ func healAutostart(log *slog.Logger) {
 		return
 	}
 	exe, err := os.Executable()
-	if err == nil && autostart.Temporary(exe) {
+	if err == nil && !ownsLoginItem(exe, version != "dev") {
 		return // keep the login item pointing at the installed copy
 	}
 	if err == nil {

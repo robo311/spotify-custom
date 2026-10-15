@@ -26,6 +26,7 @@ func TestLoginDefault(t *testing.T) {
 		{"already defaulted → the user's choice stands", store.Runtime{LoginDefaulted: true}, installed, true, false, true},
 		{"dev build → never", store.Runtime{}, installed, false, false, false},
 		{"copy on a disk image → not yet (the installed copy will)", store.Runtime{}, "/Volumes/Spotify Custom/Spotify Custom.app/Contents/MacOS/spotifycustom", true, false, false},
+		{"make release build in the repo → never", store.Runtime{}, "/Users/me/spotify-custom/dist/SpotifyCustom.app/Contents/MacOS/SpotifyCustom", true, false, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -42,6 +43,25 @@ func TestLoginDefault(t *testing.T) {
 				t.Errorf("LoginDefaulted = %v, want %v", rt.rt.LoginDefaulted, tt.wantMarked)
 			}
 		})
+	}
+}
+
+// Healing the login item re-points it at the running copy; only an installed release may own it. A `go run`
+// dev helper used to claim it with a binary in Go's build cache.
+func TestOwnsLoginItem(t *testing.T) {
+	for _, tt := range []struct {
+		exe     string
+		release bool
+		want    bool
+	}{
+		{"/Applications/SpotifyCustom.app/Contents/MacOS/SpotifyCustom", true, true},
+		{"/Users/me/Library/Caches/go-build/ff/ff55-d/spotifycustom", false, false},
+		{"/Users/me/spotify-custom/dist/SpotifyCustom.app/Contents/MacOS/SpotifyCustom", true, false},
+		{"/Volumes/Spotify Custom/SpotifyCustom.app/Contents/MacOS/SpotifyCustom", true, false},
+	} {
+		if got := ownsLoginItem(tt.exe, tt.release); got != tt.want {
+			t.Errorf("ownsLoginItem(%q, %v) = %v, want %v", tt.exe, tt.release, got, tt.want)
+		}
 	}
 }
 

@@ -60,6 +60,12 @@ export const TOUR_STEPS: readonly TourStep[] = [
     body: 'The middle tabs follow Spotify’s window from top to bottom: top bar, library, Home, pages, lyrics, Now playing and the player. Everything for an area is in its tab. Reactive makes the theme move with the music.',
   },
   {
+    tab: 'menu',
+    target: '[data-tour="menu-layout"]',
+    title: 'Your right-click menu',
+    body: 'Right-click any song: the menu follows your theme. Here you choose its order, hide items, group them, and add one-click buttons like Add to queue straight onto your songs.',
+  },
+  {
     tab: 'themes',
     target: '[data-tour="share"]',
     title: 'Share your look',

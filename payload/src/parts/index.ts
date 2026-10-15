@@ -6,6 +6,7 @@ import { compileLyricsMotion } from './lyrics-motion'
 export { LYRICS_COLUMN_SLOT, LYRICS_VIEW_SLOT } from './lyrics-shared'
 import { compileHomeLook } from './home-look'
 import { compilePageLook } from './page-look'
+import { compilePanelFit } from './panel-fit'
 import { compileProgress } from './progress'
 import { PARTS } from './registry'
 
@@ -31,6 +32,7 @@ export function compileParts(theme: Theme): string {
     compileProgress(theme.effects.progressBar),
     compileHomeLook(theme.homeStyle),
     compilePageLook(theme.pageStyle),
+    compilePanelFit(),
   ]
     .filter(Boolean)
     .join('\n')

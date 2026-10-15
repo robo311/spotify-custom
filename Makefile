@@ -10,11 +10,13 @@ payload:
 	cd $(PAYLOAD) && npm run build
 	cp $(PAYLOAD)/dist/payload.js $(EMBED)
 
-## Live development: rebuild payload on save, helper re-injects into running Spotify.
+## Live development: rebuild payload on save, helper re-injects into running Spotify. A helper that is already
+## running (e.g. started at login) is asked to quit so this build takes over. The watcher stops with the helper
+## (make's shell has no job control, so it is stopped by pid; npx would leave its node child running).
 dev:
-	cd $(PAYLOAD) && npx vite build --watch & \
-	cd $(HELPER) && go run ./cmd/spotifycustom --dev --payload ../$(PAYLOAD)/dist/payload.js; \
-	kill %1
+	(cd $(PAYLOAD) && exec ./node_modules/.bin/vite build --watch) & VITE=$$!; \
+	trap 'kill $$VITE 2>/dev/null' EXIT INT TERM; \
+	cd $(HELPER) && go run ./cmd/spotifycustom --dev --payload ../$(PAYLOAD)/dist/payload.js
 
 typecheck:
 	cd $(PAYLOAD) && npx tsc --noEmit

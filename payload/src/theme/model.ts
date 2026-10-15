@@ -11,7 +11,11 @@ import type {
   LyricsAnimation,
   LyricsBackground,
   LyricsStyle,
+  MenuEntry,
+  MenuPreset,
+  MenuSettings,
   NowPlayingLayout,
+  PlaylistMenuSettings,
   PageStyle,
   Palette,
   PartStyle,
@@ -19,6 +23,8 @@ import type {
   ReactiveLook,
   ReactiveSettings,
   Settings,
+  ShortcutAction,
+  ShortcutSurface,
   Theme,
 } from '../types'
 import { ICON_NAMES } from '../icons'
@@ -660,6 +666,70 @@ export function defaultSettings(activeTheme: string): Settings {
     artworkStyles: {},
     reactive: defaultReactiveSettings(),
     lyricsColumnCollapsed: false,
+    menu: defaultMenuSettings(),
+  }
+}
+
+export const SHORTCUT_ACTIONS: readonly ShortcutAction[] = [
+  'add-to-queue', 'add-to-liked-songs', 'add-to-playlist', 'go-to-album', 'go-to-artist', 'go-to-radio', 'share', 'remove-from-queue',
+]
+export const SHORTCUT_SURFACES: readonly ShortcutSurface[] = ['rows', 'queue', 'playerBar']
+export const SHORTCUTS_MAX = 3
+export const MENU_GROUP_LABEL_MAX = 40
+const MENU_PRESETS: readonly MenuPreset[] = ['stock', 'ours', 'custom']
+const PLAYLIST_SORTS: readonly PlaylistMenuSettings['sort'][] = ['library', 'name', 'custom']
+
+export function defaultMenuSettings(): MenuSettings {
+  return {
+    enabled: true,
+    preset: 'ours',
+    custom: [],
+    playlists: { sort: 'library', order: [], pinned: [], covers: true, folders: true },
+    shortcuts: { rows: ['add-to-queue'], queue: [], playerBar: [] },
+  }
+}
+
+const strings = (v: unknown): string[] => (Array.isArray(v) ? [...new Set(v.filter((x): x is string => typeof x === 'string'))] : [])
+
+function validateMenuEntries(input: unknown): MenuEntry[] {
+  if (!Array.isArray(input)) return []
+  const seen = new Set<string>()
+  const out: MenuEntry[] = []
+  for (const e of input) {
+    if (!isRecord(e)) continue
+    if (e.kind === 'separator') out.push({ kind: 'separator' })
+    else if (e.kind === 'group' && typeof e.label === 'string') out.push({ kind: 'group', label: e.label.slice(0, MENU_GROUP_LABEL_MAX) })
+    else if (e.kind === 'item' && typeof e.key === 'string' && e.key !== '' && !seen.has(e.key)) {
+      seen.add(e.key)
+      out.push(e.hidden === true ? { kind: 'item', key: e.key, hidden: true } : { kind: 'item', key: e.key })
+    }
+  }
+  return out
+}
+
+function normalizeMenuSettings(input: unknown): MenuSettings {
+  const d = defaultMenuSettings()
+  if (!isRecord(input)) return d
+  const p = isRecord(input.playlists) ? input.playlists : {}
+  const s = isRecord(input.shortcuts) ? input.shortcuts : {}
+  const shortcuts = (v: unknown, fallback: ShortcutAction[]): ShortcutAction[] =>
+    v === undefined ? fallback : strings(v).filter((a): a is ShortcutAction => SHORTCUT_ACTIONS.includes(a as ShortcutAction)).slice(0, SHORTCUTS_MAX)
+  return {
+    enabled: typeof input.enabled === 'boolean' ? input.enabled : d.enabled,
+    preset: oneOf(MENU_PRESETS, input.preset, d.preset),
+    custom: validateMenuEntries(input.custom),
+    playlists: {
+      sort: oneOf(PLAYLIST_SORTS, p.sort, d.playlists.sort),
+      order: strings(p.order),
+      pinned: strings(p.pinned),
+      covers: typeof p.covers === 'boolean' ? p.covers : d.playlists.covers,
+      folders: typeof p.folders === 'boolean' ? p.folders : d.playlists.folders,
+    },
+    shortcuts: {
+      rows: shortcuts(s.rows, d.shortcuts.rows),
+      queue: shortcuts(s.queue, d.shortcuts.queue),
+      playerBar: shortcuts(s.playerBar, d.shortcuts.playerBar),
+    },
   }
 }
 
@@ -685,6 +755,7 @@ export function normalizeSettings(input: unknown, fallbackTheme: string): Settin
     artworkStyles: validateArtworkStyles(isRecord(input.artworkStyles) ? input.artworkStyles : input.folderStyles),
     reactive: normalizeReactiveSettings(input.reactive),
     lyricsColumnCollapsed: input.lyricsColumnCollapsed === true,
+    menu: normalizeMenuSettings(input.menu),
   }
 }
 

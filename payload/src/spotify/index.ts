@@ -5,7 +5,9 @@ import { installFetchHook } from './capture'
 import { query } from './graphql'
 import { loadLyrics } from './lyrics'
 import { onPlayback, onPlaying, playbackTime, seekTo } from './player'
+import { addToPlaylist, addToQueue, copyLink, isLiked, loadPlaylists, removeFromQueue, setLiked } from './platform'
 import { currentPath, navigate, onNavigate, uriToPath } from './router'
+import { songRadio } from './radio'
 import { trackUriOfRow } from './tracklist'
 
 export { SpotifyQueryError, type SpotifyQueryFailure } from './graphql'
@@ -17,4 +19,8 @@ export function installSpotifyHooks(): void {
 
 export type { CanvasMedia } from './canvas'
 export type { LyricLine, LyricSyllable, TrackLyrics } from './lyrics'
-export const spotify = { query, navigate, onNavigate, currentPath, uriToPath, onPlayback, onPlaying, trackUriOfRow, loadCanvas, loadLyrics, playbackTime, seekTo }
+export type { PlaylistNode } from './platform'
+export const spotify = {
+  query, navigate, onNavigate, currentPath, uriToPath, onPlayback, onPlaying, trackUriOfRow, loadCanvas, loadLyrics, playbackTime, seekTo,
+  loadPlaylists, addToPlaylist, addToQueue, removeFromQueue, isLiked, setLiked, copyLink, songRadio,
+}

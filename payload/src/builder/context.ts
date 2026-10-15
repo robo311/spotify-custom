@@ -7,7 +7,7 @@ import type { Observable } from './lib/observable'
 import { useSelect } from './hooks/use-select'
 
 /** The studio's tabs in rail order: theme-wide first, then Spotify's areas as they sit on screen, then the rest. */
-export const TAB_IDS = ['themes', 'look', 'topbar', 'library', 'home', 'pages', 'lyrics', 'nowplaying', 'player', 'reactive', 'advanced'] as const
+export const TAB_IDS = ['themes', 'look', 'topbar', 'library', 'home', 'pages', 'lyrics', 'nowplaying', 'player', 'reactive', 'menu', 'advanced'] as const
 export type TabId = (typeof TAB_IDS)[number]
 
 /** Step-by-step guides sharing the tour's overlay: the guided tour, and the showcase of a release's new features. */

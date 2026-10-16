@@ -1,9 +1,11 @@
-// Layout tweaks: hiding parts and small UI elements, compact player bar, library side, top bar search position.
+// Layout tweaks: hiding parts and small UI elements, compact player bar, library side, top bar search position and
+// its suggestions.
 // Pure CSS generation.
 import type { LayoutConfig, LayoutOption } from '../types'
 import { hideRule, renderRules, type CssRule } from './css'
 import { compileLyricsLayout } from './lyrics-layout'
 import { compilePanelLayout } from './panel'
+import { compileSearchDropdown } from './search-dropdown'
 import { PART_RECIPES } from './registry'
 import * as S from './selectors'
 
@@ -65,7 +67,7 @@ function searchAt(side: 'left' | 'right'): CssRule[] {
 const HIDEABLE_PARTS = new Map(PART_RECIPES.filter(p => p.hideable).map(p => [p.id, p.selectors]))
 const OPTIONS_BY_ID = new Map(LAYOUT_OPTIONS.map(o => [o.id, o]))
 
-/** CSS for the whole LayoutConfig: hidden parts/options, player, library side, Now playing panel, lyrics view. */
+/** CSS for the whole LayoutConfig: hidden parts/options, player, library side, Now playing panel, search suggestions, lyrics view. */
 export function compileLayout(layout: LayoutConfig): string {
   const css: string[] = []
   const hiddenPartSelectors = layout.hidden.flatMap(id => HIDEABLE_PARTS.get(id) ?? [])
@@ -77,6 +79,6 @@ export function compileLayout(layout: LayoutConfig): string {
   if (layout.compactPlayer) css.push(renderRules(COMPACT_PLAYER))
   if (layout.librarySide === 'right') css.push(renderRules(LIBRARY_RIGHT))
   if (layout.searchPosition !== 'centre') css.push(renderRules(searchAt(layout.searchPosition)))
-  css.push(compilePanelLayout(layout.nowPlaying), compileLyricsLayout(layout))
+  css.push(compilePanelLayout(layout.nowPlaying), compileSearchDropdown(layout.searchDropdown), compileLyricsLayout(layout))
   return css.filter(Boolean).join('\n')
 }

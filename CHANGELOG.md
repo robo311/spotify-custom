@@ -5,6 +5,78 @@ All notable changes to Spotify Custom. Versions follow `X.Y.Z`; installed copies
 
 ## Unreleased
 
+## 0.4.1 — 2026-10-16
+
+### Added
+
+- **Edit the right-click menu right in its picture.** The Menu tab now shows one menu, drawn like the real one, and you
+  edit it in place: drag a row to move it, use its eye to hide or show it, remove separators and groups, and type
+  group names straight into the menu. Hidden items stay in the picture, faded, so you can bring them back. No more
+  scrolling between a list and a separate preview.
+- **Keep or hide Spotify's own add button.** The shortcut buttons list for song rows and the player bar now includes
+  Spotify's + (the one that saves to Liked Songs or a playlist). Hide it there if your shortcuts already cover it.
+- **A preview of your shortcut buttons.** The Shortcut buttons section explains what the buttons are for and shows a
+  song with your buttons where they'll appear, next to Spotify's own.
+- **Shortcut buttons in search suggestions.** Songs in the dropdown under the search box can have their own shortcut
+  buttons (pick them under Shortcut buttons → Search), and you can hide Spotify's ✓ there too. Playlists, albums and
+  artists in the dropdown keep their own buttons.
+- **Style the search suggestions.** Top bar → Search suggestions sets how tight the rows sit (Spotify, Compact, Dense),
+  the cover and text sizes, how tall the dropdown grows before it scrolls, and can hide the ↑↓ / Enter hint bar and the
+  "Song •" type before the artist. Its colours, accent and corners are yours too. The row highlight follows your text
+  colour, so a light dropdown still shows which row you're on.
+- **The search suggestions open while you edit them.** Point at Top bar → Search suggestions, or pick Search under
+  Shortcut buttons, and the dropdown opens and stays open while you change things, even while you look at it in Spotify.
+  Moving on to another section or tab, or closing the studio, closes it again.
+- **Drag the Now playing panel shut.** Pull its edge to the right past the narrowest width and keep going (about
+  100 px further), and the panel hides, just like with the hide button at its top left. The library on the left
+  already worked this way.
+  - Still holding the mouse button, pull back to the left and the panel comes back, then keeps following the mouse
+    as usual. You can hide and bring it back as often as you like in one drag.
+  - Let go while it's hidden and it stays hidden; it opens again with a click on the strip at the window's edge, at
+    the narrowest width (not some random width left over from the drag).
+  - On the lyrics page the same edge sizes the Now playing column beside the lyrics: the drag folds it to its strip
+    and, while you still hold the button, unfolds it again.
+  - Only the Now playing panel works this way; the queue and friend activity panels resize as before.
+
+### Changed
+
+- **The Menu tab sits with the other areas of Spotify**, right after Player.
+- **Add to queue and Add to playlist shortcuts use Spotify's own icons**, so they look like the menu items they
+  replace.
+- **Music-reactive effects are much lighter.** The spectrum and the breathing background are now drawn outside
+  Spotify's page, so they no longer make Spotify redraw everything 60 times a second. With them on, Spotify's window
+  used about a third less CPU in our tests. They also update less often (the spectrum 30 times a second, the speed the
+  sound analysis arrives at, and the soft background light 15), which spares the graphics chip. They look the same.
+  The Music-reactive tab now says that these effects use some extra CPU and GPU while music plays.
+- **Spotify reacts faster with your theme on.** Every time Spotify restyles the window (hovering, scrolling, opening
+  a page, typing in search), the browser checks every rule of your theme against every element, and some of our rules
+  were slow to rule out: with them, that work took nearly twice as long. They are now written so the browser can skip
+  them where they can't apply. On an album page in our tests, restyling the window went from 44 ms to 29 ms. Nothing
+  looks different.
+- **The Flow progress bar shimmers when there's something to see**: a few sweeps after the song changes or you jump to
+  another place in it, and while the pointer is over the player bar. Before, it shimmered nonstop while music played,
+  which kept the whole window redrawing and the graphics chip busy.
+- **Lyrics react rests while no lyrics are showing.** It used to follow the music even with the lyrics closed.
+
+### Fixed
+
+- **"Hide on this album" is back in the right-click menu layout.** Spotify gives this album-only item no name our menu
+  could read, so it only turned up as an unnamed leftover and was missing from the Menu tab. It now has its own row:
+  in the Spotify Custom layout it sits in the last section, under Hide in this playlist.
+- **"Remove from Liked Songs" has its icon again.** Spotify shows a small Liked Songs cover there instead of an icon,
+  and our menu left the spot empty.
+- **Shortcut buttons in the queue can be clicked.** Spotify lays an invisible click area over each queue row, and it
+  sat on top of the buttons, so a click played or selected the song instead.
+- **Shortcut buttons no longer push Spotify's ✓ onto the song's length.** The last column of song lists kept its
+  width while our buttons moved in, so Spotify's own buttons got squeezed and the ✓ landed on the duration. The column
+  now grows by the width of your buttons.
+- **The tour and What's new highlight stays inside the studio.** For a section taller than the studio, the highlight
+  ran past the studio's bottom edge to the bottom of the window. It now covers only the part you can see.
+- **Turning lyrics off in the full-window view shows the cover again.** With animated lyrics on, opening the Now
+  playing view full-window and then turning lyrics off (the lyrics button in the player bar) left our lyrics drawn
+  over the big cover Spotify shows instead. They now step aside while lyrics are off and come back when you turn them
+  on again.
+
 ## 0.4.0 — 2026-10-15
 
 ### Added

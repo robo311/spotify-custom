@@ -38,7 +38,7 @@ function rowsOf(menu: CapturedMenu, layout: Parameters<typeof arrange>[0]): { ro
     const entry: Entry = {
       id,
       label: item.label,
-      icon: item.icon ? { kind: 'svg', node: item.icon } : undefined,
+      icon: item.icon ? { kind: 'svg', node: item.icon } : item.image ? { kind: 'image', src: item.image } : undefined,
       disabled: item.disabled,
       checked: item.checked,
       submenu: item.submenu,

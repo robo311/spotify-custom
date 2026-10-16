@@ -107,7 +107,7 @@ function musicVideoRules(): CssRule[] {
 }
 
 const TOP_BAR_ITEM = S.TOP_BAR
-const PLAYER_BAR_ITEM = `${S.LAYOUT_GRID} > :has(> ${S.PLAYER_BAR})`
+const PLAYER_BAR_ITEM = `${S.GRID_ITEM}:has(> ${S.PLAYER_BAR})`
 const ABOVE_LYRICS = 'calc(var(--above-everything-grid-area-z-index, 7) + 2)'
 
 const FADE = { transition: 'opacity 280ms cubic-bezier(.2,.8,.2,1)' }

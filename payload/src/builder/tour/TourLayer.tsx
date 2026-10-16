@@ -6,7 +6,7 @@ import { useEnv, useUi } from '../context'
 import { css, useStyles } from '../styles/sheet'
 import { listenEscape } from '../lib/escape-key'
 import type { Box } from '../lib/pick'
-import { placeTourCard } from '../lib/tour-placement'
+import { clipBox, placeTourCard } from '../lib/tour-placement'
 import { Button } from '../ui/Button'
 import { endTour, goToStep, stepsOf } from './tour'
 
@@ -127,6 +127,18 @@ interface Layout {
   card: { x: number; y: number }
 }
 
+/** The boxes of the containers that clip `el` (scroll areas such as the drawer's body), nearest first. */
+function clipsOf(el: Element): Box[] {
+  const boxes: Box[] = []
+  let node: Element | null = el.parentElement ?? null
+  while (node) {
+    if (getComputedStyle(node).overflowY !== 'visible') boxes.push(node.getBoundingClientRect())
+    const root = node.getRootNode()
+    node = node.parentElement ?? (root instanceof ShadowRoot ? root.host : null)
+  }
+  return boxes
+}
+
 const sameLayout = (a: Layout, b: Layout) => JSON.stringify(a) === JSON.stringify(b)
 
 function TourStep({ index }: { index: number }) {
@@ -151,7 +163,8 @@ function TourStep({ index }: { index: number }) {
         scrolled = true
       }
       const r = target?.getBoundingClientRect()
-      const spot = r ? { x: r.x - PAD, y: r.y - PAD, width: r.width + PAD * 2, height: r.height + PAD * 2 } : null
+      // A section taller than the drawer gets a spotlight on its visible part only, not one running past the drawer.
+      const spot = target && r ? clipBox({ x: r.x - PAD, y: r.y - PAD, width: r.width + PAD * 2, height: r.height + PAD * 2 }, clipsOf(target)) : null
       const card = cardRef.current
       const size = { width: CARD_W, height: card?.offsetHeight ?? 0 }
       const next = { spot, card: placeTourCard(spot, size, { width: window.innerWidth, height: window.innerHeight }) }

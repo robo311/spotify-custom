@@ -4,7 +4,7 @@
 // [style*=] lyrics hosts, where style writes are expensive); a static rule anchors the swell.
 // Reduced motion: brightness only.
 import { LYRICS_LINE } from '../selectors'
-import { amount, type ReactiveEffect } from './effect'
+import { amount, type LevelEffect } from './effect'
 import { scrub, type Scrub } from './scrub'
 
 const MAX_SCALE = 0.07
@@ -54,7 +54,7 @@ export function lyricPosition(level: number, intensity: number): number {
   return Math.min(1, level * amount(intensity))
 }
 
-export function startLyrics(setCss: (css: string) => void, align: () => 'left' | 'center'): ReactiveEffect {
+export function startLyrics(setCss: (css: string) => void, align: () => 'left' | 'center'): LevelEffect {
   let active: string | null = null
   let scannedSheets = -1
   let lastScan = -Infinity
@@ -101,6 +101,8 @@ export function startLyrics(setCss: (css: string) => void, align: () => 'left' |
       }
       dial.set(lyricPosition(levels.level, ctx.look.lyrics.intensity))
     },
+    /** Only while lyrics show somewhere (the lyrics view, or the Now playing panel's lyrics card). */
+    wantsLevels: () => document.querySelector(LYRICS_LINE) !== null,
     heal() {
       findSelector()
     },

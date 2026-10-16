@@ -14,5 +14,5 @@ export { startMenu, type MenuController } from './controller'
  */
 export { openPlaylistPicker } from './picker'
 
-/** A static picture of the panel for the studio's preview; brings its own styles (renders in a shadow root). */
-export { MenuPreview } from './MenuPreview'
+/** The panel's look for the studio: children render in a shadow root with the menu's own styles. */
+export { PanelFrame } from './PanelFrame'

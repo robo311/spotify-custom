@@ -1,5 +1,6 @@
 // Test fixture: Spotify 1.3.3's layout skeleton, trimmed from the live DOM to the hooks the parts module uses
 // (hashed classes kept only where they show what we must NOT depend on). No personal data.
+import { markLayout } from '../layout-marks'
 export const SPOTIFY_LAYOUT_HTML = `
 <div data-testid="root">
   <div class="zXqmJUq4Orp0Adt90GGA">
@@ -16,6 +17,7 @@ export const SPOTIFY_LAYOUT_HTML = `
         <div><form data-encore-id="formInputIcon" role="search">
           <button data-testid="search-icon" data-encore-id="buttonTertiary"><span><svg><path d="M1 1"/></svg></span></button>
           <input data-testid="search-input" data-encore-id="formInput">
+          <div><div><div id="search-dropdown" role="listbox" data-testid="search-dropdown"><div data-overlayscrollbars="host"></div></div></div></div>
         </form></div>
       </div></div>
       <div><div>
@@ -90,6 +92,8 @@ export const SPOTIFY_LAYOUT_HTML = `
 <p id="outside">Not Spotify</p>
 `
 
+/** Spotify's markup as our code sees it at runtime: with the layout marks (parts/layout-marks.ts) already set. */
 export function mountSpotifyLayout(): void {
   document.body.innerHTML = SPOTIFY_LAYOUT_HTML
+  markLayout()
 }

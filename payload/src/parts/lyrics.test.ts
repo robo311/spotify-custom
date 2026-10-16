@@ -70,7 +70,7 @@ describe('compileLyrics', () => {
     const css = compileLyrics({ ...SPOTIFY, background: 'cover-blur' })
     expect(css).toContain('--lyrics-color-background: transparent !important;')
     expect(css).toContain('[data-testid="lyrics-npv-section"]::before {')
-    expect(css).toContain('div:has(> #Desktop_LeftSidebar_Id)::before {')
+    expect(css).toContain('[data-sc-grid]::before {')
     expect(css.split('}').find(r => r.includes(':is(#Desktop_LeftSidebar_Id,'))).toContain('background: transparent !important;')
     expect(css).toContain(':has(#Desktop_PanelContainer_Id):not(:has(> [data-overlayscrollbars])) {\n  visibility: hidden !important;')
     expect(css).toContain('background-image: var(--sc-cover-url, none) !important;')
@@ -83,7 +83,7 @@ describe('compileLyrics', () => {
   it('runs the window\'s blurred cover past the window edges', () => {
     const css = compileLyrics({ ...SPOTIFY, background: 'cover-blur' })
     const before = (part: string) => css.split('}').find(r => r.includes(`${part}::before {`)) ?? ''
-    expect(before('div:has(> #Desktop_LeftSidebar_Id)')).toContain('inset: -216px !important;')
+    expect(before('[data-sc-grid]')).toContain('inset: -216px !important;')
     expect(before('[data-testid="lyrics-npv-section"]')).toContain('inset: 0 !important;')
   })
 

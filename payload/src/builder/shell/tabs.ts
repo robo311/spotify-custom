@@ -36,7 +36,7 @@ export const TABS: readonly TabDef[] = [
   { id: 'lyrics', label: 'Lyrics', icon: MicVocal, group: 'areas', Component: LyricsTab },
   { id: 'nowplaying', label: 'Now playing', icon: PanelRight, group: 'areas', Component: NowPlayingTab },
   { id: 'player', label: 'Player', icon: CirclePlay, group: 'areas', Component: PlayerTab },
+  { id: 'menu', label: 'Menu', icon: SquareMenu, group: 'areas', Component: MenuTab },
   { id: 'reactive', label: 'Reactive', icon: AudioLines, group: 'more', Component: ReactiveTab },
-  { id: 'menu', label: 'Menu', icon: SquareMenu, group: 'more', Component: MenuTab },
   { id: 'advanced', label: 'Advanced', icon: CodeXml, group: 'more', Component: AdvancedTab },
 ]

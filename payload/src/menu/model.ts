@@ -3,6 +3,7 @@ import type { Anchor, Rect } from './position'
 
 export type Icon =
   | { kind: 'svg'; node: SVGElement } // a clone of Spotify's own icon
+  | { kind: 'image'; src: string } // a picture Spotify uses as an icon (the Liked Songs cover)
   | { kind: 'cover'; src: string | null } // a playlist cover (null = no image)
   | { kind: 'folder' }
 

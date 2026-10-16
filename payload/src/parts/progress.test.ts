@@ -39,10 +39,11 @@ describe('compileProgress', () => {
     expect(ruleFor(css, '> [data-testid="progress-bar-handle"]')).toContain('animation: sc-pb-knob-pop 340ms')
   })
 
-  it('flow: gradient fill and a sheen that only runs while playing', () => {
+  it('flow: gradient fill and a sheen that runs only while playing and asked to sweep (progress-sheen.ts)', () => {
     const css = compileProgress('flow')
     expect(css).toContain('oklch(from var(--is-active-fg-color, var(--sc-accent)) min(calc(l + 0.18), 0.95) c calc(h + 40))')
     const running = ruleFor(css, ':not(:has([data-testid="control-button-playpause"] :is(')
+    expect(running.startsWith(':root[data-sc-sheen] ')).toBe(true)
     expect(running).toContain('animation: sc-pb-sheen 2.5s')
     expect(css).toContain('to { translate: calc(var(--progress-bar-transform) - 65%) 0; }')
   })

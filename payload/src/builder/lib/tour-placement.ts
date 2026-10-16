@@ -25,3 +25,18 @@ export function placeTourCard(target: Box | null, card: Size, viewport: Size): {
   if (below + card.height <= viewport.height - EDGE) return { x: clampX(target.x), y: below }
   return { x: clampX(target.x), y: clampY(target.y - GAP - card.height) }
 }
+
+/** The part of `box` inside every one of `clips` (the scroll areas around it); null when none of it shows. */
+export function clipBox(box: Box, clips: readonly Box[]): Box | null {
+  let left = box.x
+  let top = box.y
+  let right = box.x + box.width
+  let bottom = box.y + box.height
+  for (const c of clips) {
+    left = Math.max(left, c.x)
+    top = Math.max(top, c.y)
+    right = Math.min(right, c.x + c.width)
+    bottom = Math.min(bottom, c.y + c.height)
+  }
+  return right > left && bottom > top ? { x: left, y: top, width: right - left, height: bottom - top } : null
+}

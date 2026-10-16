@@ -2,6 +2,7 @@
 import type { Theme } from '../types'
 import { COLUMN_HOST, VIEW_LINES, customisesLyricsView } from './lyrics-shared'
 import * as S from './selectors'
+import { filterable } from './state-selectors'
 
 // Opening and closing the lyrics view. Spotify runs it as a View Transition (html[data-transition="cinema-…"]) that
 // morphs its Now playing panel into the full view; we give that morph a calmer, physical curve, let the first lines
@@ -33,11 +34,11 @@ export function compileLyricsMotion(theme: Pick<Theme, 'lyrics' | 'layout'>): st
   if (!customisesLyricsView(theme)) return ''
   const vt = 'html[data-transition^="cinema"]'
   const lines = Array.from({ length: CASCADE_LINES }, (_, i) =>
-    `  ${S.LYRICS_VIEW_OPEN}[${LYRICS_INTRO_ATTR}] ${VIEW_LINES}:nth-child(${i + 1}) { animation: sc-lyric-in ${LINE_RISE_MS}ms ${EASE}; animation-delay: ${CASCADE_START_MS + i * CASCADE_STEP_MS}ms; animation-fill-mode: backwards; }`,
+    `  ${filterable(`${S.LYRICS_VIEW_OPEN}[${LYRICS_INTRO_ATTR}] ${VIEW_LINES}:nth-child(${i + 1})`)} { animation: sc-lyric-in ${LINE_RISE_MS}ms ${EASE}; animation-delay: ${CASCADE_START_MS + i * CASCADE_STEP_MS}ms; animation-fill-mode: backwards; }`,
   )
   const column = theme.layout.lyricsNowPlaying
     ? [
-        `  ${S.LYRICS_VIEW_OPEN} ${COLUMN_HOST} { view-transition-name: ${COLUMN_LAYER}; }`,
+        `  ${filterable(`${S.LYRICS_VIEW_OPEN} ${COLUMN_HOST}`)} { view-transition-name: ${COLUMN_LAYER}; }`,
         `  ::view-transition-new(${COLUMN_LAYER}) { animation: sc-npv-in 440ms ${EASE} both; }`,
         `  ::view-transition-old(${COLUMN_LAYER}) { animation: sc-npv-out 300ms cubic-bezier(.4, 0, 1, 1) both; }`,
         '  @keyframes sc-npv-in { from { opacity: 0; transform: translateX(56px); } }',
@@ -48,7 +49,7 @@ export function compileLyricsMotion(theme: Pick<Theme, 'lyrics' | 'layout'>): st
     '@media (prefers-reduced-motion: no-preference) {',
     `  ${vt}::view-transition-group(*) { animation-duration: 400ms !important; animation-timing-function: ${EASE} !important; }`,
     `  ${vt}::view-transition-old(root), ${vt}::view-transition-new(root) { animation-duration: 280ms !important; }`,
-    `  ${S.LYRICS_VIEW_CLOSING} ${S.NPV_SCROLL_VIEWPORT} { view-transition-name: ${PANEL_CONTENT_LAYER}; }`,
+    `  ${filterable(`${S.LYRICS_VIEW_CLOSING} ${S.NPV_SCROLL_VIEWPORT}`)} { view-transition-name: ${PANEL_CONTENT_LAYER}; }`,
     `  ${[...PANEL_FOREGROUND_LAYERS, PANEL_CONTENT_LAYER].map(layer => `${vt}::view-transition-group(${layer})`).join(', ')} { z-index: 1; }`,
     ...lines,
     '  @keyframes sc-lyric-in { from { opacity: 0; transform: translateY(14px); } }',

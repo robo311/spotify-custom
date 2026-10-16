@@ -12,6 +12,7 @@ function setup() {
   const engine = startAudioEngine({
     store,
     helperConnected: true,
+    worker: () => null, // the scene runs on the page here (render/host.test.ts covers the worker)
     send,
     onPlaying: fn => {
       setPlaying = fn

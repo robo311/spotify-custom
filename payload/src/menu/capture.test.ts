@@ -45,6 +45,19 @@ describe('itemFacts', () => {
     facts.setOpen?.(true)
     expect(setIsOpen).toHaveBeenCalledWith(true)
   })
+
+  it('names "Hide on this album" (no menuAction) by its ban props, in a list and in the player bar', () => {
+    const ctx = { contextUri: 'spotify:album:1', trackUri: TRACK, contextName: 'GO HARD' }
+    const inList = itemFacts([{ role: 'menuitem' }, { canBan: true, isBanned: false, canRemoveFromContext: false, ...ctx }])
+    // Live on 1.3.4: the player bar's menu has no canBan, and sometimes no isBanned either.
+    const inPlayerBar = itemFacts([{ role: 'menuitem' }, { canRemoveFromContext: false, provider: 'context', ...ctx }])
+    expect([inList.key, inPlayerBar.key]).toEqual(['hide-in-context', 'hide-in-context'])
+  })
+
+  it("never renames an item that has its own menuAction, even with the song's context props nearer", () => {
+    const facts = itemFacts([{ contextUri: 'spotify:album:1', trackUri: TRACK, contextName: 'x' }, { menuAction: 'exclude-from-taste-profile' }])
+    expect(facts.key).toBe('exclude-from-taste-profile')
+  })
 })
 
 describe('readMenu', () => {
@@ -66,6 +79,14 @@ describe('readMenu', () => {
     expect(m.items[3]).toMatchObject({ disabled: true, checked: true, divider: 'both', submenu: false })
     expect(m.song).toBe(true)
     expect(m.uris).toEqual([TRACK, 'spotify:track:2'])
+  })
+
+  it('keeps a picture icon (Remove from Liked Songs shows the Liked Songs cover, not an svg)', () => {
+    const item = li('Remove from Liked Songs', [{ menuAction: 'add-to-liked-songs' }, { uri: TRACK }])
+    item.querySelector('svg')?.replaceWith(Object.assign(document.createElement('img'), { src: 'https://misc.scdn.co/liked-songs/liked-songs-64.jpg' }))
+    const [read] = readMenu(menu(item)).items
+    expect(read.icon).toBeNull()
+    expect(read.image).toBe('https://misc.scdn.co/liked-songs/liked-songs-64.jpg')
   })
 
   it('is not a song menu when no item is about a song', () => {

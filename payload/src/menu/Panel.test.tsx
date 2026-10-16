@@ -21,6 +21,13 @@ describe('Panel', () => {
     expect(labelsWithIconSlot(rows)).toEqual([true, true])
   })
 
+  it("draws a picture icon at icon size (Spotify's Liked Songs cover on Remove from Liked Songs)", () => {
+    const el = document.createElement('div')
+    const rows: PanelRow[] = [{ kind: 'item', entry: { id: 'a', label: 'Remove from Liked Songs', icon: { kind: 'image', src: 'https://x/liked.jpg' } } }]
+    render(h(Panel, { rows, label: 'Menu' }), el)
+    expect(el.querySelector('.icon img')?.getAttribute('src')).toBe('https://x/liked.jpg')
+  })
+
   it('adds no empty icon column to a panel without icons', () => {
     const rows: PanelRow[] = [
       { kind: 'item', entry: { id: 'a', label: '5 minutes' } },

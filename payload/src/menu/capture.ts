@@ -10,6 +10,8 @@ export interface CapturedItem extends LiveItem {
   label: string
   /** A clone of Spotify's icon. */
   icon: SVGElement | null
+  /** A picture Spotify shows instead of an icon (the Liked Songs cover on "Remove from Liked Songs"). */
+  image: string | null
   disabled: boolean
   checked: boolean
   /** Opens one of Spotify's submenus. */
@@ -58,6 +60,16 @@ export interface ItemFacts {
   setOpen: ((open: boolean) => void) | null
 }
 
+/**
+ * Items Spotify gives no menuAction, named by props only they carry. "Hide on this album" (1.3.4) is the song's
+ * hide-in-context toggle. Its props vary by place and state (canBan, isBanned, provider come and go); seen every time:
+ * contextUri, trackUri and contextName. The key is ours, and only used when the item has no menuAction.
+ */
+const isString = (v: unknown) => typeof v === 'string'
+const UNNAMED: readonly { key: string; matches: (p: Props) => boolean }[] = [
+  { key: 'hide-in-context', matches: p => isString(p.contextUri) && isString(p.trackUri) && isString(p.contextName) },
+]
+
 const DIVIDERS = new Set(['before', 'after', 'both'])
 const isDivider = (v: unknown): v is NonNullable<LiveItem['divider']> => typeof v === 'string' && DIVIDERS.has(v)
 
@@ -77,6 +89,7 @@ export function itemFacts(chain: readonly Props[]): ItemFacts {
       facts.setOpen = open => fn(open)
     }
   }
+  facts.key ??= UNNAMED.find(u => chain.some(u.matches))?.key ?? null
   return facts
 }
 
@@ -90,11 +103,13 @@ export function readMenu(list: Element): CapturedMenu {
   list.querySelectorAll<HTMLElement>(MENU_ITEM).forEach((element, index) => {
     const facts = itemFacts(propsChain(element))
     const svg = element.querySelector('svg')
+    const img = svg ? null : element.querySelector('img')
     items.push({
       key: facts.key ?? `unknown:${index}`,
       divider: facts.divider,
       label: element.textContent.trim(),
       icon: svg ? (svg.cloneNode(true) as SVGElement) : null,
+      image: img?.getAttribute('src') ?? null,
       disabled: element.getAttribute('aria-disabled') === 'true',
       checked: element.getAttribute('aria-checked') === 'true',
       submenu: element.hasAttribute('aria-expanded'),

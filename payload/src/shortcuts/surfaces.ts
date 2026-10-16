@@ -1,11 +1,26 @@
 // Where the shortcut buttons go: song rows in the main view's track lists, rows in the right panel's Queue and
-// Recently played tabs, and the playing song in the player bar. Each surface watches one container, batched per frame,
+// Recently played tabs, the playing song in the player bar, and song suggestions in the search dropdown. Each surface watches one container, batched per frame,
 // and keeps one button group per row. Rows are reused for other songs while scrolling, so every pass re-reads each
 // row's song and the group follows it.
 import type { PlaybackState } from '../types'
-import { createGroup, type Group, type GroupOptions } from './group'
+import { BUTTON_PX, createGroup, type Group, type GroupOptions } from './group'
 import { songOfElement, type Song } from './song'
-import { HISTORY_PANEL, MAIN_VIEW, MORE_BUTTON, PANEL, PANEL_ROW, PLAYER_TITLE, PLAYER_WIDGET, ROW_ACTIONS_CELL, TRACK_ROW } from './selectors'
+import {
+  HISTORY_PANEL,
+  LAST_COLUMN_GAP_PX,
+  LAST_COLUMN_MIN_PX,
+  MAIN_VIEW,
+  MORE_BUTTON,
+  PANEL,
+  PANEL_ROW,
+  PLAYER_TITLE,
+  PLAYER_WIDGET,
+  ROW_ACTIONS_CELL,
+  SEARCH_FORM,
+  SEARCH_ROW,
+  TRACK_GRID,
+  TRACK_ROW,
+} from './selectors'
 
 /** Spotify may unmount a container (the panel when closed); a slow check re-attaches the observer. */
 const REATTACH_MS = 1000
@@ -86,8 +101,19 @@ function startRows(surface: RowSurface, settings: GroupSettings): () => void {
 
 const lastCell = (row: Element) => row.querySelector(ROW_ACTIONS_CELL)
 
+/** Widens the lists' last column by our buttons; without it they squeeze Spotify's ✓ onto the duration. */
+function widenLastColumn(buttons: number): () => void {
+  const style = document.createElement('style')
+  style.id = 'sc-shortcuts-row-width'
+  const width = LAST_COLUMN_MIN_PX + buttons * BUTTON_PX + LAST_COLUMN_GAP_PX
+  style.textContent = `${TRACK_GRID} { --last-min-width: ${String(width)}px !important; }`
+  document.head.append(style)
+  return () => style.remove()
+}
+
 export function startTrackRows(settings: GroupSettings): () => void {
-  return startRows(
+  const unwiden = widenLastColumn(settings.actions.length)
+  const stop = startRows(
     {
       container: MAIN_VIEW,
       rows: TRACK_ROW,
@@ -100,6 +126,10 @@ export function startTrackRows(settings: GroupSettings): () => void {
     },
     settings,
   )
+  return () => {
+    stop()
+    unwiden()
+  }
 }
 
 export function startQueueRows(settings: GroupSettings): () => void {
@@ -115,6 +145,24 @@ export function startQueueRows(settings: GroupSettings): () => void {
       misplaced: (row, host) => !row.contains(host),
       // Recently played rows are history; queue rows carry the uid remove-from-queue needs.
       queued: (row, song) => row.closest(HISTORY_PANEL) === null && song.uid !== null,
+    },
+    settings,
+  )
+}
+
+/** Song suggestions: before the ⋯ (Spotify's ✓ follows it). */
+export function startSearchRows(settings: GroupSettings): () => void {
+  return startRows(
+    {
+      container: SEARCH_FORM,
+      rows: SEARCH_ROW,
+      place(row, host) {
+        const menu = row.querySelector(MORE_BUTTON)?.closest('[role="gridcell"]')
+        if (menu?.parentElement) menu.parentElement.insertBefore(host, menu)
+        else row.append(host)
+      },
+      misplaced: (row, host) => !row.contains(host),
+      queued: () => false,
     },
     settings,
   )

@@ -1,9 +1,10 @@
-// Starts and stops each music-reactive effect from the settings (master switch + its own toggle) and feeds the
-// running ones the engine's levels every display frame, with the colours they follow.
+// Starts and stops each music-reactive effect from the settings (master switch + its own toggle) and keeps the scene
+// told about the colours they follow. Effects the scene paints never see the levels here; the page listens for levels
+// only while an effect on Spotify's own elements (pulse, lyrics) runs.
 import type { ReactiveLook, Store } from '../../types'
 import { coverColors } from '../../theme/cover-colors'
 import type { AudioEngine } from '../engine'
-import { NOW_PLAYING_COVER_IMAGE } from '../selectors'
+import { LYRICS_VIEW_STATE_ATTRS, NOW_PLAYING_COVER_IMAGE } from '../selectors'
 import { backdropCss, startBackdrop } from './backdrop'
 import type { EffectContext, ReactiveEffect } from './effect'
 import { startLyrics } from './lyrics'
@@ -33,16 +34,23 @@ export function startReactiveEffects(engine: AudioEngine, store: Store): () => v
 
   const motion = window.matchMedia('(prefers-reduced-motion: reduce)')
   const ctx: EffectContext = { look: store.get().active.effects.reactive, reducedMotion: motion.matches, accent: '', cover: null }
+  let sent: EffectContext | null = null
+  const sendContext = () => {
+    if (sent?.look === ctx.look && sent.accent === ctx.accent && sent.cover === ctx.cover && sent.reducedMotion === ctx.reducedMotion) return
+    sent = { ...ctx }
+    engine.paint.context(sent)
+  }
   const onMotion = () => {
     ctx.reducedMotion = motion.matches
+    sendContext()
   }
   motion.addEventListener('change', onMotion)
 
   const running = new Map<EffectKey, ReactiveEffect>()
   const start: Record<EffectKey, () => ReactiveEffect> = {
-    spectrum: startSpectrum,
+    spectrum: () => startSpectrum(engine.paint),
     pulse: startPulse,
-    background: startBackdrop,
+    background: () => startBackdrop(engine.paint),
     lyrics: () =>
       startLyrics(
         css => {
@@ -56,27 +64,43 @@ export function startReactiveEffects(engine: AudioEngine, store: Store): () => v
   let coverSrc: string | null = null
   const followColours = () => {
     ctx.accent = getComputedStyle(document.documentElement).getPropertyValue('--sc-accent').trim() || '#1ed760'
+    sendContext()
     const src = document.querySelector(NOW_PLAYING_COVER_IMAGE)?.getAttribute('src') ?? null
     if (src === coverSrc) return
     coverSrc = src
+    const setCover = (cover: string | null) => {
+      if (src !== coverSrc) return
+      ctx.cover = cover
+      sendContext()
+    }
     if (!src) {
-      ctx.cover = null
+      setCover(null)
       return
     }
     coverColors(src).then(
-      colors => {
-        if (src === coverSrc) ctx.cover = colors.vivid
-      },
-      () => {
-        if (src === coverSrc) ctx.cover = null
-      },
+      colors => setCover(colors.vivid),
+      () => setCover(null),
     )
+  }
+
+  let stopLevels: (() => void) | null = null
+  const listenForLevels = () => {
+    const needed = [...running.values()].some(effect => effect.update !== undefined && (effect.wantsLevels?.() ?? true))
+    if (needed && !stopLevels) {
+      stopLevels = engine.onLevels(levels => {
+        for (const effect of running.values()) effect.update?.(levels, ctx)
+      })
+    } else if (!needed && stopLevels) {
+      stopLevels()
+      stopLevels = null
+    }
   }
 
   let timer: ReturnType<typeof setInterval> | null = null
   const sync = () => {
     const s = store.get()
     ctx.look = s.active.effects.reactive
+    sendContext()
     const wanted = new Set(wantedEffects(s.settings.reactive.enabled, ctx.look))
     for (const [key, effect] of running) {
       if (wanted.has(key)) continue
@@ -84,11 +108,13 @@ export function startReactiveEffects(engine: AudioEngine, store: Store): () => v
       running.delete(key)
     }
     for (const key of wanted) if (!running.has(key)) running.set(key, start[key]())
+    listenForLevels()
     if (running.size > 0 && timer === null) {
       followColours()
       timer = setInterval(() => {
         followColours()
         for (const effect of running.values()) effect.heal()
+        listenForLevels()
       }, HEAL_MS)
     } else if (running.size === 0 && timer !== null) {
       clearInterval(timer)
@@ -104,14 +130,15 @@ export function startReactiveEffects(engine: AudioEngine, store: Store): () => v
     lastSettings = s.settings.reactive
     sync()
   })
-  const stopLevels = engine.onLevels(levels => {
-    for (const effect of running.values()) effect.update(levels, ctx)
-  })
+  // The lyrics view opening or closing: lyrics react may start or stop wanting levels now, not at the next heal.
+  const lyricsView = new MutationObserver(listenForLevels)
+  lyricsView.observe(document.documentElement, { attributes: true, attributeFilter: LYRICS_VIEW_STATE_ATTRS })
   sync()
 
   return () => {
     unsubscribe()
-    stopLevels()
+    lyricsView.disconnect()
+    stopLevels?.()
     motion.removeEventListener('change', onMotion)
     if (timer !== null) clearInterval(timer)
     for (const effect of running.values()) effect.dispose()

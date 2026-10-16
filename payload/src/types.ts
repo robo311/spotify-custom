@@ -99,6 +99,18 @@ export interface LayoutConfig {
   lyricsLibraryFloating: boolean
   /** The same for the column on the other side: our Now playing column, or Spotify's Queue/Friends panel when open. */
   lyricsPanelFloating: boolean
+  /** The suggestions dropdown under the top bar's search box. */
+  searchDropdown: SearchDropdownLayout
+}
+
+/** How the search suggestions are laid out. Defaults are Spotify's own look. */
+export interface SearchDropdownLayout {
+  density: 'spotify' | 'compact' | 'dense' // space around each row
+  imageSize: number // px, covers and the round search-term icons (Spotify: 48)
+  textSize: number // px, row titles; subtitles stay 2px smaller (Spotify: 16)
+  maxHeight: number | null // px the dropdown grows to before it scrolls; null = Spotify's
+  hideHints: boolean // the ↑↓ Navigate / Enter Search bar at the top
+  hideTypeLabel: boolean // "Song •", "Playlist •" before the artist or owner
 }
 
 /** Where the lyrics background comes from. Applies to the lyrics page and the lyrics preview card in the Now playing panel. */
@@ -301,8 +313,14 @@ export type ShortcutAction =
   | 'share'
   | 'remove-from-queue'
 
-/** Where shortcut buttons appear: song rows in lists · rows in the queue / recently played panel · the player bar song. */
-export type ShortcutSurface = 'rows' | 'queue' | 'playerBar'
+/**
+ * Where shortcut buttons appear: song rows in lists · rows in the queue / recently played panel · the player bar song ·
+ * song suggestions in the top bar's search dropdown.
+ */
+export type ShortcutSurface = 'rows' | 'queue' | 'playerBar' | 'search'
+
+/** The places where Spotify draws its own add button (the + / ✓ beside a song); queue rows have none. */
+export type SpotifyAddSurface = Exclude<ShortcutSurface, 'queue'>
 
 export interface MenuSettings {
   enabled: boolean // false = Spotify's own menus, untouched
@@ -310,6 +328,7 @@ export interface MenuSettings {
   custom: MenuEntry[] // the layout used when preset = custom
   playlists: PlaylistMenuSettings
   shortcuts: Record<ShortcutSurface, ShortcutAction[]> // ≤ SHORTCUTS_MAX each, in order
+  hideSpotifyAdd: SpotifyAddSurface[] // where Spotify's own add button is hidden
 }
 
 /** Personal (never in share codes): turning capture on is a permission decision, and sync depends on the speakers. */

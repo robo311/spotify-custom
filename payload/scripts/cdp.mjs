@@ -42,7 +42,7 @@ export async function connect() {
     if (r.exceptionDetails) throw new Error(r.exceptionDetails.exception?.description || r.exceptionDetails.text)
     return r.result.value
   }
-  return { send, evaluate, close: () => ws.close() }
+  return { ws, send, evaluate, close: () => ws.close() }
 }
 
 async function main() {

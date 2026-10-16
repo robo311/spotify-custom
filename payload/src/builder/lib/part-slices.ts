@@ -1,7 +1,7 @@
 // Which bits of the theme a part's editor can change, as edit-session slices: the part's own style, whether it's
 // hidden, and any part-specific extras (e.g. the progress bar's animation style, Home's card layout).
-import type { HomeStyle, IconChoice, PartStyle, ProgressStyle, Theme } from '../../types'
-import { defaultHomeStyle, SPOTIFY_NPV_CARD_GAP } from '../../theme/model'
+import type { HomeStyle, IconChoice, PartStyle, ProgressStyle, SearchDropdownLayout, Theme } from '../../types'
+import { defaultHomeStyle, defaultSearchDropdown, SPOTIFY_NPV_CARD_GAP } from '../../theme/model'
 import type { Slice } from './edit-session'
 import { lookup } from './record'
 import { isPartEdited, resetPart, setHidden } from './theme-edits'
@@ -53,6 +53,15 @@ const EXTRA_SLICES: Partial<Record<string, ExtraSlice[]>> = {
   ],
   homeButton: [iconSlice('home')],
   searchBox: [iconSlice('search'), iconSlice('browse')],
+  searchDropdown: [
+    {
+      read: (t: Theme) => t.layout.searchDropdown,
+      write: (t: Theme, v: unknown) => {
+        t.layout.searchDropdown = { ...(v as SearchDropdownLayout) }
+      },
+      reset: defaultSearchDropdown(),
+    },
+  ],
   topBar: [iconSlice('notifications'), iconSlice('friends')],
   shortcuts: [homeStyleSlice('shortcutSize'), homeStyleSlice('shortcutColumns')],
   npvCards: [

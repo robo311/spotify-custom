@@ -47,6 +47,12 @@ const NOTE = 'M6 12V3.5l6.5-1.5V10.5M6 12a1.75 1.75 0 1 1-3.5 0 1.75 1.75 0 0 1 
 
 function IconView({ icon }: { icon: Icon }) {
   if (icon.kind === 'svg') return <SvgClone node={icon.node} />
+  if (icon.kind === 'image')
+    return (
+      <span class="icon" aria-hidden="true">
+        <img src={icon.src} alt="" draggable={false} />
+      </span>
+    )
   if (icon.kind === 'folder')
     return (
       <span class="cover empty icon" aria-hidden="true">

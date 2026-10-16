@@ -17,6 +17,7 @@ import {
   RectangleHorizontal,
   Search,
   SquareStack,
+  TextSearch,
   TriangleAlert,
   Volume2,
 } from 'lucide-static'
@@ -43,6 +44,7 @@ export const PART_ICONS: Readonly<Partial<Record<string, string>>> = {
   progressBar: Clock3,
   volumeBar: Volume2,
   searchBox: Search,
+  searchDropdown: TextSearch,
   homeButton: House,
   shortcuts: LayoutGrid,
   stats: ChartColumn,

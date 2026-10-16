@@ -1,6 +1,6 @@
 import type { PlaybackState } from '../types'
 import { startShortcuts, type ShortcutSource } from './index'
-import { ALBUM, ARTIST, menuSettings, setRowSong, TRACK_A, TRACK_B, TRACK_LIST_HTML } from './fixtures'
+import { ALBUM, ARTIST, menuSettings, SEARCH_DROPDOWN_HTML, SEARCH_FORM_HTML, setRowSong, TRACK_A, TRACK_B, TRACK_LIST_HTML } from './fixtures'
 
 const flush = async () => {
   await new Promise(resolve => setTimeout(resolve, 0))
@@ -67,6 +67,17 @@ describe('song rows', () => {
     const labels = [...(document.querySelector('.sc-shortcuts')?.shadowRoot?.querySelectorAll('button') ?? [])].map(b => b.getAttribute('aria-label'))
     expect(labels).toEqual(['Copy song link', 'Add to queue'])
     expect(button('share').tabIndex).toBe(-1)
+  })
+
+  it("widens the list's last column by the buttons, so Spotify's ✓ and the duration keep their room", () => {
+    const widen = () => [...document.querySelectorAll('style')].map(s => s.textContent).find(t => t.includes('--last-min-width'))
+    let settings = menuSettings({ rows: ['add-to-queue', 'add-to-playlist'] })
+    const controller = startShortcuts(() => settings, fakeSource().source)
+    expect(widen()).toContain('--last-min-width: 188px !important') // 120 + 2 × 28 + 12
+    settings = menuSettings({ rows: [] })
+    controller.refresh()
+    expect(widen()).toBeUndefined()
+    controller.dispose()
   })
 
   it('adds nothing for a place without shortcuts', async () => {
@@ -204,6 +215,26 @@ describe('song rows', () => {
   })
 })
 
+describe("Spotify's own add button", () => {
+  it('is hidden only where the user removed it, and comes back on dispose', () => {
+    document.body.innerHTML = `${TRACK_LIST_HTML}<div data-testid="now-playing-widget"><button id="bar-add" aria-checked="false"></button></div>`
+    const rowAdd = document.getElementById('spotify-add')
+    const barAdd = document.getElementById('bar-add')
+    let settings = { ...menuSettings({}), hideSpotifyAdd: ['rows' as const] }
+    const controller = startShortcuts(() => settings, fakeSource().source)
+    const shown = (el: Element | null) => el !== null && getComputedStyle(el).display !== 'none'
+    expect(shown(rowAdd)).toBe(false)
+    expect(shown(barAdd)).toBe(true)
+    settings = { ...settings, hideSpotifyAdd: [] }
+    controller.refresh()
+    expect(shown(rowAdd)).toBe(true)
+    settings = { ...settings, hideSpotifyAdd: ['rows'] }
+    controller.refresh()
+    controller.dispose()
+    expect(shown(rowAdd)).toBe(true)
+  })
+})
+
 describe('queue panel', () => {
   const panelRow = (uri: string) =>
     `<li role="row"><div><div data-encore-id="listRowTitle" id="listrow-title-${uri}">Song</div></div><div><button data-testid="more-button"></button></div></li>`
@@ -233,6 +264,71 @@ describe('queue panel', () => {
     button('remove-from-queue', queued).click()
     await flush()
     expect(fns.removeFromQueue).toHaveBeenCalledWith([{ uri: TRACK_A, uid: 'q1' }])
+  })
+
+  it("stacks the buttons above the row's full-size click layer, like Spotify's own ⋯ (clicks went to the row)", async () => {
+    stop = start(() => menuSettings({ queue: ['add-to-queue'] }), fakeSource().source)
+    await flush()
+    const css = document.querySelector('.sc-shortcuts')?.shadowRoot?.querySelector('style')?.textContent ?? ''
+    expect(css).toMatch(/:host \{[^}]*position: relative; z-index: 1;/)
+  })
+})
+
+describe('search suggestions', () => {
+  const songRow = () => {
+    const el = document.querySelector('#search-dropdown [role="row"][aria-rowindex="1"]')
+    if (!el) throw new Error('no song row')
+    return el
+  }
+  const openDropdown = () => {
+    document.querySelector('form[role="search"]')?.insertAdjacentHTML('beforeend', SEARCH_DROPDOWN_HTML)
+    setRowSong(songRow(), TRACK_A, { album: ALBUM, artist: ARTIST })
+  }
+
+  beforeEach(() => {
+    document.body.innerHTML = SEARCH_FORM_HTML
+  })
+
+  it("puts the buttons on song suggestions only, before Spotify's ⋯, when the dropdown opens", async () => {
+    const { source, fns } = fakeSource()
+    stop = start(() => menuSettings({ search: ['add-to-queue', 'go-to-album'] }), source)
+    await flush()
+    openDropdown()
+    await flush()
+    expect(hosts()).toHaveLength(1)
+    expect(document.getElementById('song-trailing')?.firstElementChild?.className).toBe('sc-shortcuts')
+    expect(document.getElementById('song-menu')?.previousElementSibling?.className).toBe('sc-shortcuts')
+    button('go-to-album').click()
+    button('add-to-queue').click()
+    await flush()
+    expect(fns.navigate).toHaveBeenCalledWith('/album/61PCQeDaTD2gwfpHFikpbh')
+    expect(fns.addToQueue).toHaveBeenCalledWith([TRACK_A])
+  })
+
+  it('drops the buttons when the dropdown closes and adds them again when it reopens', async () => {
+    stop = start(() => menuSettings({ search: ['share'] }), fakeSource().source)
+    openDropdown()
+    await flush()
+    document.getElementById('search-dropdown')?.remove()
+    await flush()
+    expect(hosts()).toHaveLength(0)
+    openDropdown()
+    await flush()
+    expect(hosts()).toHaveLength(1)
+  })
+
+  it("hides Spotify's ✓ on song suggestions only when the user removed it there", () => {
+    document.body.innerHTML = SEARCH_FORM_HTML
+    openDropdown()
+    const shown = (id: string) => {
+      const el = document.getElementById(id)
+      return el !== null && getComputedStyle(el).display !== 'none'
+    }
+    const controller = startShortcuts(() => ({ ...menuSettings({}), hideSpotifyAdd: ['search'] }), fakeSource().source)
+    expect(shown('song-save')).toBe(false)
+    expect(shown('playlist-save')).toBe(true)
+    controller.dispose()
+    expect(shown('song-save')).toBe(true)
   })
 })
 

@@ -1,7 +1,8 @@
 // The shortcut actions as a data table: label, icon, when the button applies to a song, and what a click does.
 // Icons and labels match the studio's picker (builder/tabs/menu/ShortcutsSection.tsx).
-import { Disc3, Heart, Link, ListEnd, ListPlus, ListX, Radio, UserRound } from 'lucide-static'
+import { Disc3, Heart, Link, ListX, Radio, UserRound } from 'lucide-static'
 import type { ShortcutAction } from '../types'
+import { ADD_TO_PLAYLIST_ICON, ADD_TO_QUEUE_ICON } from './icons'
 import type { Likes } from './likes'
 import type { Song } from './song'
 import type { ShortcutSource } from './source'
@@ -41,7 +42,7 @@ const always = () => true
 export const ACTIONS: Record<ShortcutAction, ActionDef> = {
   'add-to-queue': {
     label: 'Add to queue',
-    icon: ListEnd,
+    icon: ADD_TO_QUEUE_ICON,
     failure: "Couldn't add to queue",
     applies: always,
     run: async ({ source, song }) => {
@@ -64,7 +65,7 @@ export const ACTIONS: Record<ShortcutAction, ActionDef> = {
   },
   'add-to-playlist': {
     label: 'Add to playlist',
-    icon: ListPlus,
+    icon: ADD_TO_PLAYLIST_ICON,
     failure: "Couldn't open your playlists",
     applies: always,
     run: ({ source, song, button }) => {

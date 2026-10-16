@@ -3,12 +3,14 @@ import { glowHost } from '../../theme/effects'
 import { defaultReactiveLook } from '../../theme/model'
 import { AUDIO_BANDS } from '../frame'
 import type { AudioLevels } from '../envelope'
-import { backdropColor, backdropHost, breath } from './backdrop'
+import { backdropColor, breath } from '../render/backdrop-paint'
+import { layoutBars, litBlocks, PEAK_HOLD_MS, reach, stepPeak } from '../render/spectrum-paint'
+import { backdropHost } from './backdrop'
 import { wantedEffects } from './controller'
 import type { EffectContext } from './effect'
 import { findActiveLineSelector, lyricKeyframes, lyricPosition, lyricsCss } from './lyrics'
 import { beatOnset, kickScale, startPulse } from './pulse'
-import { layoutBars, litBlocks, PEAK_HOLD_MS, playedShare, reach, stepPeak } from './spectrum'
+import { playedShare } from './spectrum'
 
 function sheet(css: string): CSSStyleSheet {
   const s = new CSSStyleSheet()

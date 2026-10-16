@@ -20,9 +20,11 @@ export const LYRICS_COLUMN_SLOT = {
   collapsedAttr: 'data-sc-lyrics-npv-collapsed',
   collapsedWidth: 48,
   slidingAttr: 'data-sc-lyrics-npv-sliding',
-  grid: S.LAYOUT_GRID,
+  grid: S.LAYOUT_GRID_FIND, // looked up from JS: the structural form, independent of parts/layout-marks.ts
 } as const
 export const COLUMN_HOST = `#${LYRICS_COLUMN_SLOT.hostId}`
+/** On <html> while the column stands beside the lyrics (Spotify's right panel takes its place when that opens). */
+export const COLUMN_SHOWN = `${S.LYRICS_VIEW_OPEN}[${LYRICS_COLUMN_SLOT.readyAttr}]:not(${S.RIGHT_PANEL_OPEN})`
 
 /**
  * Hooks for our animated lyrics (theme.lyrics.animated; drawn by src/lyrics-view): its host goes inside the lyrics
@@ -32,9 +34,13 @@ export const COLUMN_HOST = `#${LYRICS_COLUMN_SLOT.hostId}`
 export const LYRICS_VIEW_SLOT = {
   hostId: 'sc-lyrics-view',
   ownAttr: 'data-sc-lyrics-own',
-  viewHost: S.LYRICS_CINEMA_HOST,
-  grid: S.LAYOUT_GRID,
+  viewHost: S.LYRICS_CINEMA_HOST_FIND, // looked up from JS
+  grid: S.LAYOUT_GRID_FIND,
   open: S.LYRICS_VIEW_OPEN,
+  /** Lyrics turned off inside the open view: Spotify keeps the view and shows the big cover instead. */
+  lyricsOff: `${S.PLAYER_BAR} ${S.LYRICS_BUTTON}[aria-pressed="false"]`,
+  /** Watched for the lyrics button: Spotify swaps in a new one when it turns (no attribute on <html> changes). */
+  playerBar: S.PLAYER_BAR,
   line: `${S.LYRICS_CINEMA_BG} ${S.LYRICS_LINE}`,
   colorHost: S.LYRICS_COLOR_HOSTS,
 } as const

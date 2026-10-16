@@ -110,6 +110,22 @@ export function positionOf(state: unknown, now: number): number | null {
   return Math.max(0, duration ? Math.min(duration, position) : position)
 }
 
+/** Where playback was at a moment Spotify reported (it reports on seeks, track changes, pause and resume only). */
+export interface PlaybackPosition {
+  uri: string | null
+  positionMs: number
+  at: number // Date.now() clock
+  paused: boolean
+}
+
+/** Pure: Spotify's player state → its last reported position, or null without a track. */
+export function mapPosition(state: unknown): PlaybackPosition | null {
+  const positionMs = num(field(state, 'positionAsOfTimestamp'))
+  const at = num(field(state, 'timestamp'))
+  if (!isRecord(field(state, 'item')) || positionMs === null || at === null) return null
+  return { uri: text(field(field(state, 'item'), 'uri')) || null, positionMs, at, paused: field(state, 'isPaused') !== false }
+}
+
 // ---- subscription ----
 
 /** Calls fn now and whenever the mapped state changes (player events batched per frame). Returns unsubscribe. */
@@ -158,6 +174,12 @@ export function onPlayback(fn: (s: PlaybackState | null) => void): () => void {
     return () => undefined
   }
   return subscribePlayback(cached, fn)
+}
+
+/** Follows Spotify's position reports (seeks, track changes, pause, resume). Silent if the player can't be found. */
+export function onPosition(fn: (p: PlaybackPosition | null) => void): () => void {
+  cached ??= findPlayerInFiber(rootFiber())
+  return cached ? subscribeMapped(cached, mapPosition, fn) : () => undefined
 }
 
 /** Where playback is now, in ms (null without a track, or if Spotify's player can't be found). */

@@ -136,6 +136,10 @@ export function ReactiveTab() {
             })
           }
         />
+        <span class="b-hint">
+          While music plays, these effects keep redrawing part of the window, so Spotify uses more CPU and GPU (and
+          battery on a laptop). Each effect you turn on adds a little.
+        </span>
         <div class="b-rx-status" data-tone={line.tone} role="status">
           <span class="b-rx-status__lamp" aria-hidden="true" />
           <span class="b-rx-status__title">{line.title}</span>

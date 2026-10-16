@@ -150,6 +150,24 @@ export const PART_RECIPES: PartRecipe[] = [
     },
   },
   {
+    id: 'searchDropdown',
+    label: 'Search suggestions',
+    description: 'The dropdown under the search box as you type',
+    selectors: [S.SEARCH_DROPDOWN],
+    hideable: false,
+    // Only there while you type.
+    pageSpecific: true,
+    // The panel inside paints var(--background-elevated-highlight) with 8px corners. Spotify hard-codes the rows'
+    // highlight white at 10%, and the titles inside links white too (a:not([data-encore-id])): both need the colour.
+    targets: {
+      background: [S.SEARCH_PANEL_CHILD],
+      text: [ROOT, S.LIST_ROW_TITLE, { sel: S.SEARCH_ROW_HIGHLIGHT, wash: 10 }],
+      accent: [ROOT],
+      radius: [S.SEARCH_PANEL_CHILD],
+    },
+    radius: 8,
+  },
+  {
     id: 'homeButton',
     label: 'Home button',
     description: 'The round Home button in the top bar',

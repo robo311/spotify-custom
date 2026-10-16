@@ -2,13 +2,26 @@
 // Allowed hooks: data-testid, data-encore-id, semantic tags/roles, Encore set classes, and three readable layout ids
 // (Desktop_LeftSidebar_Id, main-view, Desktop_PanelContainer_Id) that Spotify uses as landmarks — never hashed classes.
 
-/** The CSS grid that lays out top bar, sidebars, main view and player bar (grid-template with named areas). */
-export const LAYOUT_GRID = '[data-testid="root"] > div:has(> #Desktop_LeftSidebar_Id)'
+/**
+ * The CSS grid that lays out top bar, sidebars, main view and player bar (grid-template with named areas), found by
+ * structure. CSS uses the marks instead (parts/layout-marks.ts): this :has() form, tried on every element, made up a
+ * quarter of our style cost. JS lookups keep the _FIND forms, which work without the marks.
+ */
+export const LAYOUT_GRID_FIND = '[data-testid="root"] > div:has(> #Desktop_LeftSidebar_Id)'
+export const GRID_ATTR = 'data-sc-grid'
+export const GRID_ITEM_ATTR = 'data-sc-grid-item'
+/** On a grid item while it hosts a full-window scroll view (the lyrics or video view): its direct child scrolls. */
+export const GRID_SCROLL_ATTR = 'data-sc-grid-scroll'
+/** OverlayScrollbars' attribute on the scroll hosts it manages (it adds it when it starts). */
+export const SCROLL_HOST_ATTR = 'data-overlayscrollbars'
+export const LAYOUT_GRID = `[${GRID_ATTR}]`
+/** A direct child of the layout grid (every one is marked). */
+export const GRID_ITEM = `[${GRID_ITEM_ATTR}]`
 
 export const LEFT_SIDEBAR = '#Desktop_LeftSidebar_Id'
 export const MAIN_VIEW = '#main-view'
 /** Grid item that hosts the right panel (Now Playing / queue). The landmark id sits deeper, so match the item by :has. */
-export const RIGHT_SIDEBAR = `${LAYOUT_GRID} > :has(#Desktop_PanelContainer_Id)`
+export const RIGHT_SIDEBAR = `${GRID_ITEM}:has(#Desktop_PanelContainer_Id)`
 export const TOP_BAR = '[data-testid="global-nav-bar"]'
 export const PLAYER_BAR = '[data-testid="now-playing-bar"]'
 export const RESIZE_BAR = '[data-testid="LayoutResizer__resize-bar"]'
@@ -37,6 +50,23 @@ export const VOLUME_BAR = '[data-testid="volume-bar"]'
 export const PROGRESS_BAR = '[data-testid="progress-bar"]'
 export const SEARCH_FORM = `${TOP_BAR} form[role="search"]`
 export const SEARCH_INPUT = '[data-testid="search-input"]'
+/** The suggestions under the search box; Spotify sizes this box to the panel's max height (398px on 1.3.4). */
+export const SEARCH_DROPDOWN = `${SEARCH_FORM} [data-testid="search-dropdown"]`
+/** The visible panel inside it (an OverlayScrollbars host): its background, corners and max height. */
+export const SEARCH_PANEL_CHILD = '> [data-overlayscrollbars]'
+export const SEARCH_PANEL = `${SEARCH_DROPDOWN} ${SEARCH_PANEL_CHILD}`
+export const LIST_ROW_TITLE = '[data-encore-id="listRowTitle"]'
+/** A row's highlight layer under the pointer or the arrow keys (relative to the dropdown). */
+export const SEARCH_ROW_HIGHLIGHT = '[data-encore-id="listRow"]:is(:hover, [aria-selected="true"])::after'
+/** The ↑↓ Navigate / Enter Search bar right above the list. */
+export const SEARCH_HINTS = `${SEARCH_DROPDOWN} :has(+ [data-encore-id="typeList"])`
+export const SEARCH_ROW = `${SEARCH_DROPDOWN} [data-encore-id="listRow"]`
+/** Covers sit in a box Spotify sizes inline; search terms show a round box with a magnifier in it. */
+export const SEARCH_ROW_IMAGES = [`${SEARCH_ROW} div:has(> img[data-testid="entity-image"])`, `${SEARCH_ROW} a[aria-hidden="true"] > div`]
+export const SEARCH_TERM_ICON = `${SEARCH_ROW} svg[data-testid="autocomplete"]`
+export const SEARCH_ROW_TITLE = `${SEARCH_ROW} [data-encore-id="listRowTitle"]`
+export const SEARCH_ROW_SUBTITLE = `${SEARCH_ROW} [data-encore-id="listRowSubtitle"]`
+export const ENCORE_TEXT = '[data-encore-id="text"]'
 
 export const HOME_BUTTON = `${TOP_BAR} [data-testid="home-button"]`
 /** Holds Home + search. Spotify centres it as an absolute full-width layer over the bar's left and right groups. */
@@ -186,16 +216,29 @@ export const NPV_CARDS_134 = `${NPV_ROOT} [data-sc-panel-key]:not([data-sc-panel
  * duringexit → postexit. It counts as open from duringenter up to and including preexit: preexit is when Spotify's
  * close transition snapshots the "before" picture, so the open layout must still hold then.
  */
-export const LYRICS_VIEW_OPEN =
-  ':root:is([data-cinema-npv-duringenter], [data-cinema-npv-postenter], [data-cinema-npv-preexit], ' +
-  '[data-cinema-library-npv-duringenter], [data-cinema-library-npv-postenter], [data-cinema-library-npv-preexit])'
+export const LYRICS_OPEN_STATES = [
+  '[data-cinema-npv-duringenter]',
+  '[data-cinema-npv-postenter]',
+  '[data-cinema-npv-preexit]',
+  '[data-cinema-library-npv-duringenter]',
+  '[data-cinema-library-npv-postenter]',
+  '[data-cinema-library-npv-preexit]',
+] as const
+/** Rendered CSS spells these state selectors out per attribute (parts/state-selectors.ts): keeps them cheap. */
+export const LYRICS_VIEW_OPEN = `:root:is(${LYRICS_OPEN_STATES.join(', ')})`
 /** The close animation itself (after preexit's "before" snapshot); the Now playing panel is mounted again by then. */
-export const LYRICS_VIEW_CLOSING = ':root:is([data-cinema-npv-duringexit], [data-cinema-library-npv-duringexit])'
+export const LYRICS_CLOSING_STATES = ['[data-cinema-npv-duringexit]', '[data-cinema-library-npv-duringexit]'] as const
+export const LYRICS_VIEW_CLOSING = `:root:is(${LYRICS_CLOSING_STATES.join(', ')})`
 /**
  * Attribute states on <html> while Spotify's right panel (queue, friend activity, …) is open. Spotify then narrows
  * the lyrics view to the left so the panel gets the right column. Combine with LYRICS_VIEW_OPEN (both on :root).
  */
-export const RIGHT_PANEL_OPEN = ':is([data-right-sidebar-open-duringenter], [data-right-sidebar-open-postenter], [data-right-sidebar-open-preexit])'
+export const RIGHT_PANEL_STATES = [
+  '[data-right-sidebar-open-duringenter]',
+  '[data-right-sidebar-open-postenter]',
+  '[data-right-sidebar-open-preexit]',
+] as const
+export const RIGHT_PANEL_OPEN = `:is(${RIGHT_PANEL_STATES.join(', ')})`
 export const LYRICS_LINE = '[data-testid="lyrics-line"]'
 /** Elements on which Spotify sets the cover-derived lyrics colours inline (cinema view and preview card). */
 export const LYRICS_COLOR_HOSTS = '[style*="--lyrics-color-background"]'
@@ -206,7 +249,8 @@ export const LYRICS_CINEMA_BG = '[style*="--cinema-mode-bg-color-from"]'
  * is a scroll host. Never find it through LYRICS_CINEMA_BG: Spotify rewrites inline styles every frame while the
  * view opens and closes, and a :has() on style attributes re-runs on each rewrite (measured ~9 ms each: the lag).
  */
-export const LYRICS_CINEMA_HOST = `${LAYOUT_GRID} > :has(> [data-overlayscrollbars])`
+export const LYRICS_CINEMA_HOST = `[${GRID_SCROLL_ATTR}]:has(> [${SCROLL_HOST_ATTR}])`
+export const LYRICS_CINEMA_HOST_FIND = `${LAYOUT_GRID_FIND} > :has(> [data-overlayscrollbars])`
 /** The view's own header row (title + action buttons), floating over the top of the lyrics. */
 /** Spotify's music video player ("Switch to video"), shown in the same cinema view as the lyrics. */
 export const VIDEO_PLAYER_CINEMA = '[data-testid="video-player-cinema"]'

@@ -5,6 +5,7 @@
 import type { ProgressStyle } from '../types'
 import { PLAY_GLYPHS } from '../icons'
 import { renderRules, type CssRule } from './css'
+import { SHEEN_ANIMATION, SHEEN_ATTR } from './progress-sheen'
 import * as S from './selectors'
 
 /** Scopes: the bar at rest, while hovered/keyboard-focused, and while music plays (no play triangle shown). */
@@ -86,7 +87,8 @@ const FLOW: CssRule[] = [
       'pointer-events': 'none',
     },
   },
-  { selector: `${PLAYING} ${S.PB_FILL_CLIP}::after`, decls: { opacity: '1', animation: `sc-pb-sheen 2.5s ${SWEEP} infinite` } },
+  // Sweeps only while progress-sheen.ts wants it (after a song change or seek, and while hovering the player bar).
+  { selector: `:root[${SHEEN_ATTR}] ${PLAYING} ${S.PB_FILL_CLIP}::after`, decls: { opacity: '1', animation: `${SHEEN_ANIMATION} 2.5s ${SWEEP} infinite` } },
 ]
 
 // wave: the played part becomes a moving sine (Android-style squiggle); the rest stays a flat track. When
@@ -220,7 +222,7 @@ const STRIPES: CssRule[] = [
 // in the rules above.
 const KEYFRAMES: Record<Exclude<ProgressStyle, 'spotify'>, string> = {
   glow: '@keyframes sc-pb-knob-pop { from { scale: 0; } to { scale: 1; } }',
-  flow: `@keyframes sc-pb-sheen { from { translate: -100% 0; } to { translate: calc(${PLAYED} - 65%) 0; } }`,
+  flow: `@keyframes ${SHEEN_ANIMATION} { from { translate: -100% 0; } to { translate: calc(${PLAYED} - 65%) 0; } }`,
   wave: `@keyframes sc-pb-wave { from { mask-position: 0 50%; } to { mask-position: ${WAVE_TILE.width}px 50%; } }`,
   segments: '@keyframes sc-pb-seg-blink { 50% { opacity: 0; } }',
   stripes: `@keyframes sc-pb-stripes { from { translate: 0 0; } to { translate: ${STRIPE_TILE}px 0; } }`,

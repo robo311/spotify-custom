@@ -4,6 +4,7 @@ import { compileParts, PARTS } from '.'
 import { compileRecipe, PART_RECIPES, type PartRecipe } from './registry'
 import { readableOn } from './style-props'
 import { mountSpotifyLayout } from './fixtures/spotify-layout'
+import { markLayout } from './layout-marks'
 import { RESIZE_BAR } from './selectors'
 import { defaultLyrics, defaultPageStyle } from '../theme/model'
 
@@ -14,11 +15,11 @@ function recipe(id: string): PartRecipe {
 }
 
 describe('PARTS registry', () => {
-  it('has the 18 curated parts with unique ids', () => {
+  it('has the 19 curated parts with unique ids', () => {
     expect(PARTS.map(p => p.id)).toEqual([
       'sidebar', 'topBar', 'main', 'rightPanel', 'playerBar', 'cards',
       'buttons', 'cardPlayButton', 'playerPlayButton', 'progressBar', 'volumeBar', 'searchBox',
-      'homeButton', 'shortcuts', 'stats', 'lyricsColumn', 'npvCards', 'shelfHeaders',
+      'searchDropdown', 'homeButton', 'shortcuts', 'stats', 'lyricsColumn', 'npvCards', 'shelfHeaders',
     ])
   })
 
@@ -30,7 +31,7 @@ describe('PARTS registry', () => {
   })
 
   it('flags parts that only exist on some pages', () => {
-    expect(PARTS.filter(p => p.pageSpecific).map(p => p.id)).toEqual(['cards', 'buttons', 'shortcuts', 'stats', 'lyricsColumn', 'npvCards', 'shelfHeaders'])
+    expect(PARTS.filter(p => p.pageSpecific).map(p => p.id)).toEqual(['cards', 'buttons', 'searchDropdown', 'shortcuts', 'stats', 'lyricsColumn', 'npvCards', 'shelfHeaders'])
   })
 
   it('never relies on hashed classes, aria-labels or text', () => {
@@ -93,6 +94,15 @@ describe('compileRecipe', () => {
     )
     expect(compileRecipe(recipe('cardPlayButton'), { background: '#ff7a59' })).not.toContain('control-button-playpause')
     expect(compileRecipe(recipe('playerPlayButton'), { background: '#ff7a59' })).toContain('[data-testid="control-button-playpause"] > span {')
+  })
+
+  it("styles the search suggestions' panel, and washes the row highlight Spotify hard-codes white in the text colour", () => {
+    const css = compileRecipe(recipe('searchDropdown'), { background: '#f4f0e8', text: '#222', radius: 14 })
+    const panel = 'form[role="search"] [data-testid="search-dropdown"] > [data-overlayscrollbars] {'
+    expect(css).toContain(panel)
+    expect(css.slice(css.indexOf(panel))).toMatch(/^[^}]*background: #f4f0e8 !important;[^}]*border-radius: 14px !important;/)
+    expect(css).toContain('[data-testid="search-dropdown"] [data-encore-id="listRow"]:is(:hover, [aria-selected="true"])::after {\n  background-color: color-mix(in oklab, #222 10%, transparent) !important;')
+    expect(css).toMatch(/\[data-testid="search-dropdown"\] \[data-encore-id="listRowTitle"\] \{[^}]*color: #222 !important;/)
   })
 
   it('colours hard-coded spots directly for text', () => {
@@ -182,6 +192,7 @@ describe('compileRecipe', () => {
       <div id="Desktop_LeftSidebar_Id"><nav id="library"></nav><div data-testid="LayoutResizer__resize-bar"></div></div>
       <div><div id="panel"><aside id="Desktop_PanelContainer_Id"></aside></div><div data-testid="LayoutResizer__resize-bar"></div></div>
     </div></div>`
+    markLayout()
     for (const [id, inner] of [['sidebar', '#library'], ['rightPanel', '#panel']] as const) {
       const css = compileRecipe(recipe(id), { radius: 18 })
       const clipped = css.split('}').filter(r => r.includes('overflow: clip')).map(r => r.slice(0, r.indexOf('{')).trim())

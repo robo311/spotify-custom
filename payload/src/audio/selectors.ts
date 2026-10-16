@@ -11,6 +11,11 @@ export const NOW_PLAYING_COVER_IMAGE = `${NOW_PLAYING_COVER} [data-testid="cover
 export const PLAY_PAUSE = '[data-testid="control-button-playpause"]'
 /** Our own theme studio button host (builder/entry). */
 export const LYRICS_LINE = '[data-testid="lyrics-line"]'
+/** Attributes Spotify sets on <html> through the lyrics view's life (opening, open, closing). */
+export const LYRICS_VIEW_STATE_ATTRS = ['preenter', 'duringenter', 'postenter', 'preexit', 'duringexit', 'postexit'].flatMap(s => [
+  `data-cinema-npv-${s}`,
+  `data-cinema-library-npv-${s}`,
+])
 /**
  * The lyrics view's scroll host: it paints the view's background and doesn't scroll (its viewport inside does). Found
  * from a line under the element carrying the view's inline background variables, so the Now playing panel's lyrics

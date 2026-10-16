@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { defaultNowPlaying } from '../theme/model'
+import { defaultNowPlaying, defaultSearchDropdown } from '../theme/model'
 import type { LayoutConfig } from '../types'
 import { compileLayout, LAYOUT_OPTIONS } from './layout'
 import { PARTS } from './registry'
@@ -18,6 +18,7 @@ const BASE: LayoutConfig = {
   lyricsNowPlayingQueue: true,
   lyricsLibraryFloating: false,
   lyricsPanelFloating: false,
+  searchDropdown: defaultSearchDropdown(),
 }
 
 describe('LAYOUT_OPTIONS', () => {

@@ -4,9 +4,9 @@ import type { AppState, ScGlobal, Store } from './types'
 import { createBridge } from './core/bridge'
 import { createStore } from './core/store'
 import { startEffects } from './theme/effects'
-import { startLyricsLibrary, startPartsRuntime, startPlayingRow, watchPanelSections, watchPartStatus } from './parts'
+import { startLayoutMarks, startLyricsLibrary, startPartsRuntime, startPlayingRow, startProgressSheen, watchPanelSections, watchPartStatus } from './parts'
 import { startHome } from './home'
-import { startLyricsColumn } from './nowplaying'
+import { startLyricsColumn, startPanelDragToHide } from './nowplaying'
 import { startLyricsView } from './lyrics-view'
 import { startBarLayers } from './bar-layers'
 import { startCanvasCover } from './canvas'
@@ -75,7 +75,8 @@ function boot() {
 
   const bridge = createBridge()
   const store = createStore(bridge)
-  const disposers: (() => void)[] = []
+  // Before the theme CSS meets Spotify's layout: its grid rules name these marks.
+  const disposers: (() => void)[] = [startLayoutMarks()]
   let host: ExtensionHost | null = null
   let disposed = false
 
@@ -114,7 +115,10 @@ function boot() {
       watchPanelSections(s => store.setPanelSections(s)),
       startPartsRuntime(),
       startPlayingRow(),
+      startPanelDragToHide(),
     )
+    const sheen = startProgressSheen({ style: () => store.get().active.effects.progressBar, onPosition: spotify.onPosition })
+    disposers.push(onSliceChange(store, s => s.active.effects.progressBar, () => sheen.refresh()), () => sheen.dispose())
 
     const lyricsLibrary = startLyricsLibrary(() => store.get().active.layout.lyricsKeepLibrary)
     const lyricsColumn = startLyricsColumn(

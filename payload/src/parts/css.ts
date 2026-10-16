@@ -1,4 +1,5 @@
 // Tiny helpers for generating CSS text. Pure functions, no DOM.
+import { filterable } from './state-selectors'
 
 export type Declarations = Record<string, string>
 
@@ -21,7 +22,7 @@ export function renderRules(rules: CssRule[]): string {
       const body = Object.entries(decls)
         .map(([prop, value]) => `  ${prop}: ${value} !important;`)
         .join('\n')
-      return `${selector} {\n${body}\n}`
+      return `${filterable(selector)} {\n${body}\n}`
     })
     .join('\n')
 }

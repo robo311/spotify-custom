@@ -20,6 +20,10 @@ export const NOW_PLAYING_COVER = '[data-testid="now-playing-widget"] [data-testi
 
 export const HOME_BUTTON = '[data-testid="home-button"]'
 
+/** The top bar's search box, and the suggestions it opens on focus (unmounted while closed). */
+export const SEARCH_INPUT = `${NAV_BAR} [data-testid="search-input"]`
+export const SEARCH_DROPDOWN = `${NAV_BAR} [data-testid="search-dropdown"]`
+
 /** Player bar button that opens the lyrics page. */
 export const LYRICS_BUTTON = '[data-testid="lyrics-button"]'
 

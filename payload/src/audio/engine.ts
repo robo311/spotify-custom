@@ -1,28 +1,31 @@
 // Music-reactive runtime: receives the helper's frames and statuses (window.__sc.audio), tells the helper when to
-// listen, and turns the frames into smooth levels once per display frame for the effects and the studio's meter.
-// The animation loop only runs while frames arrive or levels are still decaying.
+// listen, and hands the frames to the scene (render/), which smooths them and paints our canvases, in a worker when it
+// can. Levels come back to the page only while something here listens (effects on Spotify's elements, the studio's
+// meter).
 import type { AudioStatus, ScGlobal, Store } from '../types'
-import { createDelayBuffer, emptyFrame } from './delay'
-import { createEnvelope, type AudioLevels } from './envelope'
-import { decodeFrame } from './frame'
+import type { PaintPort } from './effects/effect'
+import type { AudioLevels } from './envelope'
+import { AUDIO_BANDS } from './frame'
+import { startSceneHost, startWorker } from './render/host'
+import type { FromScene, PaintContext } from './render/protocol'
 import { anyEffectOn, captureWanted, createWantSender } from './wanted'
-
-/** After the newest frame is this old (plus the sync delay) the stream counts as stopped. */
-const STREAM_GAP_MS = 400
-const MAX_STEP_MS = 100
 
 export interface AudioEngineDeps {
   store: Store
   helperConnected: boolean
   send: (on: boolean) => Promise<AudioStatus>
   onPlaying: (fn: (playing: boolean) => void) => () => void
+  /** Where the scene may run; tests pass () => null to keep it on the page. */
+  worker?: () => Worker | null
 }
 
 export interface AudioEngine {
   readonly channel: ScGlobal['audio']
+  /** For effects that paint a canvas of ours: the scene does the painting. */
+  readonly paint: PaintPort & { context(ctx: PaintContext): void }
   status(): AudioStatus
   onStatus(fn: (s: AudioStatus) => void): () => void
-  /** Called once per display frame while sound is moving, and once more when it has settled to silence. */
+  /** Called every painted frame (up to 30/s) while sound is moving, and once more when it has settled to silence. */
   onLevels(fn: (levels: AudioLevels) => void): () => void
   dispose(): void
 }
@@ -44,50 +47,42 @@ function toStatus(value: unknown): AudioStatus | null {
 
 export function startAudioEngine(deps: AudioEngineDeps): AudioEngine {
   const { store } = deps
-  const buffer = createDelayBuffer()
-  const envelope = createEnvelope()
-  const scratch = emptyFrame()
   const statusFns = new Set<(s: AudioStatus) => void>()
   const levelFns = new Set<(l: AudioLevels) => void>()
+  const levels: AudioLevels = { level: 0, bass: 0, beat: 0, bands: new Float32Array(AUDIO_BANDS) }
   let status: AudioStatus = { state: 'off', latencyMs: 0 }
-  let frame = 0
-  let lastTick = 0
-  let lastSampleAt = -Infinity
   let playing = false
   let disposed = false
 
+  const host = startSceneHost((msg: FromScene) => {
+    if (msg.type !== 'levels' || disposed) return
+    levels.level = msg.level
+    levels.bass = msg.bass
+    levels.beat = msg.beat
+    levels.bands.set(msg.bands)
+    for (const fn of levelFns) fn(levels)
+  }, deps.worker ?? startWorker)
+
+  let timing = { delayMs: -1, sensitivity: -1 }
+  const sendTiming = () => {
+    const s = store.get()
+    const next = { delayMs: Math.max(0, status.latencyMs + s.settings.reactive.syncMs), sensitivity: s.active.effects.reactive.sensitivity }
+    if (next.delayMs === timing.delayMs && next.sensitivity === timing.sensitivity) return
+    timing = next
+    host.post({ type: 'timing', ...next })
+  }
+
   const setStatus = (next: AudioStatus) => {
     status = next
-    if (next.state !== 'listening') buffer.clear()
+    if (next.state !== 'listening') host.post({ type: 'clear' })
+    sendTiming()
     for (const fn of statusFns) fn(next)
   }
   const sender = createWantSender(deps.send, setStatus)
 
-  const delayMs = () => Math.max(0, status.latencyMs + store.get().settings.reactive.syncMs)
-
-  // Frames are stamped with performance.now(), so the loop uses the same clock (not rAF's frame-start time).
-  const tick = () => {
-    const now = performance.now()
-    frame = 0
-    const dt = Math.min(MAX_STEP_MS, now - lastTick)
-    lastTick = now
-    const t = now - delayMs()
-    const has = buffer.sample(t, scratch)
-    const beat = buffer.beatBetween(lastSampleAt, t)
-    lastSampleAt = t
-    const levels = envelope.step(has ? scratch : null, beat, dt, store.get().active.effects.reactive.sensitivity)
-    for (const fn of levelFns) fn(levels)
-    const streaming = now - buffer.newest() < STREAM_GAP_MS + delayMs()
-    if (streaming || !envelope.settled()) frame = requestAnimationFrame(tick)
-  }
-  const wake = () => {
-    if (frame !== 0 || disposed) return
-    lastTick = performance.now()
-    frame = requestAnimationFrame(tick)
-  }
-
   const refreshWanted = () => {
     const s = store.get()
+    sendTiming()
     sender.set(
       captureWanted({
         enabled: s.settings.reactive.enabled,
@@ -110,16 +105,19 @@ export function startAudioEngine(deps: AudioEngineDeps): AudioEngine {
   return {
     channel: {
       frame(base64) {
-        if (disposed) return
-        const decoded = decodeFrame(base64)
-        if (!decoded) return
-        buffer.push(decoded, performance.now())
-        wake()
+        if (!disposed) host.post({ type: 'frame', data: base64 })
       },
       status(s) {
         const next = toStatus(s)
         if (next && !disposed) setStatus(next)
       },
+    },
+    paint: {
+      attach: (id, canvas) => host.post({ type: 'attach', id, canvas }),
+      size: (id, width, height, dpr) => host.post({ type: 'size', id, width, height, dpr }),
+      played: share => host.post({ type: 'played', share }),
+      detach: id => host.post({ type: 'detach', id }),
+      context: context => host.post({ type: 'context', context }),
     },
     status: () => status,
     onStatus(fn) {
@@ -128,7 +126,10 @@ export function startAudioEngine(deps: AudioEngineDeps): AudioEngine {
     },
     onLevels(fn) {
       levelFns.add(fn)
-      return () => levelFns.delete(fn)
+      if (levelFns.size === 1) host.post({ type: 'levels', on: true })
+      return () => {
+        if (levelFns.delete(fn) && levelFns.size === 0 && !disposed) host.post({ type: 'levels', on: false })
+      }
     },
     dispose() {
       disposed = true
@@ -136,7 +137,7 @@ export function startAudioEngine(deps: AudioEngineDeps): AudioEngine {
       stopPlaying()
       document.removeEventListener('visibilitychange', refreshWanted)
       sender.dispose()
-      if (frame !== 0) cancelAnimationFrame(frame)
+      host.dispose()
       statusFns.clear()
       levelFns.clear()
     },

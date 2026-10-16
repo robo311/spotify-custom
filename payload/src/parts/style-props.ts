@@ -29,6 +29,8 @@ export interface Target {
   hover?: string
   /** Colour props with `vars`: write the colour at this opacity (%) instead, e.g. a subdued text variant. */
   fade?: number
+  /** text only: paint the colour here as a background at this opacity (%), for highlights Spotify hard-codes white. */
+  wash?: number
   /** size only: this fraction of the size (e.g. 0.5 for the icon inside a button). */
   scale?: number
 }
@@ -105,6 +107,7 @@ export function propRules(prop: StyleProp, value: string | number, selector: str
     }
     case 'text': {
       const v = String(value)
+      if (target.wash !== undefined) return [{ selector, decls: { 'background-color': fade(v, target.wash) } }]
       if (target.vars) return [{ selector, decls: fromVars(target.vars, colour(v)) }]
       return [{ selector, decls: { ...textVars(v), ...(paint ? { color: v } : {}) } }]
     }

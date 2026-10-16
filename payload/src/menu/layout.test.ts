@@ -42,6 +42,12 @@ describe('arrange', () => {
     ])
   })
 
+  it('puts "Hide on this album" in the last section of our preset, under Hide in this playlist', () => {
+    const album: LiveItem[] = [...LIKED.slice(0, 3), { key: 'hide-in-context' }, ...LIKED.slice(3)]
+    expect(show(arrange(OURS, album)).slice(-3)).toEqual(['---', 'exclude-from-taste-profile', 'hide-in-context'])
+    expect(OURS.slice(-2)).toEqual([{ kind: 'item', key: 'hide-in-playlist' }, { kind: 'item', key: 'hide-in-context' }])
+  })
+
   it('puts items the layout never mentions after the item Spotify shows before them, so new items never vanish', () => {
     const layout: MenuEntry[] = [{ kind: 'item', key: 'add-to-queue' }, { kind: 'separator' }, { kind: 'item', key: 'share' }]
     // Several artists: Spotify's "Go to artist" is a submenu without a key; it follows its neighbour.

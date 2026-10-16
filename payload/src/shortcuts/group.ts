@@ -10,17 +10,23 @@ import type { ShortcutSource } from './source'
 import { showToast } from './toast'
 
 export const HOST_CLASS = 'sc-shortcuts'
+/** One button's width (and height). */
+export const BUTTON_PX = 28
 const CONFIRM_MS = 1200
 
 const STYLE = `
-  :host { display: inline-flex; flex-shrink: 0; align-items: center; margin-inline-end: 8px; opacity: 0; pointer-events: none; }
+  :host {
+    display: inline-flex; flex-shrink: 0; align-items: center; margin-inline-end: 8px; opacity: 0; pointer-events: none;
+    /* Queue rows lay a full-size click layer (position absolute, z-index 0) over their content; stay above it. */
+    position: relative; z-index: 1;
+  }
   :host([hidden]) { display: none; }
   :host([data-always]), :host(:focus-within),
   :host-context([role="row"]:hover), :host-context([role="row"]:focus-within), :host-context([role="row"][aria-selected="true"]) {
     opacity: 1; pointer-events: auto;
   }
   button {
-    all: unset; box-sizing: border-box; width: 28px; height: 28px; display: grid; place-items: center;
+    all: unset; box-sizing: border-box; width: ${BUTTON_PX}px; height: ${BUTTON_PX}px; display: grid; place-items: center;
     border-radius: 6px; color: var(--sc-text-subdued); cursor: pointer;
     transition: color 160ms cubic-bezier(.2, .8, .2, 1);
   }

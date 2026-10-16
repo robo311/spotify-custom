@@ -46,6 +46,7 @@ export const PANEL_CSS = /* css */ `
 .icon { display: grid; place-items: center; flex: none; width: 16px; height: 16px; color: var(--sc-text-subdued, #b3b3b3); }
 .row[data-active] .icon, .row[data-open] .icon { color: var(--sc-text, #fff); }
 .icon svg { display: block; width: 16px; height: 16px; fill: currentColor; }
+.icon img { display: block; width: 16px; height: 16px; border-radius: 2px; object-fit: cover; }
 .line { fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
 .cover { flex: none; width: 24px; height: 24px; margin: 0 -2px 0 -4px; border-radius: 3px; object-fit: cover; background: var(--hover); }
 .cover.empty { display: grid; place-items: center; color: var(--sc-text-subdued, #b3b3b3); }

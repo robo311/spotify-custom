@@ -1,11 +1,12 @@
 // Top bar: the strip at the top of the window. The bar itself (where Home and search sit, which buttons show, their
-// icons, its colours), then the Home button and the search box.
+// icons, its colours), then the Home button, the search box and its suggestions.
 import type { LayoutConfig } from '../../types'
 import { useApp, useEnv } from '../context'
 import { HideToggle } from '../parts/HideToggle'
 import { PartSection } from '../parts/PartSection'
 import { Field } from '../ui/Field'
 import { Segmented } from '../ui/Segmented'
+import { SearchSuggestionsFields } from './topbar/SearchSuggestionsFields'
 
 export function TopBarTab() {
   const { store } = useEnv()
@@ -42,6 +43,10 @@ export function TopBarTab() {
       </PartSection>
 
       <PartSection partId="searchBox" />
+
+      <PartSection partId="searchDropdown" hint="Opens while you work here, showing what’s in the search box (or your recent searches).">
+        <SearchSuggestionsFields />
+      </PartSection>
     </>
   )
 }

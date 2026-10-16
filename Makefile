@@ -3,7 +3,7 @@ PAYLOAD     := payload
 HELPER      := helper
 EMBED       := $(HELPER)/internal/inject/payload.js
 
-.PHONY: payload dev typecheck lint test check e2e release publish clean
+.PHONY: payload dev typecheck lint test check e2e perf release publish clean
 
 ## Build the injected bundle and copy it where the helper embeds it.
 payload:
@@ -37,6 +37,11 @@ check: typecheck lint test
 ## Live checks against the real Spotify on this machine (spec §12.2).
 e2e: payload
 	node e2e/run.mjs
+
+## How heavy the running Spotify is: CPU per process, frames, layers, heap (read-only). ARGS="--json" saves a run,
+## ARGS="--baseline before.json" compares against one.
+perf:
+	@node $(PAYLOAD)/scripts/perf.mjs $(ARGS)
 
 ## Mac .dmg + update zip, Windows .exe into dist/ (spec §11). VERSION=x.y.z sets the version. The Windows
 ## installer is built by CI (Inno Setup runs on Windows); see docs/releasing.md.

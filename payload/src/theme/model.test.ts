@@ -1,6 +1,6 @@
 import type { PartStyle } from '../types'
 import { describe, expect, it } from 'vitest'
-import { BAR_LAYER_BLUR_MAX, BAR_LAYER_MAX_CHARS, BAR_LAYER_SIZE, BAR_LAYER_X, BAR_LAYER_Y, BAR_LAYERS_MAX, FOLDER_IMAGE_MAX_CHARS, PART_SIZE_MAX, defaultBarLayer, ThemeValidationError, defaultHomeStyle, defaultLayout, defaultNowPlaying, defaultPageStyle, defaultLyrics, defaultLyricsAnimation, defaultMenuSettings, defaultReactiveLook, forkTheme, isSlug, normalizeSettings, slugify, uniqueId, validateTheme } from './model'
+import { BAR_LAYER_BLUR_MAX, BAR_LAYER_MAX_CHARS, BAR_LAYER_SIZE, BAR_LAYER_X, BAR_LAYER_Y, BAR_LAYERS_MAX, FOLDER_IMAGE_MAX_CHARS, PART_SIZE_MAX, defaultBarLayer, ThemeValidationError, defaultHomeStyle, defaultLayout, defaultNowPlaying, defaultSearchDropdown, defaultPageStyle, defaultLyrics, defaultLyricsAnimation, defaultMenuSettings, defaultReactiveLook, forkTheme, isSlug, normalizeSettings, slugify, uniqueId, validateTheme } from './model'
 import { PRESETS } from './presets'
 
 const [darcula] = PRESETS.filter(p => p.id === 'darcula')
@@ -222,7 +222,8 @@ describe('menu settings', () => {
       preset: 'ours',
       custom: [],
       playlists: { sort: 'library', order: [], pinned: [], covers: true, folders: true },
-      shortcuts: { rows: ['add-to-queue'], queue: [], playerBar: [] },
+      shortcuts: { rows: ['add-to-queue'], queue: [], playerBar: [], search: [] },
+      hideSpotifyAdd: [],
     })
   })
 
@@ -251,10 +252,15 @@ describe('menu settings', () => {
   it('validates the playlist submenu and shortcuts', () => {
     const m = menu({
       playlists: { sort: 'name', order: ['spotify:playlist:a', 3], pinned: 'x', covers: false, folders: 'no' },
-      shortcuts: { rows: ['go-to-album', 'nope', 'go-to-album', 'share', 'add-to-queue', 'go-to-radio'], queue: 'x', playerBar: ['add-to-liked-songs'] },
+      shortcuts: { rows: ['go-to-album', 'nope', 'go-to-album', 'share', 'add-to-queue', 'go-to-radio'], queue: 'x', playerBar: ['add-to-liked-songs'], search: ['share', 7] },
     })
     expect(m.playlists).toEqual({ sort: 'name', order: ['spotify:playlist:a'], pinned: [], covers: false, folders: true })
-    expect(m.shortcuts).toEqual({ rows: ['go-to-album', 'share', 'add-to-queue'], queue: [], playerBar: ['add-to-liked-songs'] })
+    expect(m.shortcuts).toEqual({ rows: ['go-to-album', 'share', 'add-to-queue'], queue: [], playerBar: ['add-to-liked-songs'], search: ['share'] })
+  })
+
+  it("keeps Spotify's own add button hidden only where it exists (song rows, player bar, search)", () => {
+    expect(menu({ hideSpotifyAdd: ['search', 'playerBar', 'queue', 'rows', 'rows', 7] }).hideSpotifyAdd).toEqual(['rows', 'playerBar', 'search'])
+    expect(menu({ hideSpotifyAdd: 'rows' }).hideSpotifyAdd).toEqual([])
   })
 })
 
@@ -335,6 +341,7 @@ describe('themes saved before lyrics and Now playing layout existed', () => {
       lyricsNowPlayingQueue: true,
       lyricsLibraryFloating: false,
       lyricsPanelFloating: false,
+      searchDropdown: defaultSearchDropdown(),
     })
     expect(t.lyrics).toEqual({ background: 'spotify', fontScale: 1, font: 'theme', align: 'left', animated: defaultLyricsAnimation() })
     expect(t.lyrics.animated.on).toBe(true)
@@ -457,6 +464,15 @@ describe('lyrics page Now playing column', () => {
     expect(validateTheme({ ...darcula, layout: { lyricsLibraryFloating: true } }).layout.lyricsLibraryFloating).toBe(true)
     expect(validateTheme({ ...darcula, layout: {} }).layout.lyricsPanelFloating).toBe(false)
     expect(validateTheme({ ...darcula, layout: { lyricsPanelFloating: true } }).layout.lyricsPanelFloating).toBe(true)
+  })
+
+  it("starts the search suggestions as Spotify's own and clamps what a theme sets", () => {
+    const dropdown = (searchDropdown: unknown) => validateTheme({ ...darcula, layout: { searchDropdown } }).layout.searchDropdown
+    expect(dropdown(undefined)).toEqual({ density: 'spotify', imageSize: 48, textSize: 16, maxHeight: null, hideHints: false, hideTypeLabel: false })
+    expect(dropdown({ density: 'dense', imageSize: 8, textSize: 30.4, maxHeight: 9999, hideHints: true, hideTypeLabel: 'yes' })).toEqual({
+      density: 'dense', imageSize: 24, textSize: 18, maxHeight: 800, hideHints: true, hideTypeLabel: false,
+    })
+    expect(dropdown({ density: 'tiny', maxHeight: 'tall' })).toMatchObject({ density: 'spotify', maxHeight: null })
   })
 
   it('keeps a valid top bar search position, else centre', () => {

@@ -18,6 +18,7 @@ function layout() {
   document.body.innerHTML = `
     <div data-testid="root"><div><nav id="Desktop_LeftSidebar_Id"></nav>
       <div class="view"><div data-overlayscrollbars></div></div>
+      <div data-testid="now-playing-bar"><button data-testid="lyrics-button" aria-pressed="true"></button></div>
     </div></div>`
   const view = document.querySelector('.view')
   if (!view) throw new Error('no view')
@@ -104,6 +105,33 @@ describe('startLyricsView', () => {
     off.play()
     await frames()
     expect(off.loadLyrics).not.toHaveBeenCalled()
+    c.dispose()
+  })
+})
+
+describe('startLyricsView with lyrics turned off in the view', () => {
+  // Spotify keeps its full-window view open and shows the big cover instead; our lines stayed on top of it.
+  it("hands back to Spotify's view while the lyrics button is off, and comes back with it", async () => {
+    const view = layout()
+    open()
+    const { source, play } = fakeSource(SYNCED)
+    const c = startLyricsView(() => ON, source)
+    play()
+    await frames()
+    // Spotify swaps in a new button rather than flipping the old one's aria-pressed.
+    const press = (on: boolean) => {
+      const next = document.createElement('button')
+      next.dataset.testid = 'lyrics-button'
+      next.setAttribute('aria-pressed', String(on))
+      document.querySelector('[data-testid="lyrics-button"]')?.replaceWith(next)
+    }
+    press(false)
+    await frames()
+    expect(view.querySelector('#sc-lyrics-view')).toBeNull()
+    expect(document.documentElement.hasAttribute('data-sc-lyrics-own')).toBe(false)
+    press(true)
+    await frames()
+    expect(view.querySelector('#sc-lyrics-view')).not.toBeNull()
     c.dispose()
   })
 })

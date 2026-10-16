@@ -5,7 +5,7 @@
 // Reduced motion: no pulse.
 import type { ReactiveLook } from '../../types'
 import { NOW_PLAYING_COVER, PLAY_PAUSE } from '../selectors'
-import { amount, type ReactiveEffect } from './effect'
+import { amount, type LevelEffect } from './effect'
 
 const KICK_MS = 240
 const KICK_EASING = 'cubic-bezier(.2,.8,.2,1)'
@@ -31,7 +31,7 @@ export function beatOnset(previous: number, current: number): boolean {
   return current - previous > ONSET
 }
 
-export function startPulse(): ReactiveEffect {
+export function startPulse(): LevelEffect {
   const targets: Target[] = [
     { selector: NOW_PLAYING_COVER, enabled: l => l.pulse.cover, max: 0.08, el: null, kick: null },
     { selector: PLAY_PAUSE, enabled: l => l.pulse.play, max: 0.14, el: null, kick: null },

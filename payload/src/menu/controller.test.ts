@@ -12,7 +12,8 @@ const settings = (s: Partial<MenuSettings> = {}): MenuSettings => ({
   preset: 'ours',
   custom: [],
   playlists: { sort: 'library', order: [], pinned: [], covers: false, folders: true },
-  shortcuts: { rows: [], queue: [], playerBar: [] },
+  shortcuts: { rows: [], queue: [], playerBar: [], search: [] },
+  hideSpotifyAdd: [],
   ...s,
 })
 

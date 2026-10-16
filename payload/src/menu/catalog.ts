@@ -30,6 +30,8 @@ export const MENU_ITEMS: readonly MenuItemDef[] = [
   { key: 'exclude-from-taste-profile', label: 'Exclude from your taste profile' },
   // Spotify's editorial playlists only.
   { key: 'hide-in-playlist', label: 'Hide in this playlist', contextual: true },
+  // Albums (Spotify gives it no menuAction; capture.ts names it).
+  { key: 'hide-in-context', label: 'Hide on this album', contextual: true },
 ]
 
 const item = (key: string): MenuEntry => ({ kind: 'item', key })
@@ -46,6 +48,7 @@ export const STOCK: readonly MenuEntry[] = [
   item('add-to-queue'),
   item('remove-from-queue'),
   item('hide-in-playlist'),
+  item('hide-in-context'),
   item('exclude-from-taste-profile'),
   item('start-jam'),
   item('sleep-timer'),
@@ -77,6 +80,7 @@ export const OURS: readonly MenuEntry[] = [
   item('remove-from-queue'),
   item('exclude-from-taste-profile'),
   item('hide-in-playlist'),
+  item('hide-in-context'),
 ]
 
 /** The layout for a preset; null = Spotify's own order. An empty custom layout means "not edited yet" → ours. */

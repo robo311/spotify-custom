@@ -15,6 +15,7 @@ import type {
   MenuPreset,
   MenuSettings,
   NowPlayingLayout,
+  SearchDropdownLayout,
   PlaylistMenuSettings,
   PageStyle,
   Palette,
@@ -25,6 +26,7 @@ import type {
   Settings,
   ShortcutAction,
   ShortcutSurface,
+  SpotifyAddSurface,
   Theme,
 } from '../types'
 import { ICON_NAMES } from '../icons'
@@ -87,7 +89,19 @@ export function defaultLayout(): LayoutConfig {
     lyricsNowPlayingQueue: true,
     lyricsLibraryFloating: false,
     lyricsPanelFloating: false,
+    searchDropdown: defaultSearchDropdown(),
   }
+}
+
+export const SEARCH_IMAGE_MIN = 24
+export const SEARCH_IMAGE_MAX = 56
+export const SEARCH_TEXT_MIN = 12
+export const SEARCH_TEXT_MAX = 18
+export const SEARCH_HEIGHT_MIN = 200
+export const SEARCH_HEIGHT_MAX = 800
+
+export function defaultSearchDropdown(): SearchDropdownLayout {
+  return { density: 'spotify', imageSize: 48, textSize: 16, maxHeight: null, hideHints: false, hideTypeLabel: false }
 }
 
 export const NPV_TITLE_SCALE_MIN = 0.8
@@ -277,6 +291,22 @@ function validateLayout(input: unknown): LayoutConfig {
     lyricsNowPlayingQueue: raw.lyricsNowPlayingQueue !== false,
     lyricsLibraryFloating: raw.lyricsLibraryFloating === true,
     lyricsPanelFloating: raw.lyricsPanelFloating === true,
+    searchDropdown: validateSearchDropdown(raw.searchDropdown),
+  }
+}
+
+function validateSearchDropdown(input: unknown): SearchDropdownLayout {
+  const raw = isRecord(input) ? input : {}
+  const d = defaultSearchDropdown()
+  const px = (v: unknown, min: number, max: number, fallback: number) =>
+    typeof v === 'number' && Number.isFinite(v) ? Math.min(max, Math.max(min, Math.round(v))) : fallback
+  return {
+    density: oneOf(['spotify', 'compact', 'dense'] as const, raw.density, d.density),
+    imageSize: px(raw.imageSize, SEARCH_IMAGE_MIN, SEARCH_IMAGE_MAX, d.imageSize),
+    textSize: px(raw.textSize, SEARCH_TEXT_MIN, SEARCH_TEXT_MAX, d.textSize),
+    maxHeight: typeof raw.maxHeight === 'number' ? px(raw.maxHeight, SEARCH_HEIGHT_MIN, SEARCH_HEIGHT_MAX, d.maxHeight ?? SEARCH_HEIGHT_MIN) : null,
+    hideHints: raw.hideHints === true,
+    hideTypeLabel: raw.hideTypeLabel === true,
   }
 }
 
@@ -673,7 +703,8 @@ export function defaultSettings(activeTheme: string): Settings {
 export const SHORTCUT_ACTIONS: readonly ShortcutAction[] = [
   'add-to-queue', 'add-to-liked-songs', 'add-to-playlist', 'go-to-album', 'go-to-artist', 'go-to-radio', 'share', 'remove-from-queue',
 ]
-export const SHORTCUT_SURFACES: readonly ShortcutSurface[] = ['rows', 'queue', 'playerBar']
+export const SHORTCUT_SURFACES: readonly ShortcutSurface[] = ['rows', 'queue', 'playerBar', 'search']
+export const SPOTIFY_ADD_SURFACES: readonly SpotifyAddSurface[] = ['rows', 'playerBar', 'search']
 export const SHORTCUTS_MAX = 3
 export const MENU_GROUP_LABEL_MAX = 40
 const MENU_PRESETS: readonly MenuPreset[] = ['stock', 'ours', 'custom']
@@ -685,7 +716,8 @@ export function defaultMenuSettings(): MenuSettings {
     preset: 'ours',
     custom: [],
     playlists: { sort: 'library', order: [], pinned: [], covers: true, folders: true },
-    shortcuts: { rows: ['add-to-queue'], queue: [], playerBar: [] },
+    shortcuts: { rows: ['add-to-queue'], queue: [], playerBar: [], search: [] },
+    hideSpotifyAdd: [],
   }
 }
 
@@ -729,7 +761,9 @@ function normalizeMenuSettings(input: unknown): MenuSettings {
       rows: shortcuts(s.rows, d.shortcuts.rows),
       queue: shortcuts(s.queue, d.shortcuts.queue),
       playerBar: shortcuts(s.playerBar, d.shortcuts.playerBar),
+      search: shortcuts(s.search, d.shortcuts.search),
     },
+    hideSpotifyAdd: SPOTIFY_ADD_SURFACES.filter(place => strings(input.hideSpotifyAdd).includes(place)),
   }
 }
 

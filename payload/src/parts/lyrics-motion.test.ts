@@ -60,7 +60,7 @@ describe('lyrics view motion', () => {
   it("fades the Now playing panel's content in with the cover when the lyrics view closes", () => {
     const css = compileLyricsMotion(theme({}, { background: 'theme' }))
     expect(css).toContain(
-      '[data-cinema-npv-duringexit], [data-cinema-library-npv-duringexit]) :is([data-overlayscrollbars-viewport]:has([data-testid="NPV_Panel_OpenDiv"]), [data-npv-root] [data-overlayscrollbars-viewport]) { view-transition-name: sc-npv-content; }',
+      ':root[data-cinema-library-npv-duringexit] :is([data-overlayscrollbars-viewport]:has([data-testid="NPV_Panel_OpenDiv"]), [data-npv-root] [data-overlayscrollbars-viewport]) { view-transition-name: sc-npv-content; }',
     )
   })
 

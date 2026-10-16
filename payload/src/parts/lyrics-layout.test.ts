@@ -13,7 +13,7 @@ describe('compileLyricsLayout', () => {
     const fullHeight = (css: string) => css.split('}').find(rule => rule.includes('grid-row: 1 / -1')) ?? ''
     const kept = fullHeight(compileLyricsLayout({ ...LAYOUT, lyricsImmersive: true, lyricsKeepLibrary: true }))
     const alone = fullHeight(compileLyricsLayout({ ...LAYOUT, lyricsImmersive: true }))
-    const sidebar = '[data-cinema-library-npv-preexit]) #Desktop_LeftSidebar_Id)'
+    const sidebar = ':root[data-cinema-library-npv-preexit] #Desktop_LeftSidebar_Id'
     expect(kept).toContain(sidebar)
     expect(alone).not.toContain(sidebar)
   })
@@ -180,7 +180,8 @@ describe('our Now playing column beside the lyrics', () => {
 })
 
 describe('lyrics view with Spotify\'s right panel (queue, friends) open', () => {
-  const RIGHT_OPEN = ':is([data-right-sidebar-open-duringenter], [data-right-sidebar-open-postenter], [data-right-sidebar-open-preexit])'
+  // Rendered with one selector per state (parts/state-selectors.ts); this is the "open, panel open" one.
+  const RIGHT_OPEN = ':root[data-cinema-npv-postenter][data-right-sidebar-open-postenter]'
 
   it('keeps the library and gives the panel its column: library | lyrics | panel', () => {
     const css = compileLyricsLayout({ ...LAYOUT, lyricsKeepLibrary: true })
@@ -225,7 +226,8 @@ describe('lyrics view with Spotify\'s right panel (queue, friends) open', () => 
   it('only hides the panel behind a transparent (cover-blur) view while no panel is open', () => {
     const css = compileLyrics({ ...SPOTIFY, background: 'cover-blur' })
     const hide = css.split('}').find(r => r.includes('visibility: hidden')) ?? ''
-    expect(hide).toContain(`:not(${RIGHT_OPEN})`)
+    // Negated states stay as written: there's nothing to split in a :not().
+    expect(hide).toContain(':not(:is([data-right-sidebar-open-duringenter], [data-right-sidebar-open-postenter], [data-right-sidebar-open-preexit]))')
   })
 
   it('turns an open panel into a translucent themed column over the cover', () => {
@@ -332,7 +334,7 @@ describe('header shade with floating side columns', () => {
   it('spans the window under the top bar instead of only the lyrics view', () => {
     for (const layout of [{ lyricsPanelFloating: true }, { lyricsKeepLibrary: true, lyricsLibraryFloating: true }]) {
       const rules = shade(layout).split('}')
-      const ours = rules.find(r => r.includes("[data-testid=\"root\"] > div:has(> #Desktop_LeftSidebar_Id)::after")) ?? ''
+      const ours = rules.find(r => r.includes("[data-sc-grid]::after")) ?? ''
       expect(ours).toContain('[data-cinema-npv-postenter]')
       expect(ours).toContain('grid-row: main-view / auto !important;')
       expect(ours).toContain('height: 120px !important;')

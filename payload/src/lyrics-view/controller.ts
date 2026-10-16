@@ -67,7 +67,7 @@ export function startLyricsView(options: () => LyricsAnimation, source: LyricsSo
   /** The lyrics the view is drawing. */
   let rendered: TrackLyrics | null = null
 
-  const isOpen = () => html.matches(SLOT.open)
+  const isOpen = () => html.matches(SLOT.open) && !document.querySelector(SLOT.lyricsOff)
 
   const stopLoop = () => {
     if (frame) cancelAnimationFrame(frame)
@@ -172,17 +172,21 @@ export function startLyricsView(options: () => LyricsAnimation, source: LyricsSo
   }
 
   // The lyrics view opening and closing shows as attributes on <html>; Spotify rebuilds the view (and so drops our
-  // host) as it opens, which shows as children of the layout grid changing.
+  // host) as it opens, which shows as children of the layout grid changing. Lyrics turned off and on inside the open
+  // view show only on the player bar's lyrics button.
   const htmlObserver = new MutationObserver(records => {
     if (records.some(r => r.attributeName !== SLOT.ownAttr)) scheduleCheck()
   })
   const gridObserver = new MutationObserver(scheduleCheck)
+  const buttonObserver = new MutationObserver(scheduleCheck)
 
   const start = () => {
     running = true
     htmlObserver.observe(html, { attributes: true })
     const grid = document.querySelector(SLOT.grid)
     if (grid) gridObserver.observe(grid, { childList: true })
+    const bar = document.querySelector(SLOT.playerBar)
+    if (bar) buttonObserver.observe(bar, { subtree: true, childList: true, attributes: true, attributeFilter: ['aria-pressed'] })
     stopPlayback = source.onPlayback(state => {
       const next = state?.track ?? null
       if (next?.uri !== track?.uri) {
@@ -197,6 +201,7 @@ export function startLyricsView(options: () => LyricsAnimation, source: LyricsSo
     running = false
     htmlObserver.disconnect()
     gridObserver.disconnect()
+    buttonObserver.disconnect()
     stopPlayback?.()
     stopPlayback = null
     loading?.abort()

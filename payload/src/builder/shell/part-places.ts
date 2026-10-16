@@ -14,6 +14,7 @@ export const PART_PLACES: Readonly<Partial<Record<string, TabId>>> = {
   progressBar: 'player',
   volumeBar: 'player',
   searchBox: 'topbar',
+  searchDropdown: 'topbar',
   homeButton: 'topbar',
   shortcuts: 'home',
   stats: 'home',

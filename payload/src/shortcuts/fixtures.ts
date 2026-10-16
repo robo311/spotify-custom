@@ -27,6 +27,34 @@ export const TRACK_LIST_HTML = `
   </div>
 </div></main></div>`
 
+/** The top bar's search form with its suggestions open: a search term, a song and a playlist (Spotify 1.3.4). */
+export const SEARCH_FORM_HTML = `
+<div id="global-nav-bar" data-testid="global-nav-bar"><form role="search" data-encore-id="formInputIcon">
+  <input data-testid="search-input" role="combobox" type="search">
+</form></div>`
+
+export const SEARCH_DROPDOWN_HTML = `
+<div id="search-dropdown" role="listbox" data-testid="search-dropdown"><ul role="grid" data-encore-id="typeList">
+  <div data-encore-id="listRow" role="row" aria-rowindex="0" aria-selected="false">
+    <div data-testid="mouse-only-link"></div>
+    <div><div role="gridcell"><a href="/search/endless%20love" tabindex="-1">endless love</a></div></div>
+  </div>
+  <div data-encore-id="listRow" role="row" aria-rowindex="1" aria-selected="false" draggable="true">
+    <div data-testid="mouse-only-link"></div>
+    <div><div><img data-testid="entity-image" alt=""><div role="gridcell"><button data-encore-id="buttonTertiary" tabindex="-1"></button></div></div></div>
+    <div><div><div role="gridcell"><a href="/track/54E6zLaoW4ofXKaXhLVu3G" tabindex="-1"><span data-encore-id="listRowTitle">Andless</span></a></div>
+      <p data-encore-id="listRowSubtitle"><span>Song</span> • <a href="/artist/5Z71xE9prhpHrqL5thVMyK" tabindex="-1">tripleS</a></p></div>
+    <div id="song-trailing"><div role="gridcell" id="song-menu"><button aria-haspopup="menu" data-testid="more-button" tabindex="-1"></button></div>
+      <div role="gridcell"><button id="song-save" aria-checked="true" data-encore-id="buttonTertiary" tabindex="-1"></button></div></div></div>
+  </div>
+  <div data-encore-id="listRow" role="row" aria-rowindex="2" aria-selected="false" draggable="true">
+    <div data-testid="mouse-only-link"></div>
+    <div><div><div role="gridcell"><a href="/playlist/02X91JXgs29SxLGnZo3s3T" tabindex="-1"><span data-encore-id="listRowTitle">TripleS</span></a></div></div>
+    <div><div role="gridcell"><button aria-haspopup="menu" data-testid="more-button" tabindex="-1"></button></div>
+      <div role="gridcell"><button id="playlist-save" aria-checked="false" data-encore-id="buttonTertiary" tabindex="-1"></button></div></div></div>
+  </div>
+</ul></div>`
+
 /** Gives an element a React fiber whose chain carries `uri` (and the menu item with uid / album / artists). */
 export function setRowSong(row: Element, uri: string, extra: { uid?: string; album?: string; artist?: string } = {}): void {
   const menuItem = { uri, uid: extra.uid, album: extra.album ? { uri: extra.album } : undefined, artists: extra.artist ? [{ uri: extra.artist }] : [] }
@@ -43,6 +71,7 @@ export function menuSettings(shortcuts: Partial<Record<ShortcutSurface, Shortcut
     preset: 'stock',
     custom: [],
     playlists: { sort: 'library', order: [], pinned: [], covers: true, folders: true },
-    shortcuts: { rows: [], queue: [], playerBar: [], ...shortcuts },
+    shortcuts: { rows: [], queue: [], playerBar: [], search: [], ...shortcuts },
+    hideSpotifyAdd: [],
   }
 }

@@ -66,6 +66,12 @@ export const SEARCH_ROW_IMAGES = [`${SEARCH_ROW} div:has(> img[data-testid="enti
 export const SEARCH_TERM_ICON = `${SEARCH_ROW} svg[data-testid="autocomplete"]`
 export const SEARCH_ROW_TITLE = `${SEARCH_ROW} [data-encore-id="listRowTitle"]`
 export const SEARCH_ROW_SUBTITLE = `${SEARCH_ROW} [data-encore-id="listRowSubtitle"]`
+/** The column holding a row's title and subtitle (search terms have no subtitle and keep Spotify's). */
+export const SEARCH_ROW_TEXT = `${SEARCH_ROW} :has(> [data-encore-id="listRowSubtitle"])`
+/** The row under the pointer or the arrow keys. */
+export const SEARCH_ROW_ACTIVE = `${SEARCH_ROW}:is(:hover, [aria-selected="true"])`
+/** The title's and subtitle's one clamped line each (Spotify's line-clamp span). */
+export const SEARCH_ROW_LINES = ['[data-encore-id="listRowTitle"] > *', '[data-encore-id="listRowSubtitle"] > *']
 export const ENCORE_TEXT = '[data-encore-id="text"]'
 
 export const HOME_BUTTON = `${TOP_BAR} [data-testid="home-button"]`

@@ -2,7 +2,7 @@
 // Fonts are static and live in apply.ts's base slot. Cascade order: palette variables → Encore mapping → parts → layout → icons → theme CSS → file CSS.
 import type { IconPack, Palette, Theme } from '../types'
 import { compileIcons } from '../icons'
-import { compileLayout, compileParts } from '../parts'
+import { compileLayout, compileParts, searchTextScrollCss } from '../parts'
 import { compileEncoreVars } from './encore-map'
 import { MONO_FONT, fontStack, spotifyFontVars } from './fonts'
 import { SPOTIFY_PALETTE } from './presets'
@@ -56,6 +56,7 @@ export function compileTheme(theme: Theme, ctx: CompileContext): string {
     ['encore', isNativePalette(theme.palette) ? '' : compileEncoreVars()],
     ['parts', compileParts(theme)],
     ['layout', compileLayout(theme.layout)],
+    ['search text', searchTextScrollCss()],
     ['icons', compileIcons(theme.icons, ctx.iconPacks, theme.iconOverrides)],
     ['theme css', theme.css],
     ['theme.css file', ctx.fileCss ?? ''],

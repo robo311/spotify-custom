@@ -71,6 +71,20 @@ describe('startMenu', () => {
     expect(panels('sc-menu')).toEqual([['Save', '---', 'Profile', '---', 'Download']])
   })
 
+  it("leaves Spotify's add-to-playlist sheet alone (its list sits in a search form inside #context-menu)", async () => {
+    const menu = startMenu(() => settings(), api())
+    stop = () => menu.dispose()
+    const sheet = fakeMenu([{ label: 'New playlist', chain: [{}] }])
+    const cm = sheet.querySelector('[data-testid="context-menu"]')
+    const form = document.createElement('form')
+    form.append(...(cm?.childNodes ?? []))
+    cm?.append(form)
+    document.body.append(sheet)
+    await settle()
+    expect(sheet.hasAttribute('data-sc-menu-hidden')).toBe(false)
+    expect(document.getElementById('sc-menu')).toBeNull()
+  })
+
   it("runs Spotify's own item on click and closes our panel", async () => {
     const album = vi.fn()
     await open(songItems({ album }))

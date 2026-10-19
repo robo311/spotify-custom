@@ -1,5 +1,5 @@
 // The search suggestions' layout: row spacing, cover and text sizes, how tall the dropdown grows, and which bits of
-// text show. Pure CSS generation; the colours are the searchDropdown part's (registry.ts).
+// text show; and long text scrolling on hover. Pure CSS generation; the colours are the searchDropdown part's (registry.ts).
 import type { SearchDropdownLayout } from '../types'
 import { hideRule, renderRules, type CssRule } from './css'
 import * as S from './selectors'
@@ -12,6 +12,27 @@ const SPOTIFY_TEXT = 16
 const SUBTITLE_STEP = 2
 
 const px = (n: number) => `${String(n)}px`
+
+/**
+ * Long titles and subtitles end in "…"; on the active row they scroll by exactly their overflow (100cqw is the text
+ * column's width, 100% the line's own) and back, so the whole text can be read and short ones don't move. The text
+ * column takes the row's free width and may shrink, so the shortcut buttons stay on its line.
+ */
+// One rule per line rather than a selector list: happy-dom splits lists at the comma inside :is(:hover, …).
+const ACTIVE_LINES = S.SEARCH_ROW_LINES.map(line => `${S.SEARCH_ROW_ACTIVE} :has(> [data-encore-id="listRowSubtitle"]) ${line}`)
+const SCROLL: CssRule[] = [
+  { selector: S.SEARCH_ROW_TEXT, decls: { 'container-type': 'inline-size', flex: '1 1 0', 'min-width': '0' } },
+  { selector: `${S.SEARCH_ROW_TEXT} > *`, decls: { 'max-width': '100%', overflow: 'hidden' } },
+  ...ACTIVE_LINES.map(selector => ({
+    selector,
+    decls: { display: 'inline-block', width: 'max-content', 'max-width': 'none', overflow: 'visible', '-webkit-line-clamp': 'none' },
+  })),
+]
+// Keyframes can't take !important (renderRules adds it), so this part is written out.
+const SCROLL_MOTION = `@media (prefers-reduced-motion: no-preference) {
+${ACTIVE_LINES.map(sel => `${sel} { animation: sc-search-scroll 7s ease-in-out infinite alternate !important; }`).join('\n')}
+}
+@keyframes sc-search-scroll { 0%, 15% { transform: none; } 85%, 100% { transform: translateX(min(0px, calc(100cqw - 100%))); } }`
 
 export function compileSearchDropdown(layout: SearchDropdownLayout): string {
   const rules: CssRule[] = []
@@ -47,4 +68,9 @@ export function compileSearchDropdown(layout: SearchDropdownLayout): string {
     )
   }
   return renderRules(rules)
+}
+
+/** The scroll on hover, for every theme (not a layout option, so the default layout still compiles to nothing). */
+export function searchTextScrollCss(): string {
+  return `${renderRules(SCROLL)}\n${SCROLL_MOTION}`
 }

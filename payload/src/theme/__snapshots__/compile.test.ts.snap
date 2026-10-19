@@ -116,6 +116,9 @@ html.encore-dark-theme .encore-inverted-light-set {
 /* layout */
 /* layout-marker */
 
+/* search text */
+/* search-text-marker */
+
 /* icons */
 /* icons-marker line */"
 `;
@@ -235,6 +238,9 @@ html.encore-dark-theme .encore-inverted-light-set {
 
 /* layout */
 /* layout-marker */
+
+/* search text */
+/* search-text-marker */
 
 /* icons */
 /* icons-marker line */"
@@ -356,6 +362,9 @@ html.encore-dark-theme .encore-inverted-light-set {
 /* layout */
 /* layout-marker */
 
+/* search text */
+/* search-text-marker */
+
 /* icons */
 /* icons-marker line */"
 `;
@@ -475,6 +484,9 @@ html.encore-dark-theme .encore-inverted-light-set {
 
 /* layout */
 /* layout-marker */
+
+/* search text */
+/* search-text-marker */
 
 /* icons */
 /* icons-marker line */"
@@ -596,6 +608,9 @@ html.encore-dark-theme .encore-inverted-light-set {
 /* layout */
 /* layout-marker */
 
+/* search text */
+/* search-text-marker */
+
 /* icons */
 /* icons-marker line */"
 `;
@@ -715,6 +730,9 @@ html.encore-dark-theme .encore-inverted-light-set {
 
 /* layout */
 /* layout-marker */
+
+/* search text */
+/* search-text-marker */
 
 /* icons */
 /* icons-marker line */"
@@ -836,6 +854,9 @@ html.encore-dark-theme .encore-inverted-light-set {
 /* layout */
 /* layout-marker */
 
+/* search text */
+/* search-text-marker */
+
 /* icons */
 /* icons-marker line */"
 `;
@@ -956,6 +977,9 @@ html.encore-dark-theme .encore-inverted-light-set {
 /* layout */
 /* layout-marker */
 
+/* search text */
+/* search-text-marker */
+
 /* icons */
 /* icons-marker line */"
 `;
@@ -1075,6 +1099,9 @@ html.encore-dark-theme .encore-inverted-light-set {
 /* layout */
 /* layout-marker */
 
+/* search text */
+/* search-text-marker */
+
 /* icons */
 /* icons-marker line */"
 `;
@@ -1100,6 +1127,9 @@ exports[`compileTheme > compiles spotify-original deterministically 1`] = `
 
 /* layout */
 /* layout-marker */
+
+/* search text */
+/* search-text-marker */
 
 /* icons */
 /* icons-marker spotify */"
@@ -1221,6 +1251,9 @@ html.encore-dark-theme .encore-inverted-light-set {
 /* layout */
 /* layout-marker */
 
+/* search text */
+/* search-text-marker */
+
 /* icons */
 /* icons-marker line */"
 `;
@@ -1340,6 +1373,9 @@ html.encore-dark-theme .encore-inverted-light-set {
 
 /* layout */
 /* layout-marker */
+
+/* search text */
+/* search-text-marker */
 
 /* icons */
 /* icons-marker line */"

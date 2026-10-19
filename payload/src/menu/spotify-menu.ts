@@ -166,7 +166,9 @@ export function watchMenus(opened: (menu: SpotifyMenu) => void): () => void {
     if (!list) return false
     const depth = Number(list.getAttribute('data-depth') ?? '0')
     if (depth === 0) {
-      if (!root.querySelector(CONTEXT_MENU)) return true // a dropdown, not a context menu: leave it alone
+      // A dropdown, or the + button's add-to-playlist sheet (also #context-menu, but its list sits inside a search
+      // form): not a context menu, leave it alone.
+      if (list.parentElement?.matches(CONTEXT_MENU) !== true) return true
       current?.end()
       const session = createSession(root, list)
       current = session

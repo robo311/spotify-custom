@@ -6,6 +6,7 @@ import { PRESETS, SPOTIFY_ORIGINAL_ID } from './presets'
 vi.mock('../parts', () => ({
   compileParts: () => '/* parts-marker */',
   compileLayout: () => '/* layout-marker */',
+  searchTextScrollCss: () => '/* search-text-marker */',
 }))
 vi.mock('../icons', () => ({
   compileIcons: (pack: string) => `/* icons-marker ${pack} */`,
@@ -45,9 +46,9 @@ describe('compileTheme', () => {
     expect(css).toContain('--sc-font-ui: "SC Fraunces", var(--fallback-fonts, serif);')
   })
 
-  it('orders sections so user CSS wins: variables, encore, parts, layout, icons, css, file css', () => {
+  it('orders sections so user CSS wins: variables, encore, parts, layout, search text, icons, css, file css', () => {
     const css = compileTheme({ ...PRESETS[0], css: '/* user-css */' }, { ...ctx, fileCss: '/* file-css */' })
-    const order = ['--sc-background', 'encore-dark-theme', 'parts-marker', 'layout-marker', 'icons-marker line', 'user-css', 'file-css'].map(m => css.indexOf(m))
+    const order = ['--sc-background', 'encore-dark-theme', 'parts-marker', 'layout-marker', 'search-text-marker', 'icons-marker line', 'user-css', 'file-css'].map(m => css.indexOf(m))
     expect(order.every(i => i >= 0)).toBe(true)
     expect([...order].sort((a, b) => a - b)).toEqual(order)
   })

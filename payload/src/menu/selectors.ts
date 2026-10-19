@@ -5,7 +5,10 @@
 /** A popover root (tippy): on <body> for a menu, inside the parent row for a submenu. */
 export const POPOVER_ROOT = '[data-tippy-root]'
 
-/** Marks the root of a top-level context menu (not dropdowns such as the library's sort menu). */
+/**
+ * Marks the root of a top-level context menu (not dropdowns such as the library's sort menu). The + button's
+ * add-to-playlist sheet (1.3.5) carries it too, with its ul[role=menu] inside a form rather than a direct child.
+ */
 export const CONTEXT_MENU = '[data-testid="context-menu"]'
 
 export const MENU_LIST = 'ul[role="menu"]'

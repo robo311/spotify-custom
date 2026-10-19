@@ -156,11 +156,12 @@ func (l *shellLink) setTarget(path string) error {
 
 type windowsLinks struct{}
 
-// NewLinks finds Spotify's shortcuts in the current user's Start menu, desktop and pinned taskbar.
+// NewLinks finds Spotify's shortcuts in the current user's Start menu, desktop and pinned taskbar (pins are found
+// only so ones pointed at us by earlier versions are given back).
 func NewLinks() Links { return windowsLinks{} }
 
-func folders() []string {
-	var dirs []string
+// folders are where Spotify's shortcuts live; pinned is the taskbar's.
+func folders() (dirs []string, pinned string) {
 	if p, err := windows.KnownFolderPath(windows.FOLDERID_Programs, 0); err == nil {
 		dirs = append(dirs, p, filepath.Join(p, "*"))
 	}
@@ -168,14 +169,16 @@ func folders() []string {
 		dirs = append(dirs, p)
 	}
 	if p, err := windows.KnownFolderPath(windows.FOLDERID_RoamingAppData, 0); err == nil {
-		dirs = append(dirs, filepath.Join(p, `Microsoft\Internet Explorer\Quick Launch\User Pinned\TaskBar`))
+		pinned = filepath.Join(p, `Microsoft\Internet Explorer\Quick Launch\User Pinned\TaskBar`)
+		dirs = append(dirs, pinned)
 	}
-	return dirs
+	return dirs, pinned
 }
 
 func (windowsLinks) Find() ([]Link, error) {
 	var paths []string
-	for _, dir := range folders() {
+	dirs, pinned := folders()
+	for _, dir := range dirs {
 		matches, _ := filepath.Glob(filepath.Join(dir, "*.lnk")) // only fails on a bad pattern
 		for _, m := range matches {
 			if strings.Contains(strings.ToLower(filepath.Base(m)), "spotify") {
@@ -194,7 +197,7 @@ func (windowsLinks) Find() ([]Link, error) {
 			release(unsafe.Pointer(file))
 			release(unsafe.Pointer(link))
 			if err == nil && target != "" {
-				links = append(links, Link{Path: p, Target: target, Args: args})
+				links = append(links, Link{Path: p, Target: target, Args: args, Pinned: pinned != "" && filepath.Dir(p) == pinned})
 			}
 		}
 		return nil

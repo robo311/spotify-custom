@@ -1,6 +1,9 @@
-// Package shortcut points Spotify's own shortcuts (Start menu, desktop, pinned taskbar) at Spotify Custom, so opening
-// Spotify from its usual icon starts Spotify Custom, which opens Spotify with the theme. Windows only: Dock icons on
-// macOS can't take another app's place without changing Spotify.app. Elsewhere Links finds nothing.
+// Package shortcut points Spotify's own shortcuts (Start menu, desktop) at Spotify Custom, so opening Spotify from its
+// usual icon starts Spotify Custom, which opens Spotify with the theme. Taskbar pins stay Spotify's: Windows groups a
+// window with a pin by the program the pin opens, so a pin pointed at us left Spotify with a second taskbar icon (and
+// a broken pin after restarts). The helper, running from login, restarts a Spotify opened from the pin with the theme.
+// Windows only: Dock icons on macOS can't take another app's place without changing Spotify.app. Elsewhere Links
+// finds nothing.
 package shortcut
 
 import (
@@ -19,6 +22,7 @@ type Link struct {
 	Path   string
 	Target string // the program it opens
 	Args   string
+	Pinned bool // pinned to the taskbar: never pointed at us, and given back if it was
 }
 
 // Links finds and rewrites shortcut files.
@@ -29,7 +33,8 @@ type Links interface {
 	Retarget(path, target, args, icon string) error
 }
 
-// Sync points every plain Spotify shortcut at self (on), or every one of ours back at spotify (off). A Spotify
+// Sync points every plain Spotify shortcut at self (on), or every one of ours back at spotify (off). Taskbar pins are
+// always treated as off. A Spotify
 // shortcut with arguments of its own is left alone, so restoring is always exact. Shortcuts of ours that point at
 // another copy of the app (it moved) follow it. Every shortcut is tried; it returns how many it changed.
 func Sync(links Links, on bool, spotify, self string) (int, error) {
@@ -40,7 +45,7 @@ func Sync(links Links, on bool, spotify, self string) (int, error) {
 	var changed int
 	var errs []error
 	for _, l := range found {
-		target, args, ok := wanted(l, on, spotify, self)
+		target, args, ok := wanted(l, on && !l.Pinned, spotify, self)
 		if !ok {
 			continue
 		}

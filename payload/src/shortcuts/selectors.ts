@@ -30,8 +30,9 @@ export const PLAYER_TITLE = '[data-testid="context-item-info-title"]'
 export const SEARCH_FORM = '[data-testid="global-nav-bar"] form[role="search"]'
 /** A suggestion row (songs, playlists, artists, search terms); only song rows carry a song. */
 export const SEARCH_ROW = '[data-testid="search-dropdown"] [role="row"]'
-/** A song suggestion: the only kind that links to /track/ (its title). */
-const SEARCH_SONG_ROW = `${SEARCH_ROW}:has(a[href^="/track/"])`
+/** A song suggestion's title: the only kind that links to /track/. */
+export const SEARCH_SONG_LINK = 'a[href^="/track/"]'
+const SEARCH_SONG_ROW = `${SEARCH_ROW}:has(${SEARCH_SONG_LINK})`
 
 /**
  * Spotify's own add button (+ / ✓ for Liked Songs and playlists): the row's or the player bar's only toggle button

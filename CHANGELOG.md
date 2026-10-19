@@ -5,6 +5,25 @@ All notable changes to Spotify Custom. Versions follow `X.Y.Z`; installed copies
 
 ## Unreleased
 
+## 0.4.2 — 2026-10-19
+
+### Fixed
+
+- **One Spotify icon on the Windows taskbar.** Start with Spotify no longer changes a Spotify icon pinned to the
+  taskbar. Changing it made Windows show Spotify as a second icon next to the pin, and the pin could stop working after
+  a restart, so you had to pin Spotify again every time. Pins changed by earlier versions are given back to Spotify. A
+  Spotify opened from the pin gets your look a moment later. Start menu and desktop icons work as before.
+- **Spotify's add button opens its full playlist list again.** The + next to a song showed only "New playlist": our
+  right-click menu took Spotify's add-to-playlist window for one of its menus. It's left alone now.
+- **Shortcut buttons stay on the line in recent searches.** On a recent search (no ⋯, only the remove ×) the buttons
+  dropped to a line of their own. They now sit before the ×, next to the text.
+- **Long names in the search suggestions scroll on hover.** A title or artist list that doesn't fit ends in "…"; point
+  at the row (or move to it with the arrow keys) and it scrolls to show the rest, then back. Short ones stay put, and
+  nothing moves if your system asks for reduced motion.
+- **The "New release from" block on Home stays in its place.** It sometimes showed up between your shortcuts and
+  Your listening. Your listening now always comes first, and the block is listed in the Home tab as its own section,
+  so you can hide it or move it.
+
 ## 0.4.1 — 2026-10-16
 
 ### Added

@@ -18,6 +18,7 @@ import {
   ROW_ACTIONS_CELL,
   SEARCH_FORM,
   SEARCH_ROW,
+  SEARCH_SONG_LINK,
   TRACK_GRID,
   TRACK_ROW,
 } from './selectors'
@@ -150,14 +151,26 @@ export function startQueueRows(settings: GroupSettings): () => void {
   )
 }
 
-/** Song suggestions: before the ⋯ (Spotify's ✓ follows it). */
+/**
+ * A recent search has no ⋯, only a remove × after the text: the block holding it (the last gridcell, climbed to a
+ * sibling of the text). Appended to the row instead, the buttons wrapped onto a line of their own.
+ */
+function trailingSlot(row: Element): Element | null {
+  const title = row.querySelector(SEARCH_SONG_LINK)
+  let slot = [...row.querySelectorAll('[role="gridcell"]')].at(-1) ?? null
+  if (!slot || !title || slot.contains(title)) return null
+  while (slot.parentElement && !slot.parentElement.contains(title)) slot = slot.parentElement
+  return slot.parentElement === row ? null : slot
+}
+
+/** Song suggestions: before the ⋯ (Spotify's ✓ follows it), or before a recent search's ×. */
 export function startSearchRows(settings: GroupSettings): () => void {
   return startRows(
     {
       container: SEARCH_FORM,
       rows: SEARCH_ROW,
       place(row, host) {
-        const menu = row.querySelector(MORE_BUTTON)?.closest('[role="gridcell"]')
+        const menu = row.querySelector(MORE_BUTTON)?.closest('[role="gridcell"]') ?? trailingSlot(row)
         if (menu?.parentElement) menu.parentElement.insertBefore(host, menu)
         else row.append(host)
       },

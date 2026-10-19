@@ -4,7 +4,7 @@
 import type { HomeConfig, ShelfDef, ShelfInfo } from '../types'
 import { compileHomeCss } from './css'
 import { shelfIdentity, shelfTitle } from './keys'
-import { HOME_PAGE, OBSERVE_SCOPE, SHELF, SHELF_KEY_ATTR } from './selectors'
+import { HOME_PAGE, OBSERVE_SCOPE, RELEASE_SHELF, SHELF, SHELF_KEY_ATTR } from './selectors'
 import { createShelfHost, type ShelfHost } from './shelf-host'
 
 export interface HomeController {
@@ -36,7 +36,7 @@ export function startHome(opts: { getConfig: () => HomeConfig; onShelves: (s: Sh
     // Away from Home: keep the last known list so the builder can still edit it.
     if (!home) return
 
-    const natives = [...home.querySelectorAll(SHELF)]
+    const natives = [...home.querySelectorAll(`${SHELF}, ${RELEASE_SHELF}`)]
     const shelves: ShelfInfo[] = []
     const seen = new Set<string>()
     for (const host of hosts.values()) {

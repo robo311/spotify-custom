@@ -43,9 +43,10 @@ menu). Then:
 
 - **Open Spotify from its own icon** and Spotify comes up, closes and reopens once with your look, within a couple of
   seconds. A Spotify that has been open (and maybe playing) for a while is never restarted without asking.
-- **Windows: Start with Spotify** (on by default) goes further: Spotify's icons in the Start menu, on the desktop and
-  on the taskbar open Spotify Custom, which opens Spotify with your look straight away, even if you quit Spotify Custom
-  earlier. Turn it off in the tray menu and the icons belong to Spotify again; then start Spotify Custom yourself.
+- **Windows: Start with Spotify** (on by default) goes further: Spotify's icons in the Start menu and on the desktop
+  open Spotify Custom, which opens Spotify with your look straight away, even if you quit Spotify Custom earlier. A
+  Spotify icon pinned to the taskbar stays Spotify's (so Windows keeps one taskbar icon for it) and works like the
+  first point. Turn it off in the tray menu and the icons belong to Spotify again; then start Spotify Custom yourself.
 
 ## Updates
 

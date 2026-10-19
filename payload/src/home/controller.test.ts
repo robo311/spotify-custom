@@ -53,6 +53,24 @@ describe('startHome', () => {
     expect(reports.at(-1)?.[0]).toEqual({ key: 'ext:stats', title: 'Your listening', stable: true })
   })
 
+  it("keys Spotify's new-release block (no component-shelf id, artist link changes) as one stable shelf, after ours", () => {
+    const container = mountHome()
+    const release = document.createElement('section')
+    release.innerHTML =
+      '<div data-testid="rich-title-row-shelf-header"><p>New release from</p><h2><a data-testid="see-all-link" href="/artist/1">Artist</a></h2></div>' +
+      '<a data-encore-id="box" href="album/1">Single</a>'
+    container.querySelector('#shortcuts')?.after(release)
+    const { controller, reports } = start()
+    controller.addShelf({ id: 'stats', title: 'Your listening', render: vi.fn() })
+
+    expect(release.getAttribute('data-sc-shelf-key')).toBe('release')
+    expect(reports.at(-1)?.slice(0, 2)).toEqual([
+      { key: 'ext:stats', title: 'Your listening', stable: true },
+      { key: 'release', title: 'New release from Artist', stable: true },
+    ])
+    expect(container.querySelector('[data-sc-shelf-key="ext:stats"]')?.nextElementSibling).toBe(release)
+  })
+
   it('re-attaches extension shelves when Spotify re-renders Home', async () => {
     const container = mountHome()
     const { controller } = start()

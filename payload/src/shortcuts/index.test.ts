@@ -305,6 +305,30 @@ describe('search suggestions', () => {
     expect(fns.addToQueue).toHaveBeenCalledWith([TRACK_A])
   })
 
+  // Recent searches (1.3.5): no ⋯, only a remove × after the text. Appended to the row, the buttons wrapped onto a
+  // line of their own (the row is a two-column grid).
+  it('puts the buttons before the remove × on a recent search, in the row with the text', async () => {
+    stop = start(() => menuSettings({ search: ['add-to-queue'] }), fakeSource().source)
+    document.querySelector('form[role="search"]')?.insertAdjacentHTML(
+      'beforeend',
+      `<div id="search-dropdown" role="listbox" data-testid="search-dropdown"><ul role="grid" data-encore-id="typeList">
+        <div data-encore-id="listRow" role="row" aria-rowindex="0">
+          <div data-testid="mouse-only-link"></div>
+          <div><div><img data-testid="entity-image" alt=""><div role="gridcell"><button></button></div></div></div>
+          <div id="recent-text"><div><div role="gridcell"><a href="/track/54E6zLaoW4ofXKaXhLVu3G"><span data-encore-id="listRowTitle">POP/STARS</span></a></div>
+            <p data-encore-id="listRowSubtitle"><span>Song</span> • <a href="/artist/1">K/DA</a></p></div>
+            <div id="recent-remove"><div role="gridcell"><button data-encore-id="buttonTertiary"></button></div></div></div>
+        </div>
+      </ul></div>`,
+    )
+    const row = document.querySelector('#search-dropdown [role="row"]')
+    if (row) setRowSong(row, TRACK_A)
+    await flush()
+    expect(hosts()).toHaveLength(1)
+    expect(document.getElementById('recent-remove')?.previousElementSibling?.className).toBe('sc-shortcuts')
+    expect(document.getElementById('recent-text')?.contains(hosts().item(0))).toBe(true)
+  })
+
   it('drops the buttons when the dropdown closes and adds them again when it reopens', async () => {
     stop = start(() => menuSettings({ search: ['share'] }), fakeSource().source)
     openDropdown()

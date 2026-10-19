@@ -2,6 +2,12 @@
 
 export const HOME_PAGE = '[data-testid="home-page"]'
 export const SHELF = '[data-testid="component-shelf"]'
+/**
+ * Spotify's "New release from <artist>" block (1.3.5): a plain section around a rich-title header and one release,
+ * no component-shelf id. Its see-all link points at the artist, so it gets one fixed key instead.
+ */
+export const RELEASE_SHELF = 'section:has(> [data-testid="rich-title-row-shelf-header"]):not([data-testid="component-shelf"])'
+export const RELEASE_KEY = 'release'
 export const SEE_ALL_LINK = '[data-testid="see-all-link"]'
 export const SHELF_TITLE = 'h2'
 export const ANY_LINK = 'a[href]'

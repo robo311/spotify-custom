@@ -18,7 +18,7 @@ export const SEARCH_DROPDOWN_DOM = `
           <div data-testid="mouse-only-link"></div>
           <div><div><div><div id="song-image" style="width: 48px; height: 48px;"><img data-testid="entity-image" alt=""></div>
             <div role="gridcell"><button data-encore-id="buttonTertiary" tabindex="-1"></button></div></div></div></div>
-          <div><div><div role="gridcell"><a href="/track/54E6zLaoW4ofXKaXhLVu3G" tabindex="-1"><span><span data-encore-id="listRowTitle">Andless</span></span></a></div>
+          <div><div id="song-text"><div role="gridcell"><a href="/track/54E6zLaoW4ofXKaXhLVu3G" tabindex="-1"><span><span data-encore-id="listRowTitle"><span id="song-title">Andless</span></span></span></a></div>
             <p data-encore-id="listRowSubtitle"><span id="song-subtitle"><span id="song-type"><span></span><span>Song</span></span> • <span id="song-artist"><a href="/artist/5Z71xE9prhpHrqL5thVMyK">tripleS</a></span></span></p></div></div>
         </div>
         <div data-encore-id="listRow" role="row" id="artist-row">

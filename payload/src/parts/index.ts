@@ -12,6 +12,8 @@ import { PARTS } from './registry'
 
 export { PARTS } from './registry'
 export { LAYOUT_OPTIONS, compileLayout } from './layout'
+/** Long search-suggestion text scrolls on hover; part of every theme. */
+export { searchTextScrollCss } from './search-dropdown'
 export { watchPartStatus, findPartAt, partElements } from './status'
 export { watchPanelSections } from './panel'
 export { startPartsRuntime } from './runtime'

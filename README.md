@@ -17,3 +17,7 @@ It updates itself after that.
 | `make publish VERSION=x.y.z` | publish a release via GitHub Actions ([docs/releasing.md](docs/releasing.md)) |
 
 Changes: [CHANGELOG.md](CHANGELOG.md) · payload in `payload/` (TypeScript, Preact) · helper in `helper/` (Go).
+
+## License
+
+[MIT](LICENSE) © robo311

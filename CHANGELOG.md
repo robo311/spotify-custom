@@ -5,6 +5,10 @@ All notable changes to Spotify Custom. Versions follow `X.Y.Z`; installed copies
 
 ## Unreleased
 
+### Changed
+
+- **Spotify Custom is open source** under the [MIT licence](LICENSE).
+
 ## 0.4.2 — 2026-10-19
 
 ### Fixed
